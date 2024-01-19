@@ -112,7 +112,8 @@ public class Manager
   public static void Poke(Info info, ZDO zdo, string name, string parameter)
   {
     var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.Pokes, zdo, name, parameter);
+    var pokeParameter = Helper2.ReplaceParameters(info.PokeParameter, name, parameter);
     foreach (var z in zdos)
-      Handle(ActionType.Poke, info.PokeParameter, z);
+      Handle(ActionType.Poke, pokeParameter, z);
   }
 }

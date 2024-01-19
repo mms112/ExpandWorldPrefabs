@@ -35,6 +35,16 @@ public class ObjectsFiltering
     else
       return HasLimitObjects(indices, limit, objects, zdo, name, parameter);
   }
+  public static bool HasNotNearby(Range<int>? limit, Object[] objects, ZDO zdo, string name, string parameter)
+  {
+    if (objects.Length == 0) return true;
+    var maxRadius = objects.Max(o => o.MaxDistance);
+    var indices = GetSectorIndices(zdo.m_position, maxRadius);
+    if (limit == null)
+      return !HasAllObjects(indices, objects, zdo, name, parameter);
+    else
+      return !HasLimitObjects(indices, limit, objects, zdo, name, parameter);
+  }
 
   private static bool HasAllObjects(HashSet<int> indices, Object[] objects, ZDO zdo, string name, string parameter)
   {

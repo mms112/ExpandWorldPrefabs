@@ -61,7 +61,7 @@ public class InfoSelector
     }
     if (checkBannedObjects)
     {
-      linq = linq.Where(d => !ObjectsFiltering.HasNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, name, parameter)).ToArray();
+      linq = linq.Where(d => ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, name, parameter)).ToArray();
     }
     if (checkLocations)
     {
