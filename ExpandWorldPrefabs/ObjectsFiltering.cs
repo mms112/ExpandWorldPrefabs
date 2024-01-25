@@ -21,7 +21,7 @@ public class ObjectsFiltering
     var zm = ZDOMan.instance;
     var query = indices.SelectMany(z => zm.m_objectsBySector[z]).Where(z => z != zdo && objects.Any(o => o.IsValid(z, pos, name, parameter)));
     if (limit > 0)
-      query = query.Take(limit);
+      query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
   }
 

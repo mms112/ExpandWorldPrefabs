@@ -72,6 +72,7 @@ Most fields are put on a single line. List values are separated by `,`.
     - `<par>`: Triggered parameter.
     - `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
     - `<x>`, `<y>` and `<z>`: Object center point.
+    - `<i>` and `<j>`: Object zone indices.
     - `<a>`: Object rotation.
   - With `prefab: Player` or with `playerSearch`:
     - `<pid>`: Player id.
