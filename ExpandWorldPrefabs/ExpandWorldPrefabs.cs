@@ -8,7 +8,7 @@ using UnityEngine;
 using ServerSync;
 namespace ExpandWorld.Prefab;
 [BepInPlugin(GUID, NAME, VERSION)]
-[BepInDependency("expand_world_data", "1.25")]
+[BepInDependency("expand_world_data", "1.27")]
 public class EWP : BaseUnityPlugin
 {
   public const string GUID = "expand_world_prefabs";
@@ -62,6 +62,7 @@ public class EWP : BaseUnityPlugin
     if (ZNet.instance == null) return;
     HandleCreated.Execute();
     DelayedSpawn.Execute(Time.deltaTime);
+    DelayedRemove.Execute(Time.deltaTime);
   }
 
   public static RandomEvent GetCurrentEvent(Vector3 pos)

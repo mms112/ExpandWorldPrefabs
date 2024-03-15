@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using ExpandWorldData;
 using UnityEngine;
@@ -7,8 +8,8 @@ namespace ExpandWorld.Prefab;
 
 public class InfoSelector
 {
-  public static Info? Select(ActionType type, ZDO zdo, string name, string parameter, ZDO? source) => Select(InfoManager.Select(type), zdo, name, parameter, source);
-  private static Info? Select(PrefabInfo infos, ZDO zdo, string name, string parameter, ZDO? source)
+  public static Info? Select(ActionType type, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source) => Select(InfoManager.Select(type), zdo, arg, parameters, source);
+  private static Info? Select(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
   {
     var prefab = zdo.m_prefab;
     var pos = zdo.m_position;
@@ -17,9 +18,9 @@ public class InfoSelector
     var biome = WorldGenerator.instance.GetBiome(pos);
     var distance = Utils.DistanceXZ(pos, Vector3.zero);
     var day = EnvMan.instance.IsDay();
-    var parameters = parameter.Split(' ');
+    var args = arg.Split(' ');
     var linq = data
-      .Where(d => CheckParameters(d, parameters))
+      .Where(d => CheckArgs(d, args))
       .Where(d => (d.Biomes & biome) == biome)
       .Where(d => d.Day || !day)
       .Where(d => d.Night || day)
@@ -57,11 +58,11 @@ public class InfoSelector
     }
     if (checkObjects)
     {
-      linq = linq.Where(d => ObjectsFiltering.HasNearby(d.ObjectsLimit, d.Objects, zdo, name, parameter)).ToArray();
+      linq = linq.Where(d => ObjectsFiltering.HasNearby(d.ObjectsLimit, d.Objects, zdo, parameters)).ToArray();
     }
     if (checkBannedObjects)
     {
-      linq = linq.Where(d => ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, name, parameter)).ToArray();
+      linq = linq.Where(d => ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, parameters)).ToArray();
     }
     if (checkLocations)
     {
@@ -112,12 +113,12 @@ public class InfoSelector
     }
     return null;
   }
-  private static bool CheckParameters(Info info, string[] parameters)
+  private static bool CheckArgs(Info info, string[] args)
   {
-    if (info.Parameters.Length == 0) return true;
-    if (info.Parameters.Length > parameters.Length) return false;
-    for (int i = 0; i < info.Parameters.Length; i++)
-      if (!Helper2.CheckWild(info.Parameters[i], parameters[i])) return false;
+    if (info.Args.Length == 0) return true;
+    if (info.Args.Length > args.Length) return false;
+    for (int i = 0; i < info.Args.Length; i++)
+      if (!Helper2.CheckWild(info.Args[i], args[i])) return false;
     return true;
 
   }

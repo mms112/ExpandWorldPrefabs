@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using ExpandWorldData;
 using UnityEngine;
@@ -7,13 +8,13 @@ namespace ExpandWorld.Prefab;
 public class Commands
 {
 
-  public static void Run(Info info, ZDO zdo, string name, string parameter, ZDO? source)
+  public static void Run(Info info, ZDO zdo, Dictionary<string, string> parameters, ZDO? source)
   {
     if (info.Commands.Length == 0) return;
     var pos = zdo.m_position;
     var rot = zdo.m_rotation;
     var players = FindPlayers(zdo, source, info);
-    var commands = info.Commands.Select(s => Helper2.ReplaceParameters(s, name, parameter)).ToArray();
+    var commands = info.Commands.Select(s => Helper2.ReplaceParameters(s, parameters)).ToArray();
     if (info.PlayerSearch == PlayerSearch.None)
       CommandManager.Run(commands, pos, rot, players.Length == 0 ? null : players[0]);
     else

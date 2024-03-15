@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Data;
 using ExpandWorldData;
 using Service;
 using UnityEngine;
@@ -25,6 +26,8 @@ public class Data
   public string[]? spawns = null;
   [DefaultValue(false)]
   public bool remove = false;
+  [DefaultValue(0f)]
+  public float removeDelay = 0f;
   [DefaultValue(false)]
   public bool drops = false;
   [DefaultValue("")]
@@ -94,6 +97,9 @@ public class Data
   public string[]? bannedFilters = null;
   [DefaultValue(0f)]
   public float delay = 0f;
+
+  [DefaultValue(false)]
+  public bool triggerRules = false;
 }
 
 
@@ -101,11 +107,12 @@ public class Info
 {
   public string Prefabs = "";
   public ActionType Type = ActionType.Create;
-  public string[] Parameters = [];
+  public string[] Args = [];
   public float Weight = 1f;
   public Spawn[] Swaps = [];
   public Spawn[] Spawns = [];
   public bool Remove = false;
+  public float RemoveDelay = 0f;
   public bool Drops = false;
   public string Data = "";
   public string[] Commands = [];
@@ -136,6 +143,7 @@ public class Info
   public PlayerSearch PlayerSearch = PlayerSearch.None;
   public float PlayerSearchDistance = 0f;
   public float PlayerSearchHeight = 0f;
+  public bool TriggerRules = false;
 }
 public class Spawn
 {
@@ -175,10 +183,10 @@ public class Spawn
     if (split.Count > 8)
       Delay = Parse.Float(split[8]);
   }
-  public int GetPrefab(string name, string parameter)
+  public int GetPrefab(Dictionary<string, string> parameters)
   {
     if (Prefab != 0) return Prefab;
-    var prefabName = Helper2.ReplaceParameters(WildPrefab, name, parameter);
+    var prefabName = Helper2.ReplaceParameters(WildPrefab, parameters);
     var prefab = prefabName.GetStableHashCode();
     return ZNetScene.instance.GetPrefab(prefab) ? prefab : 0;
   }
@@ -276,7 +284,7 @@ public class Object
     if (split.Count > 2)
     {
       Data = split[2].GetStableHashCode();
-      if (!ZDOData.Cache.ContainsKey(Data))
+      if (!DataHelper.Exists(Data))
       {
         EWP.LogError($"Invalid object filter data: {split[2]}");
         Data = 0;
@@ -287,20 +295,21 @@ public class Object
       Weight = Parse.Int(split[3]);
     }
   }
-  public bool IsValid(ZDO zdo, Vector3 pos, string name, string parameter)
+  public bool IsValid(ZDO zdo, Vector3 pos, Dictionary<string, string> parameters)
   {
     if (Prefab == InfoManager.CreatureHash && !InfoManager.IsCreature(zdo.m_prefab)) return false;
     if (Prefab != 0 && Prefab != InfoManager.CreatureHash && zdo.GetPrefab() != Prefab) return false;
     if (WildPrefab != "")
     {
-      var prefabName = Helper2.ReplaceParameters(WildPrefab, name, parameter);
+      var prefabName = Helper2.ReplaceParameters(WildPrefab, parameters);
       var hash = prefabName.GetStableHashCode();
       if (zdo.GetPrefab() != hash) return false;
     }
-    if (MinDistance > 0f && Utils.DistanceXZ(pos, zdo.GetPosition()) < MinDistance) return false;
-    if (Utils.DistanceXZ(pos, zdo.GetPosition()) > MaxDistance) return false;
+    var d = Utils.DistanceXZ(pos, zdo.GetPosition());
+    if (MinDistance > 0f && d < MinDistance) return false;
+    if (d > MaxDistance) return false;
     if (Data == 0) return true;
-    return ZDOData.Cache.TryGetValue(Data, out var d) && d.Match(zdo);
+    return DataHelper.Match(Data, zdo, parameters);
   }
 }
 

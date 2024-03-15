@@ -4,12 +4,13 @@ using System.IO;
 using System.Linq;
 using ExpandWorldData;
 using HarmonyLib;
+using Service;
 namespace ExpandWorld.Prefab;
 
 public class Loading
 {
   private static readonly string FileName = "expand_prefabs.yaml";
-  private static readonly string FilePath = Path.Combine(EWD.YamlDirectory, FileName);
+  private static readonly string FilePath = Path.Combine(Yaml.Directory, FileName);
   private static readonly string Pattern = "expand_prefabs*.yaml";
 
   private static void Load(string yaml)
@@ -40,7 +41,7 @@ public class Loading
     if (Helper.IsClient()) return;
     if (!File.Exists(FilePath))
     {
-      var yaml = DataManager.Serializer().Serialize(new Data[]{new(){
+      var yaml = Yaml.Serializer().Serialize(new Data[]{new(){
         prefab = "Example",
         type = "Create",
         swap = "Surtling",
@@ -61,7 +62,7 @@ public class Loading
   {
     try
     {
-      return DataManager.Deserialize<Data>(yaml, FileName).SelectMany(FromData).ToList();
+      return Yaml.Deserialize<Data>(yaml, FileName).SelectMany(FromData).ToList();
     }
     catch (Exception e)
     {
@@ -94,8 +95,9 @@ public class Loading
       {
         Prefabs = data.prefab,
         Type = t.Type,
-        Parameters = t.Parameters,
+        Args = t.Parameters,
         Remove = t.Type != ActionType.Destroy && (data.remove || swaps.Length > 0),
+        RemoveDelay = data.removeDelay,
         Drops = t.Type != ActionType.Destroy && data.drops,
         Spawns = [.. spawns],
         Swaps = [.. swaps],
@@ -132,6 +134,7 @@ public class Loading
         BannedObjectsLimit = bannedObjectsLimit,
         Filters = filters,
         BannedFilters = bannedFilters,
+        TriggerRules = data.triggerRules,
       };
     }).ToArray();
   }
@@ -160,7 +163,7 @@ public class Loading
 
   public static void SetupWatcher()
   {
-    DataManager.SetupWatcher(Pattern, FromFile);
+    Yaml.SetupWatcher(Pattern, FromFile);
   }
 }
 
