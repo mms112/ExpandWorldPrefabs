@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Data;
 using ExpandWorldData;
 using Service;
@@ -164,12 +165,14 @@ public class Spawn
       Prefab = split[0].GetStableHashCode();
       Prefab = ZNetScene.instance.GetPrefab(Prefab) ? Prefab : 0;
     }
+    if (split.Count == 2)
+    {
+      Data = split[1];
+    }
     if (split.Count > 3)
     {
       if (Parse.TryFloat(split[1], out var x))
         Pos = new Vector3(x, Parse.Float(split[3]), Parse.Float(split[2]));
-      else
-        Data = split[1];
     }
     if (split.Count > 6)
     {
@@ -201,7 +204,7 @@ public abstract class Filter
     var split = DataManager.ToList(filter);
     if (split.Count < 3)
     {
-      EWP.LogError($"Invalid filter: {filter}");
+      Log.Error($"Invalid filter: {filter}");
       return null!;
     }
     var type = split[0].ToLowerInvariant();
@@ -213,7 +216,7 @@ public abstract class Filter
     var range = Parse.StringRange(value);
     if (type == "int") return new IntFilter() { Key = key, MinValue = Parse.Int(range.Min), MaxValue = Parse.Int(range.Max) };
     if (type == "float") return new FloatFilter() { Key = key, MinValue = Parse.Float(range.Min), MaxValue = Parse.Float(range.Max) };
-    EWP.LogError($"Invalid filter type: {type}");
+    Log.Error($"Invalid filter type: {type}");
     return null!;
   }
 }
@@ -256,6 +259,7 @@ public enum PlayerSearch
 public class Object
 {
   public int Prefab = 0;
+  public HashSet<int>? Prefabs;
   public string WildPrefab = "";
   public float MinDistance = 0f;
   public float MaxDistance = 100f;
@@ -268,11 +272,16 @@ public class Object
       WildPrefab = split[0];
     else
     {
-      Prefab = split[0].ToLowerInvariant() == "all" ? 0 : split[0].GetStableHashCode();
-      if (Prefab != 0 && Prefab != InfoManager.CreatureHash && !ZNetScene.instance.GetPrefab(Prefab))
+      var hash = split[0].GetStableHashCode();
+      if (ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
+        Prefab = hash;
+      else
       {
-        EWP.LogError($"Invalid object filter prefab: {split[0]}");
-        Prefab = 0;
+        var values = DataHelper.GetValuesFromGroup(split[0]);
+        if (values == null)
+          Log.Error($"Invalid object filter prefab: {split[0]}");
+        else
+          Prefabs = values.Select(v => v.GetStableHashCode()).ToHashSet();
       }
     }
     if (split.Count > 1)
@@ -286,7 +295,7 @@ public class Object
       Data = split[2].GetStableHashCode();
       if (!DataHelper.Exists(Data))
       {
-        EWP.LogError($"Invalid object filter data: {split[2]}");
+        Log.Error($"Invalid object filter data: {split[2]}");
         Data = 0;
       }
     }
@@ -297,8 +306,8 @@ public class Object
   }
   public bool IsValid(ZDO zdo, Vector3 pos, Dictionary<string, string> parameters)
   {
-    if (Prefab == InfoManager.CreatureHash && !InfoManager.IsCreature(zdo.m_prefab)) return false;
-    if (Prefab != 0 && Prefab != InfoManager.CreatureHash && zdo.GetPrefab() != Prefab) return false;
+    if (Prefab != 0 && zdo.GetPrefab() != Prefab) return false;
+    if (Prefabs != null && !Prefabs.Contains(zdo.GetPrefab())) return false;
     if (WildPrefab != "")
     {
       var prefabName = Helper2.ReplaceParameters(WildPrefab, parameters);
@@ -323,9 +332,9 @@ public class InfoType
     if (types.Count == 0 || !Enum.TryParse(types[0], true, out Type))
     {
       if (line == "")
-        EWP.LogWarning($"Missing type for prefab {prefab}.");
+        Log.Warning($"Missing type for prefab {prefab}.");
       else
-        EWP.LogError($"Failed to parse type {prefab}.");
+        Log.Error($"Failed to parse type {prefab}.");
       Type = ActionType.Create;
     }
     Parameters = types.Count > 1 ? types[1].Split(' ') : [];

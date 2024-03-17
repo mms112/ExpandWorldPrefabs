@@ -2,6 +2,8 @@
   - Adds support for data parameters.
   - Adds a new field `triggerRules` to cause spawns from rules to trigger other rules.
   - Adds a new field `removeDelay` to delay object removing.
+  - Adds support for value groups (from the new data system).
+  - Fixes data filters not automatically updating when modifying the data entries.
 
 - v1.8
   - Adds a new field `drops` to spawn drops.

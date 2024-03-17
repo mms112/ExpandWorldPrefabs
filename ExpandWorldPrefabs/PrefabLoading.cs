@@ -21,10 +21,10 @@ public class Loading
     var data = ParseYaml(yaml);
     if (data.Count == 0)
     {
-      EWP.LogWarning($"Failed to load any prefab data.");
+      Log.Warning($"Failed to load any prefab data.");
       return;
     }
-    EWP.LogInfo($"Reloading prefab ({data.Count} entries).");
+    Log.Info($"Reloading prefab ({data.Count} entries).");
     foreach (var item in data)
     {
       InfoManager.Add(item);
@@ -66,8 +66,8 @@ public class Loading
     }
     catch (Exception e)
     {
-      EWP.LogError(e.Message);
-      EWP.LogError(e.StackTrace);
+      Log.Error(e.Message);
+      Log.Error(e.StackTrace);
     }
     return [];
   }
@@ -142,12 +142,12 @@ public class Loading
   {
     if (s.Contains("$$"))
     {
-      EWP.LogWarning($"Command \"{s}\" contains $$ which is obsolete. Use {"<>"} instead.");
+      Log.Warning($"Command \"{s}\" contains $$ which is obsolete. Use {"<>"} instead.");
       return s.Replace("$$x", "<x>").Replace("$$y", "<y>").Replace("$$z", "<z>").Replace("$$a", "<a>").Replace("$$i", "<i>").Replace("$$j", "<j>");
     }
     if (s.Contains("{") && s.Contains("}"))
     {
-      EWP.LogWarning($"Command \"{s}\" contains {{}} which is obsolete. Use {"<>"} instead.");
+      Log.Warning($"Command \"{s}\" contains {{}} which is obsolete. Use {"<>"} instead.");
       return s.Replace("{", "<").Replace("}", ">");
     }
     return s;

@@ -37,8 +37,8 @@ public class DelayedSpawn(float delay, Vector3 pos, Quaternion rot, int prefab, 
   private readonly long OriginalOwner = originalOwner;
   private readonly DataEntry? Data = data;
   public float Delay = delay;
-  public Dictionary<string, string> Parameters = parameters;
-  public bool TriggerRules = triggerRules;
+  private readonly Dictionary<string, string> Parameters = parameters;
+  private readonly bool TriggerRules = triggerRules;
 
   public void Execute()
   {

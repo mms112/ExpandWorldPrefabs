@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BepInEx.Logging;
+using Data;
 using ExpandWorldData;
+using Service;
 
 namespace ExpandWorld.Prefab;
 
@@ -69,14 +72,6 @@ public class InfoManager
     _ => CreateDatas,
   };
 
-  private static readonly Dictionary<int, bool> IsCreatureCache = [];
-  public static bool IsCreature(int prefab)
-  {
-    if (IsCreatureCache.TryGetValue(prefab, out var result))
-      return result;
-    return IsCreatureCache[prefab] = ZNetScene.instance.GetPrefab(prefab)?.GetComponent<BaseAI>() != null;
-  }
-
   private static Dictionary<string, int> PrefabCache = [];
   public static IEnumerable<int> GetPrefabs(string prefab)
   {
@@ -102,67 +97,55 @@ public class InfoManager
     }
     return [];
   }
-  public static readonly int CreatureHash = "creature".GetStableHashCode();
 }
 
 public class PrefabInfo
 {
   public readonly Dictionary<int, List<Info>> Prefabs = [];
-  public readonly List<Info> Creatures = [];
-  public readonly List<Info> All = [];
-  public bool Exists => Prefabs.Count > 0 || Creatures.Count > 0 || All.Count > 0;
+  public bool Exists => Prefabs.Count > 0;
 
 
   public void Clear()
   {
     Prefabs.Clear();
-    Creatures.Clear();
-    All.Clear();
   }
   public void Add(Info info)
   {
     var prefabs = DataManager.ToList(info.Prefabs);
     HashSet<int> hashes = [];
-    foreach (var prefab in prefabs)
-    {
-      if (prefab == "all")
-        All.Add(info);
-      else if (prefab.Contains("*"))
-        hashes.UnionWith(InfoManager.GetPrefabs(prefab));
-      else
-        hashes.Add(prefab.GetStableHashCode());
-    }
+    // Resolving dynamic values and caching hashes helps with performance.
+    // Downside is that rules must be reloaded manually when changing value groups.
+    ParsePrefabs(prefabs, hashes);
     foreach (var hash in hashes)
     {
-      if (hash == InfoManager.CreatureHash)
-        Creatures.Add(info);
+      if (!Prefabs.TryGetValue(hash, out var list))
+        Prefabs[hash] = list = [];
+      list.Add(info);
+    }
+  }
+  private void ParsePrefabs(List<string> prefabs, HashSet<int> hashes)
+  {
+    var scene = ZNetScene.instance;
+    foreach (var prefab in prefabs)
+    {
+      if (prefab.Contains("*"))
+        hashes.UnionWith(InfoManager.GetPrefabs(prefab));
       else
       {
-        if (!Prefabs.TryGetValue(hash, out var list))
-          Prefabs[hash] = list = [];
-        list.Add(info);
+        var hash = prefab.GetStableHashCode();
+        if (scene.m_namedPrefabs.ContainsKey(hash))
+          hashes.Add(hash);
+        else
+        {
+          var values = DataHelper.GetValuesFromGroup(prefab);
+          if (values != null)
+            ParsePrefabs(values, hashes);
+          else
+            Log.Warning($"Prefab {prefab} not found");
+        }
       }
     }
   }
+  public bool TryGetValue(int prefab, out List<Info> list) => Prefabs.TryGetValue(prefab, out list);
 
-  public bool TryGetValue(int prefab, out List<Info> list)
-  {
-    list = All;
-    var ret = Prefabs.TryGetValue(prefab, out var prefabs);
-    if (ret)
-      list = list.Count == 0 ? prefabs : [.. list, .. prefabs];
-    var creatures = GetCreaturePrefabs(prefab);
-    if (creatures != null)
-      list = list.Count == 0 ? creatures : [.. list, .. creatures];
-    return list.Count > 0;
-  }
-  private List<Info>? GetCreaturePrefabs(int prefab)
-  {
-    if (Creatures.Count == 0)
-      return null;
-    var isCreature = InfoManager.IsCreature(prefab);
-    if (!isCreature)
-      return null;
-    return Creatures;
-  }
 }

@@ -24,9 +24,11 @@ The file `expand_world/expand_prefabs.yaml` is created when loading a world.
 Most fields are put on a single line. List values are separated by `,`.
 
 - prefab: List of affected object ids.
-  - Keyword `creature` can be used to match all creatures.
-  - Keyword `all` can be used to match every object.
   - Wildcard `*` can be used for partial matches. For example `Trophy*` to match all trophies.
+  - Value groups can be used ([data system](https://github.com/JereKuusela/valheim-world_edit_commands/blob/main/README_data.md#multiple-parameter-values)).
+    - By default, each object component has its own value group. For example `Tameable` or `Piece`.
+    - By default, keywords `creature` (Humanoid) and `structure` (WearNTear) have their own value group.
+    - Note: Values from groups are cached, so the prefab yaml must be manually saved when changing an already used value group.
 - type: Type of the trigger and parameter (`type, parameter`).
   - Parameter is optional and can be used to specify the trigger.
   - Supported types are:

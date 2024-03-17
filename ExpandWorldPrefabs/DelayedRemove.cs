@@ -1,20 +1,18 @@
 using System.Collections.Generic;
 using Service;
-using UnityEngine;
-
 namespace ExpandWorld.Prefab;
 
-public class DelayedRemove(float delay, ZDO zdo)
+public class DelayedRemove(float delay, ZDO zdo, bool triggerRules)
 {
   private static readonly List<DelayedRemove> Removes = [];
-  public static void Add(float delay, ZDO zdo)
+  public static void Add(float delay, ZDO zdo, bool triggerRules)
   {
     if (delay <= 0f)
     {
-      Manager.RemoveZDO(zdo);
+      Manager.RemoveZDO(zdo, triggerRules);
       return;
     }
-    Removes.Add(new(delay, zdo));
+    Removes.Add(new(delay, zdo, triggerRules));
   }
   public static void Execute(float dt)
   {
@@ -33,9 +31,10 @@ public class DelayedRemove(float delay, ZDO zdo)
   }
   private readonly ZDO Zdo = zdo;
   public float Delay = delay;
+  private readonly bool TriggerRules = triggerRules;
 
   public void Execute()
   {
-    Manager.RemoveZDO(Zdo);
+    Manager.RemoveZDO(Zdo, TriggerRules);
   }
 }

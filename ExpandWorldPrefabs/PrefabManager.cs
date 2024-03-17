@@ -25,7 +25,7 @@ public class Manager
       SpawnDrops(zdo);
     // Original object was regenerated to apply data.
     if (info.Remove || info.Data != "")
-      DelayedRemove.Add(info.RemoveDelay, zdo);
+      DelayedRemove.Add(info.RemoveDelay, zdo, info.Remove && info.TriggerRules);
   }
   private static void HandleSpawns(Info info, ZDO zdo, Dictionary<string, string> parameters)
   {
@@ -45,9 +45,10 @@ public class Manager
     if (regenerateOriginal)
       CreateObject(zdo, data, parameters, false);
   }
-  public static void RemoveZDO(ZDO zdo)
+  public static void RemoveZDO(ZDO zdo, bool triggerRules)
   {
-    ZDOMan.instance.m_deadZDOs[zdo.m_uid] = ZNet.instance.GetTime().Ticks;
+    if (!triggerRules)
+      ZDOMan.instance.m_deadZDOs[zdo.m_uid] = ZNet.instance.GetTime().Ticks;
     zdo.SetOwner(ZDOMan.instance.m_sessionID);
     ZDOMan.instance.DestroyZDO(zdo);
   }
@@ -67,7 +68,7 @@ public class Manager
     var obj = ZNetScene.instance.GetPrefab(prefab);
     if (!obj || !obj.TryGetComponent<ZNetView>(out var view))
     {
-      EWP.LogError($"Can't spawn missing prefab: {prefab}");
+      Log.Error($"Can't spawn missing prefab: {prefab}");
       return;
     }
     // Prefab hash is used to check whether to trigger rules.
