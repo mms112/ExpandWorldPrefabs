@@ -70,6 +70,7 @@ Most fields are put on a single line. List values are separated by `,`.
   - Name of the data entry (from `data.yaml`) or data code.
   - Injection is done by respawning the original object with new data.
 - delay: Delay in seconds for spawns and swaps.
+- removeDelay: Delay in seconds for remove.
 - spawn: Spawns another object.
   - Format (each part is optional):
     - `id, posX,posZ,posY, rotY,rotX,rotZ, data, delay`
@@ -92,6 +93,7 @@ Most fields are put on a single line. List values are separated by `,`.
     - Mode is `all` or `closest`.
     - Distance is the search distsance.
     - Height difference is optionnal, if given the player must be within that distance vertically.
+- triggerRules (default: `false`): If true, spawns or remove from this entry can trigger other entries.
 
 ## Filters
 
