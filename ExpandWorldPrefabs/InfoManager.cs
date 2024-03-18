@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BepInEx.Logging;
 using Data;
-using ExpandWorldData;
 using Service;
 
 namespace ExpandWorld.Prefab;
@@ -111,7 +109,7 @@ public class PrefabInfo
   }
   public void Add(Info info)
   {
-    var prefabs = DataManager.ToList(info.Prefabs);
+    var prefabs = Parse.ToList(info.Prefabs);
     HashSet<int> hashes = [];
     // Resolving dynamic values and caching hashes helps with performance.
     // Downside is that rules must be reloaded manually when changing value groups.

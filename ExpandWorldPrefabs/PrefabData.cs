@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Data;
-using ExpandWorldData;
 using Service;
 using UnityEngine;
 
@@ -47,8 +46,8 @@ public class Data
   public string biomes = "";
   [DefaultValue(0f)]
   public float minDistance = 0f;
-  [DefaultValue(1000f)]
-  public float maxDistance = 1000f;
+  [DefaultValue(100000f)]
+  public float maxDistance = 100000f;
   [DefaultValue(-10000f)]
   public float minAltitude = -10000f;
   [DefaultValue(10000f)]
@@ -157,7 +156,7 @@ public class Spawn
   public Spawn(string line, float delay)
   {
     Delay = delay;
-    var split = DataManager.ToList(line);
+    var split = Parse.ToList(line);
     if (split[0].Contains("<") && split[0].Contains(">"))
       WildPrefab = split[0];
     else
@@ -189,7 +188,7 @@ public class Spawn
   public int GetPrefab(Dictionary<string, string> parameters)
   {
     if (Prefab != 0) return Prefab;
-    var prefabName = Helper2.ReplaceParameters(WildPrefab, parameters);
+    var prefabName = Helper.ReplaceParameters(WildPrefab, parameters);
     var prefab = prefabName.GetStableHashCode();
     return ZNetScene.instance.GetPrefab(prefab) ? prefab : 0;
   }
@@ -201,7 +200,7 @@ public abstract class Filter
 
   public static Filter Create(string filter)
   {
-    var split = DataManager.ToList(filter);
+    var split = Parse.ToList(filter);
     if (split.Count < 3)
     {
       Log.Error($"Invalid filter: {filter}");
@@ -267,7 +266,7 @@ public class Object
   public int Weight = 1;
   public Object(string line)
   {
-    var split = DataManager.ToList(line);
+    var split = Parse.ToList(line);
     if (split[0].Contains("<") && split[0].Contains(">"))
       WildPrefab = split[0];
     else
@@ -310,7 +309,7 @@ public class Object
     if (Prefabs != null && !Prefabs.Contains(zdo.GetPrefab())) return false;
     if (WildPrefab != "")
     {
-      var prefabName = Helper2.ReplaceParameters(WildPrefab, parameters);
+      var prefabName = Helper.ReplaceParameters(WildPrefab, parameters);
       var hash = prefabName.GetStableHashCode();
       if (zdo.GetPrefab() != hash) return false;
     }
@@ -328,7 +327,7 @@ public class InfoType
   public readonly string[] Parameters;
   public InfoType(string prefab, string line)
   {
-    var types = DataManager.ToList(line);
+    var types = Parse.ToList(line);
     if (types.Count == 0 || !Enum.TryParse(types[0], true, out Type))
     {
       if (line == "")

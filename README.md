@@ -1,10 +1,8 @@
 # Expand World Prefabs
 
-Allows configuring and replacing spawned prefabs.
+Allows creating rules to react to objects being spawned, destroyed and more.
 
-Install on the server and optionally on the clients (modding [guide](https://youtu.be/L9ljm2eKLrk)).
-
-Install [Expand World Data](https://valheim.thunderstore.io/package/JereKuusela/Expand_World_Data/).
+Install on the server (modding [guide](https://youtu.be/L9ljm2eKLrk)).
 
 ## Features
 
@@ -12,12 +10,32 @@ Install [Expand World Data](https://valheim.thunderstore.io/package/JereKuusela/
 - Modify or swap built structures.
 - Modify or swap other objects.
 - Swap destroyed creatures, structures and objects.
+- And a lot more...
 
 Note: When swapping creature spawns, the spawn limit still checks the amount of original creature. This can lead to very high amount of creatures.
 
 ## Configuration
 
 The file `expand_world/expand_prefabs.yaml` is created when loading a world.
+
+This mod uses the [data system](https://github.com/JereKuusela/valheim-world_edit_commands/blob/main/README_data.md) of World Edit Commands.
+
+### Parameterrs
+
+Following parameters are available to be used in the yaml file:
+
+- `<prefab>`: Original prefab id.
+- `<par>`: Triggered parameter.
+- `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
+- `<x>`, `<y>` and `<z>`: Object center point.
+- `<i>` and `<j>`: Object zone indices.
+- `<a>`: Object rotation.
+
+Following parameters are available for commands and playerSearch:
+
+- `<pid>`: Player id.
+- `<pname>`: Player name.
+- `<px>`, `<py>` and `<pz>`: Player position.
 
 ### expand_prefabs.yaml
 
@@ -49,7 +67,7 @@ Most fields are put on a single line. List values are separated by `,`.
 
 - remove (default: `false`): If true, the original object is removed.
 - data: Injects data to the original object.
-  - Name of the data entry (from `expand_data.yaml`) or data code.
+  - Name of the data entry (from `data.yaml`) or data code.
   - Injection is done by respawning the original object with new data.
 - delay: Delay in seconds for spawns and swaps.
 - spawn: Spawns another object.
@@ -58,10 +76,7 @@ Most fields are put on a single line. List values are separated by `,`.
     - `id, posX,posZ,posY, rotY,rotX,rotZ, data`
     - `id, posX,posZ,posY, data`
     - `id, data`
-  - Id supports keywords:
-    - `<prefab>`: Original prefab id.
-    - `<par>`: Triggered parameter.
-    - `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
+  - Id supports parameters.
 - swap: Swaps the original object with another object.
   - Format and keywords are same as for `spawn`.
   - The initial data is copied from the original object.
@@ -69,17 +84,7 @@ Most fields are put on a single line. List values are separated by `,`.
   - If the swapped object is not valid, the original object is still removed.
   - Note: Swapping can break ZDO connection, so spawn points may respawn even when the creature is alive.
 - command: Console command to run.
-  - Supported keywords:
-    - `<prefab>`: Original prefab id.
-    - `<par>`: Triggered parameter.
-    - `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
-    - `<x>`, `<y>` and `<z>`: Object center point.
-    - `<i>` and `<j>`: Object zone indices.
-    - `<a>`: Object rotation.
-  - With `prefab: Player` or with `playerSearch`:
-    - `<pid>`: Player id.
-    - `<pname>`: Player name.
-    - `<px>`, `<py>` and `<pz>`: Player position.
+  - Parameters are supported.
   - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
 - playerSearch: Searches for nearby players for `command`.
   - The command runs for each player. If no players are found, the command doesn't run.
@@ -93,8 +98,8 @@ Most fields are put on a single line. List values are separated by `,`.
 - biomes: List of valid biomes.
 - day (default: `true`): Valid during the day.
 - night (default: `true`): Valid during the night.
-- minDistance (default: `0` times world radius): Minimum distance from the world center.
-- maxDistance (default: `1000` times world radius): Maximum distance from the world center.
+- minDistance (default: `0` meters): Minimum distance from the world center.
+- maxDistance (default: `100000` meters): Maximum distance from the world center.
 - minAltitude (default: `-10000` meters): Minimum altitude (y coordinate - 30).
 - maxAltitude (default: `10000` meters): Maximum altitude (y coordinate - 30).
 - minY: Minimum y coordinate. Same as altitude but without the water level offset.
@@ -102,7 +107,9 @@ Most fields are put on a single line. List values are separated by `,`.
 - environments: List of valid environments.
 - bannedEnvironments: List of  invalid environments.
 - globalKeys: List of global keys that must be set.
+  - Parameters are supported.
 - bannedGlobalKeys: List of  global keys that must not be set.
+  - Parameters are supported.
 - locations: List of location ids. At least one must be nearby.
 - locationDistance (default: `0` meters): Search distance for nearby locations.
   - If 0, uses the location exterior radius.
@@ -130,7 +137,7 @@ Most fields are put on a single line. List values are separated by `,`.
 - objects: List of object information. Format is `- id, distance, data, weight`:
   - id: Object id. Keywords are supported ("all", "creature" and "<>").
   - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
-  - data: Optional. Entry in the `expand_data.yaml` to be used as filter. All data entries must match.
+  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
   - weight: Optional. How much tis match counts towards the `objectsLimit`. Default is 1.
   - Note: If `objectsLimit` is set and multiple filters match, the first one is matched.
 - bannedObjectsLimit: How many of the filters must not match (`min` or `min-max`).
@@ -146,7 +153,7 @@ See object filtering [examples](examples_object_filtering.md).
 - pokes: List of object information. Format is `- id, distance, data`:
   - id: Object id. Keywords are supported ("all", "creature" and "<>").
   - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
-  - data: Optional. Entry in the `expand_data.yaml` to be used as filter. All data entries must match.
+  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
 
 ### Lists
 

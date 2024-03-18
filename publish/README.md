@@ -1,10 +1,8 @@
 # Expand World Prefabs
 
-Allows configuring and replacing spawned prefabs.
+Allows creating rules to react to objects being spawned, destroyed and more.
 
 Install on the server (modding [guide](https://youtu.be/L9ljm2eKLrk)).
-
-Install [Expand World Data](https://valheim.thunderstore.io/package/JereKuusela/Expand_World_Data/).
 
 ## Usage
 

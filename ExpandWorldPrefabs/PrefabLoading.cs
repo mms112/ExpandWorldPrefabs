@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ExpandWorldData;
+using Data;
 using HarmonyLib;
 using Service;
 namespace ExpandWorld.Prefab;
@@ -10,7 +10,7 @@ namespace ExpandWorld.Prefab;
 public class Loading
 {
   private static readonly string FileName = "expand_prefabs.yaml";
-  private static readonly string FilePath = Path.Combine(Yaml.Directory, FileName);
+  private static readonly string FilePath = Path.Combine(Yaml.BaseDirectory, FileName);
   private static readonly string Pattern = "expand_prefabs*.yaml";
 
   private static void Load(string yaml)
@@ -24,7 +24,7 @@ public class Loading
       Log.Warning($"Failed to load any prefab data.");
       return;
     }
-    Log.Info($"Reloading prefab ({data.Count} entries).");
+    Log.Info($"Reloading prefab rules ({data.Count} entries).");
     foreach (var item in data)
     {
       InfoManager.Add(item);
@@ -53,9 +53,8 @@ public class Loading
     }
     else
     {
-      var yaml = DataManager.Read(Pattern);
+      var yaml = Yaml.Read(Pattern);
       Load(yaml);
-      //EWP.valuePrefabData.Value = yaml;
     }
   }
   private static List<Info> ParseYaml(string yaml)
@@ -73,15 +72,16 @@ public class Loading
   }
   private static Info[] FromData(Data data)
   {
+    var waterLevel = ZoneSystem.instance.m_waterLevel;
     var swaps = ParseSpawns(data.swaps ?? (data.swap == null ? [] : [data.swap]), data.delay);
     var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), data.delay);
-    var playerSearch = DataManager.ToList(data.playerSearch).ToArray();
+    var playerSearch = Parse.ToList(data.playerSearch).ToArray();
     var types = (data.types ?? [data.type]).Select(s => new InfoType(data.prefab, s)).ToArray();
-    HashSet<string> events = [.. DataManager.ToList(data.events)];
+    HashSet<string> events = [.. Parse.ToList(data.events)];
     var commands = ParseCommands(data.commands ?? (data.command == null ? [] : [data.command]));
-    HashSet<string> environments = [.. DataManager.ToList(data.environments).Select(s => s.ToLower())];
-    HashSet<string> bannedEnvironments = [.. DataManager.ToList(data.bannedEnvironments).Select(s => s.ToLower())];
-    HashSet<int> locations = [.. DataManager.ToList(data.locations).Select(s => s.GetStableHashCode())];
+    HashSet<string> environments = [.. Parse.ToList(data.environments).Select(s => s.ToLower())];
+    HashSet<string> bannedEnvironments = [.. Parse.ToList(data.bannedEnvironments).Select(s => s.ToLower())];
+    HashSet<int> locations = [.. Parse.ToList(data.locations).Select(s => s.GetStableHashCode())];
     var objectsLimit = ParseObjectsLimit(data.objectsLimit);
     var objects = ParseObjects(data.objects ?? []);
     var bannedObjects = ParseObjects(data.bannedObjects ?? []);
@@ -109,15 +109,15 @@ public class Loading
         Weight = data.weight,
         Day = data.day,
         Night = data.night,
-        MinDistance = data.minDistance * WorldInfo.Radius,
-        MaxDistance = data.maxDistance * WorldInfo.Radius,
-        MinY = data.minY ?? data.minAltitude - WorldInfo.WaterLevel,
-        MaxY = data.maxY ?? data.maxAltitude - WorldInfo.WaterLevel,
-        Biomes = DataManager.ToBiomes(data.biomes),
+        MinDistance = data.minDistance,
+        MaxDistance = data.maxDistance,
+        MinY = data.minY ?? data.minAltitude - waterLevel,
+        MaxY = data.maxY ?? data.maxAltitude - waterLevel,
+        Biomes = Yaml.ToBiomes(data.biomes),
         Environments = environments,
         BannedEnvironments = bannedEnvironments,
-        GlobalKeys = DataManager.ToList(data.globalKeys),
-        BannedGlobalKeys = DataManager.ToList(data.bannedGlobalKeys),
+        GlobalKeys = Parse.ToList(data.globalKeys),
+        BannedGlobalKeys = Parse.ToList(data.bannedGlobalKeys),
         Events = events,
         // Distance can be set without events for any event.
         // However if event is set, there must be a distance (the default value).
@@ -173,6 +173,10 @@ public class InitializeContent
   static void Postfix()
   {
     if (Helper.IsServer())
+    {
+      DataLoading.LoadEntries();
       Loading.FromFile();
+    }
+
   }
 }

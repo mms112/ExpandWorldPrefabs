@@ -1,9 +1,12 @@
 - v1.9
-  - Adds support for data parameters.
+  - Adds the new data system from World Edit Commands mod.
   - Adds a new field `triggerRules` to cause spawns from rules to trigger other rules.
   - Adds a new field `removeDelay` to delay object removing.
-  - Adds support for value groups (from the new data system).
+  - Adds support for value groups to the field `prefab`(from the new data system).
+  - Adds parameter support to the fields `globalKeys` and `bannedGlobalKeys`.
+  - Changes the fields `minDistance` and `maxDistance` to not scale with the world radius.
   - Fixes data filters not automatically updating when modifying the data entries.
+  - Removes dependency of Expand World Data mod.
 
 - v1.8
   - Adds a new field `drops` to spawn drops.

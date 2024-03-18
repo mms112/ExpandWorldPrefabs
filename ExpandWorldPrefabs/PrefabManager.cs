@@ -15,7 +15,7 @@ public class Manager
     if (ZDOMan.instance.m_deadZDOs.ContainsKey(zdo.m_uid)) return;
     if (!ZNet.instance.IsServer()) return;
     var name = ZNetScene.instance.GetPrefab(zdo.m_prefab)?.name ?? "";
-    var parameters = Helper2.CreateParameters(name, args);
+    var parameters = Helper.CreateParameters(name, args, zdo);
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
     if (info == null) return;
     Commands.Run(info, zdo, parameters, source);
@@ -116,7 +116,7 @@ public class Manager
   public static void Poke(Info info, ZDO zdo, Dictionary<string, string> parameters)
   {
     var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.Pokes, zdo, parameters);
-    var pokeParameter = Helper2.ReplaceParameters(info.PokeParameter, parameters);
+    var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters);
     foreach (var z in zdos)
       Handle(ActionType.Poke, pokeParameter, z);
   }

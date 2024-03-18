@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandWorldData;
 using UnityEngine;
 
 namespace ExpandWorld.Prefab;
@@ -28,8 +27,8 @@ public class InfoSelector
       .Where(d => distance < d.MaxDistance)
       .Where(d => pos.y >= d.MinY)
       .Where(d => pos.y < d.MaxY)
-      .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys))
-      .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys));
+      .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
+      .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters));
     // Minor optimization to resolve simpler checks first (not measured).
     linq = linq.ToArray();
     var checkEnvironments = linq.Any(d => d.Environments.Count > 0) || linq.Any(d => d.BannedEnvironments.Count > 0);
@@ -118,7 +117,7 @@ public class InfoSelector
     if (info.Args.Length == 0) return true;
     if (info.Args.Length > args.Length) return false;
     for (int i = 0; i < info.Args.Length; i++)
-      if (!Helper2.CheckWild(info.Args[i], args[i])) return false;
+      if (!Helper.CheckWild(info.Args[i], args[i])) return false;
     return true;
 
   }

@@ -2,44 +2,30 @@
 using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
-using BepInEx.Logging;
+using Data;
 using HarmonyLib;
-using UnityEngine;
-using ServerSync;
 using Service;
+using UnityEngine;
 namespace ExpandWorld.Prefab;
 [BepInPlugin(GUID, NAME, VERSION)]
-[BepInDependency("expand_world_data", "1.27")]
 public class EWP : BaseUnityPlugin
 {
   public const string GUID = "expand_world_prefabs";
   public const string NAME = "Expand World Prefabs";
-  public const string VERSION = "1.8";
+  public const string VERSION = "1.9";
 #nullable disable
-  public static CustomSyncedValue<string> valuePrefabData;
   public static Harmony Harmony;
 #nullable enable
-  /* Disabled for now because not fully sure what should be handled on client.
-  public static ConfigSync ConfigSync = new(GUID)
-  {
-    DisplayName = NAME,
-    CurrentVersion = VERSION,
-    ModRequired = true,
-    IsLocked = true
-  };*/
   public static Assembly? ExpandEvents;
   public void Awake()
   {
     Harmony = new(GUID);
     Harmony.PatchAll();
-    //valuePrefabData = new CustomSyncedValue<string>(ConfigSync, "prefab_data");
-    //valuePrefabData.ValueChanged += Prefab.Loading.FromSetting;
+    Log.Init(Logger);
     try
     {
-      if (ExpandWorldData.Configuration.DataReload)
-      {
-        Loading.SetupWatcher();
-      }
+      DataLoading.SetupWatcher();
+      Loading.SetupWatcher();
     }
     catch (Exception e)
     {
