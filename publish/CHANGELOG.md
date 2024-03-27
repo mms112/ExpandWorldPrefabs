@@ -1,3 +1,6 @@
+- v1.10
+  - Breaking change: Poke can now also poke the poker.
+
 - v1.9
   - Adds the new data system from World Edit Commands mod.
   - Adds a new field `triggerRules` to cause spawns from rules to trigger other rules.

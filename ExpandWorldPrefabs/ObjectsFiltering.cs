@@ -8,6 +8,7 @@ namespace ExpandWorld.Prefab;
 
 public class ObjectsFiltering
 {
+  // Note: Can include the object itself.
   public static ZDO[] GetNearby(int limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
   {
     if (objects.Length == 0) return [];
@@ -19,7 +20,7 @@ public class ObjectsFiltering
   {
     var pos = zdo.m_position;
     var zm = ZDOMan.instance;
-    var query = indices.SelectMany(z => zm.m_objectsBySector[z]).Where(z => z != zdo && objects.Any(o => o.IsValid(z, pos, parameters)));
+    var query = indices.SelectMany(z => zm.m_objectsBySector[z]).Where(z => objects.Any(o => o.IsValid(z, pos, parameters)));
     if (limit > 0)
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
