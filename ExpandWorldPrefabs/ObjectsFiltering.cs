@@ -13,14 +13,14 @@ public class ObjectsFiltering
   {
     if (objects.Length == 0) return [];
     var maxRadius = objects.Max(o => o.MaxDistance);
-    var indices = GetSectorIndices(zdo.m_position, maxRadius);
-    return GetObjects(limit, indices, objects, zdo, parameters);
+    var zdoLists = GetSectorIndices(zdo.m_position, maxRadius);
+    return GetObjects(limit, zdoLists, objects, zdo, parameters);
   }
-  private static ZDO[] GetObjects(int limit, HashSet<int> indices, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
   {
     var pos = zdo.m_position;
     var zm = ZDOMan.instance;
-    var query = indices.SelectMany(z => zm.m_objectsBySector[z]).Where(z => objects.Any(o => o.IsValid(z, pos, parameters)));
+    var query = zdoLists.SelectMany(z => z).Where(z => objects.Any(o => o.IsValid(z, pos, parameters)));
     if (limit > 0)
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
@@ -30,37 +30,37 @@ public class ObjectsFiltering
   {
     if (objects.Length == 0) return true;
     var maxRadius = objects.Max(o => o.MaxDistance);
-    var indices = GetSectorIndices(zdo.m_position, maxRadius);
+    var zdoLists = GetSectorIndices(zdo.m_position, maxRadius);
     if (limit == null)
-      return HasAllObjects(indices, objects, zdo, parameters);
+      return HasAllObjects(zdoLists, objects, zdo, parameters);
     else
-      return HasLimitObjects(indices, limit, objects, zdo, parameters);
+      return HasLimitObjects(zdoLists, limit, objects, zdo, parameters);
   }
   public static bool HasNotNearby(Range<int>? limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
   {
     if (objects.Length == 0) return true;
     var maxRadius = objects.Max(o => o.MaxDistance);
-    var indices = GetSectorIndices(zdo.m_position, maxRadius);
+    var zdoLists = GetSectorIndices(zdo.m_position, maxRadius);
     if (limit == null)
-      return !HasAllObjects(indices, objects, zdo, parameters);
+      return !HasAllObjects(zdoLists, objects, zdo, parameters);
     else
-      return !HasLimitObjects(indices, limit, objects, zdo, parameters);
+      return !HasLimitObjects(zdoLists, limit, objects, zdo, parameters);
   }
 
-  private static bool HasAllObjects(HashSet<int> indices, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  private static bool HasAllObjects(List<List<ZDO>> zdoLists, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
   {
     var pos = zdo.m_position;
     var zm = ZDOMan.instance;
-    return objects.All(o => indices.Any(z => zm.m_objectsBySector[z].Any(z => o.IsValid(z, pos, parameters) && z != zdo)));
+    return objects.All(o => zdoLists.Any(z => z.Any(z => o.IsValid(z, pos, parameters) && z != zdo)));
   }
-  private static bool HasLimitObjects(HashSet<int> indices, Range<int> limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  private static bool HasLimitObjects(List<List<ZDO>> zdoLists, Range<int> limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
   {
     var pos = zdo.m_position;
     var counter = 0;
     var useMax = limit.Max > 0;
-    foreach (var i in indices)
+    foreach (var list in zdoLists)
     {
-      foreach (var z in ZDOMan.instance.m_objectsBySector[i])
+      foreach (var z in list)
       {
         var valid = objects.FirstOrDefault(o => o.IsValid(z, pos, parameters) && z != zdo);
         if (valid == null) continue;
@@ -71,22 +71,30 @@ public class ObjectsFiltering
     }
     return limit.Min <= counter && counter <= limit.Max;
   }
-  private static HashSet<int> GetSectorIndices(Vector3 pos, float radius)
+  private static List<List<ZDO>> GetSectorIndices(Vector3 pos, float radius)
   {
+    List<List<ZDO>> zdoLists = [];
     HashSet<int> indices = [];
     var corner1 = ZoneSystem.instance.GetZone(pos + new Vector3(-radius, 0, -radius));
-    var corner2 = ZoneSystem.instance.GetZone(pos + new Vector3(radius, 0, -radius));
-    var corner3 = ZoneSystem.instance.GetZone(pos + new Vector3(-radius, 0, radius));
+    var corner2 = ZoneSystem.instance.GetZone(pos + new Vector3(radius, 0, radius));
     var zm = ZDOMan.instance;
     for (var x = corner1.x; x <= corner2.x; x++)
     {
-      for (var y = corner1.y; y <= corner3.y; y++)
+      for (var y = corner1.y; y <= corner2.y; y++)
       {
-        var index = zm.SectorToIndex(new Vector2i(x, y));
-        if (index < 0 || index >= zm.m_objectsBySector.Length) continue;
+        var zone = new Vector2i(x, y);
+        var index = zm.SectorToIndex(zone);
+        if (index < 0 || index >= zm.m_objectsBySector.Length)
+        {
+          if (zm.m_objectsByOutsideSector.TryGetValue(zone, out var list))
+            zdoLists.Add(list);
+          continue;
+        }
+        if (indices.Contains(index)) continue;
+        zdoLists.Add(zm.m_objectsBySector[index]);
         indices.Add(index);
       }
     }
-    return indices;
+    return zdoLists;
   }
 }
