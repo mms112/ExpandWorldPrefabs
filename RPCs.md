@@ -121,6 +121,16 @@ Options:
   - enum_reason, Damage/Building/Theif # - int, 0/1/2
 ```
 
+## Bed
+
+```yaml
+# Sets bed owner.
+- customRpc:
+  - SetOwner, owner
+  - long, "player id"
+  - name, "owner name"
+```
+
 ## Beehive
 
 ```yaml
@@ -234,6 +244,35 @@ Options:
   - hit, "hit data"
 ```
 
+## Door
+
+```yaml
+# Destroys item at specific slot.
+- customRpc:
+  - UseDoor, owner
+  - bool, "forward or backward"
+```
+
+## FishingFloat
+
+```yaml
+# Nibbles???
+- customRpc:
+  - RPC_Nibble, owner
+  - zdo, "fish id"
+  - bool, "is correct bait?"
+```
+
+## FootStep
+
+```yaml
+# Shows a footstep.
+- customRpc:
+  - Step, all
+  - int, "effect index"
+  - vec, "position"
+```
+
 ## Fermenter
 
 ```yaml
@@ -335,6 +374,50 @@ Options:
 # Asks to become owner of the ZDO (not much use as the server).
 - customRpc:
   - RPC_RequestOwn, owner
+```
+
+## MapTable
+
+```yaml
+# Sets data.
+- customRpc:
+  - MapData, owner
+  - zpkg, "unusable"
+```
+
+## MineRock
+
+```yaml
+# Deals damage to a part of the rock.
+- customRpc:
+  - Hit, owner
+  - hit, "hit data"
+  - int, "part index"
+```
+
+```yaml
+# Hides part of a rock as destroyed,
+- customRpc:
+  - Hide, all
+  - int, "part index"
+```
+
+## MineRock5
+
+```yaml
+# Deals damage to a part of the rock.
+- customRpc:
+  - Hit, owner
+  - hit, "hit data"
+  - int, "part index"
+```
+
+```yaml
+# Sets health of a part.
+- customRpc:
+  - SetAreaHealth, all
+  - int, "part index"
+  - float, "health"
 ```
 
 ## MonsterAI
@@ -456,6 +539,54 @@ Options:
   - RPC_OnHit, owner
 ```
 
+## ResourceRoot
+
+```yaml
+# Drains from the resource.
+- customRpc:
+  - RPC_Drain, owner
+  - float, "amount"
+```
+
+## Saddle
+
+```yaml
+# Controls the creature.
+- customRpc:
+  - Controls, owner
+  - vec, "direction"
+  - int, "speed"
+  - float, "ride skill"
+```
+
+```yaml
+# Tries to get control of the creature.
+- customRpc:
+  - RequestControl, owner
+  - long, "player id"
+```
+
+```yaml
+# Releases control of the creature.
+- customRpc:
+  - ReleaseControl, owner
+  - long, "player id"
+```
+
+```yaml
+# Response from the control request.
+- customRpc:
+  - RequestRespons, target
+  - bool, "was request ok?"
+```
+
+```yaml
+# Drops the saddle at specific position.
+- customRpc:
+  - RemoveSaddle, owner
+  - vec, "position"
+```
+
 ## SapCollector
 
 ```yaml
@@ -496,6 +627,29 @@ Options:
 - customRpc:
   - Rudder, owner
   - float, "rudder angle"
+```
+
+## ShipControl
+
+```yaml
+# Tries to get control of the ship.
+- customRpc:
+  - RequestControl, owner
+  - long, "player id"
+```
+
+```yaml
+# Releases control of the ship.
+- customRpc:
+  - ReleaseControl, owner
+  - long, "player id"
+```
+
+```yaml
+# Response from the control request.
+- customRpc:
+  - RequestRespons, target
+  - bool, "was request ok?"
 ```
 
 ## Smelter
@@ -556,6 +710,41 @@ Options:
   - bool, "is saddled"
 ```
 
+## TeleportWorld
+
+```yaml
+# Sets portal tag.
+- customRpc:
+  - SetTag, owner
+  - string, "tag"
+  - string, "name of the author for console parental controls"
+```
+
+## TerrainComp
+
+```yaml
+# Performs a terrain operation.
+- customRpc:
+  - ApplyOperation, owner
+  - zpkg, "unusabke"
+```
+
+## Trap
+
+```yaml
+# Sets trap state.
+- customRpc:
+  - RPC_RequestStateChange, owner
+  - enum_trap, Armed/Disarmed/Triggered  # - int, 0/1/2
+```
+
+```yaml
+# Shows trap state.
+- customRpc:
+  - RPC_OnStateChanged, all
+  - enum_trap, Armed/Disarmed/Triggered  # - int, 0/1/2
+```
+
 ## TreeBase
 
 ```yaml
@@ -577,12 +766,37 @@ Options:
   - Shake, all
 ```
 
+## TreeLog
+
+```yaml
+# Deals damage to the tree.
+- customRpc:
+  - Damage, owner
+  - hit, "hit data"
+```
+
 ## TriggerSpawner
 
 ```yaml
 # Triggers the spawner.
 - customRpc:
   - Trigger, owner
+```
+
+## Turret
+
+```yaml
+# Adds a single ammo.
+- customRpc:
+  - RPC_AddAmmo, owner
+  - name, "name of the ammo"
+```
+
+```yaml
+# Sets the target.
+- customRpc:
+  - RPC_SetTarget, all
+  - zdo, "target zdo"
 ```
 
 ## Vagon
@@ -631,4 +845,13 @@ Options:
 # Shows visual fragments (if m_autoCreateFragments is true).
 - customRpc:
   - WNTCreateFragments, all
+```
+
+## ZSyncAnimation
+
+```yaml
+# Triggers animation state.
+- customRpc:
+  - SetTrigger, all
+  - name, "name of the trigger"
 ```

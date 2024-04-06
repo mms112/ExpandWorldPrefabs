@@ -62,7 +62,7 @@ public class RpcInfo
 
 public class CustomRpcInfo
 {
-  private static readonly HashSet<string> Types = ["int", "float", "bool", "string", "vec", "quat", "hash", "hit", "enum_reason", "enum_message", "zdo"];
+  private static readonly HashSet<string> Types = ["int", "float", "bool", "string", "vec", "quat", "hash", "hit", "enum_reason", "enum_message", "enum_trap", "zdo"];
   public static bool IsType(string line) => Types.Contains(Parse.Kvp(line).Key);
   private readonly string Name;
   private readonly bool OnlyOwner = true;
@@ -100,9 +100,9 @@ public class CustomRpcInfo
       if (type == "hash") pars[i] = arg.GetStableHashCode();
       if (type == "hit") pars[i] = Parse.Hit(arg);
       if (type == "zdo") pars[i] = Parse.ZDOID(arg);
-      if (type == "enum_message") pars[i] = Enum.TryParse(arg, true, out MessageHud.MessageType message) ? (int)message : 2;
-      if (type == "enum_reason") pars[i] = Enum.TryParse(arg, true, out BaseAI.AggravatedReason message) ? (int)message : 0;
-
+      if (type == "enum_message") pars[i] = Enum.TryParse(arg, true, out MessageHud.MessageType state) ? (int)state : 2;
+      if (type == "enum_reason") pars[i] = Enum.TryParse(arg, true, out BaseAI.AggravatedReason state) ? (int)state : 0;
+      if (type == "enum_trap") pars[i] = Enum.TryParse(arg, true, out Trap.TrapState state) ? (int)state : 0;
     }
     return pars;
   }

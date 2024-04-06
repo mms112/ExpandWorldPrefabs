@@ -292,7 +292,7 @@ public static class Parse
       if (key == "skill") hit.m_skillLevel = Float(value);
       if (key == "level") hit.m_itemLevel = (short)Int(value);
       if (key == "world") hit.m_itemWorldLevel = (byte)Int(value);
-      if (key == "type") hit.m_hitType = Enum.TryParse(value, true, out HitData.HitType type) ? type : HitData.HitType.Self;
+      if (key == "type") hit.m_hitType = Enum.TryParse(value, true, out HitData.HitType type) ? type : HitData.HitType.Undefined;
       if (key == "spot") hit.m_weakSpot = (short)Int(value);
 
     }
