@@ -199,6 +199,50 @@ Options:
   - bool, "whether is distant teleport"
 ```
 
+## Container
+
+```yaml
+# Requests to open the container.
+- customRpc:
+  - RequestOpen, owner
+  - long, "player id"
+```
+
+```yaml
+# Opens the container.
+- customRpc:
+  - OpenRespons, target
+  - bool, "can be opened?"
+```
+
+```yaml
+# Requests to stack items.
+- customRpc:
+  - RPC_RequestStack, owner
+  - long, "player id"
+```
+
+```yaml
+# Stacks items to the chest.
+- customRpc:
+  - RPC_StackResponse, all
+  - bool, "can be stacked?"
+```
+
+```yaml
+# Requests to take items.
+- customRpc:
+  - RequestTakeAll, all
+  - long, "player id"
+```
+
+```yaml
+# Takes items from the chest.
+- customRpc:
+  - TakeAllRespons, all
+  - bool, "can be taken?"
+```
+
 ## CookingStation
 
 ```yaml
@@ -602,6 +646,18 @@ Options:
   - RPC_UpdateEffects, all
 ```
 
+## SEMan
+
+```yaml
+# Adds a status effect.
+- customRpc:
+  - RPC_AddStatusEffect, owner
+  - hash, "status effect"
+  - bool, "reset time?",
+  - int, "item level",
+  - float, "skill level"
+```
+
 ## Ship
 
 ```yaml
@@ -671,6 +727,18 @@ Options:
 # Drops the smelted items
 - customRpc:
   - EmptyProcessed, owner
+```
+
+## Talker
+
+```yaml
+# Stops the ship.
+- customRpc:
+  - Say, all
+  - int, 0/1/2 # Whisper, normal, shout
+  - userinfo, "unusable"
+  - string, "message"
+  - string, "sender network id"
 ```
 
 ## Tameable
