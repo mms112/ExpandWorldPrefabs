@@ -121,8 +121,12 @@ public class Manager
   {
     var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.Pokes, zdo, parameters);
     var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters);
+    DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
+  }
+  public static void Poke(ZDO[] zdos, string parameter)
+  {
     foreach (var z in zdos)
-      Handle(ActionType.Poke, pokeParameter, z);
+      Handle(ActionType.Poke, parameter, z);
   }
 
   public static void Rpc(RpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
@@ -135,5 +139,9 @@ public class Manager
     foreach (var i in info)
       i.Invoke(zdo, parameters);
 
+  }
+  public static void Rpc(long target, ZDOID id, string name, object[] parameters)
+  {
+    ZRoutedRpc.instance.InvokeRoutedRPC(target, id, name, parameters);
   }
 }

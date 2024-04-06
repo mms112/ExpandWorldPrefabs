@@ -22,7 +22,7 @@ public class Helper
     var split = args.Split(' ');
     var zone = ZoneSystem.instance.GetZone(zdo.m_position);
     return new Dictionary<string, string> {
-      { "<id>", zdo.m_uid.ToString() },
+      { "<zdo>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
       { "<par0>", split.Length > 0 ? split[0] : "" },
       { "<par1>", split.Length > 1 ? split[1] : "" },

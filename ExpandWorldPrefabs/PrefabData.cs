@@ -24,6 +24,8 @@ public class Data
   public string? spawn = null;
   [DefaultValue(null)]
   public string[]? spawns = null;
+  [DefaultValue(0f)]
+  public float spawnDelay = 0f;
   [DefaultValue(false)]
   public bool remove = false;
   [DefaultValue(0f)]
@@ -74,6 +76,8 @@ public class Data
   public int pokeLimit = 0;
   [DefaultValue("")]
   public string pokeParameter = "";
+  [DefaultValue(0f)]
+  public float pokeDelay = 0f;
 
   [DefaultValue(null)]
   public string[]? objects = null;
@@ -106,6 +110,8 @@ public class Data
   public string[]? rpcs = null;
   [DefaultValue(null)]
   public string[]? customRpc = null;
+  [DefaultValue(0f)]
+  public float rpcDelay = 0f;
 }
 
 
@@ -138,6 +144,7 @@ public class Info
   public Object[] Pokes = [];
   public int PokeLimit = 0;
   public string PokeParameter = "";
+  public float PokeDelay = 0f;
   public Range<int>? ObjectsLimit = null;
   public Object[] Objects = [];
   public Range<int>? BannedObjectsLimit = null;

@@ -66,11 +66,11 @@ Most fields are put on a single line. List values are separated by `,`.
 ### Actions
 
 - remove (default: `false`): If true, the original object is removed.
+- removeDelay: Delay in seconds for remove.
 - data: Injects data to the original object.
   - Name of the data entry (from `data.yaml`) or data code.
   - Injection is done by respawning the original object with new data.
-- delay: Delay in seconds for spawns and swaps.
-- removeDelay: Delay in seconds for remove.
+- spawnDelay: Delay in seconds for spawns and swaps.
 - spawn: Spawns another object.
   - Format (each part is optional):
     - `id, posX,posZ,posY, rotY,rotX,rotZ, data, delay`
@@ -156,6 +156,25 @@ See object filtering [examples](examples_object_filtering.md).
   - id: Object id. Keywords are supported ("all", "creature" and "<>").
   - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
   - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
+- pokeDelay: Delay in seconds for poking.
+
+### RPCs
+
+RPC calls are way to send data to clients. Usually these are used by clients but server can call them too.
+
+- rpc: Hardcoded RPC call with the parameters.
+  - See list of supported calls:
+  - Delay can be added after all parameters.
+- rpcDelay: Delay in seconds for RPC calls.
+- customRpc: Advanced way for calling any RPC. No handholding.
+  - The first line is the RPC name and properties: `- name, all/owner, delay`.
+    - Target is optional. By default, the RPC is only sent to the ZDO owner. If target is `all`, it is sent to all clients.
+    - You must know whether the RPC should be sent to all clients or only the owner.
+    - Delay is optional. It can be used to override the delay for this RPC.
+  - The next lines are the parameters: `- type, value`.
+    - Supported types are `int`, `float`, `string`, `bool`, `vec`, `quat`, `hash`, `hit` and `messagetype`.
+    - All parameters must be set with the correct data types.
+  - For more than one RPC,  add more lines starting with the first line format.
 
 ### Lists
 
@@ -167,6 +186,7 @@ To set multiple values, following fields can be used instead:
 - commands: List of console commands to run.
 - filters: List of data filters. All must match.
 - bannedFilters: List of data filters. None must match.
+- rcps: List of hardcoded RPC calls.
 
 ### States
 

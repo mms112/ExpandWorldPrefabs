@@ -73,8 +73,9 @@ public class Loading
   private static Info[] FromData(Data data)
   {
     var waterLevel = ZoneSystem.instance.m_waterLevel;
-    var swaps = ParseSpawns(data.swaps ?? (data.swap == null ? [] : [data.swap]), data.delay);
-    var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), data.delay);
+    var spawnDelay = Math.Max(data.delay, data.spawnDelay);
+    var swaps = ParseSpawns(data.swaps ?? (data.swap == null ? [] : [data.swap]), spawnDelay);
+    var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), spawnDelay);
     var playerSearch = Parse.ToList(data.playerSearch).ToArray();
     var types = (data.types ?? [data.type]).Select(s => new InfoType(data.prefab, s)).ToArray();
     HashSet<string> events = [.. Parse.ToList(data.events)];
@@ -130,6 +131,7 @@ public class Loading
         PokeLimit = data.pokeLimit,
         PokeParameter = data.pokeParameter,
         Pokes = pokes,
+        PokeDelay = data.pokeDelay,
         ObjectsLimit = objectsLimit,
         Objects = objects,
         BannedObjects = bannedObjects,
@@ -163,27 +165,27 @@ public class Loading
   private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
   private static RpcInfo[]? ParseRpcs(Data data)
   {
-    if (data.rpcs != null && data.rpcs.Length > 0) return ParseRpcs(data.rpcs);
-    if (data.rpc != null) return ParseRpcs([data.rpc]);
+    if (data.rpcs != null && data.rpcs.Length > 0) return ParseRpcs(data.rpcs, data.rpcDelay);
+    if (data.rpc != null) return ParseRpcs([data.rpc], data.rpcDelay);
     return null;
   }
-  private static RpcInfo[] ParseRpcs(string[] objects) => objects.Select(s => new RpcInfo(s)).ToArray();
+  private static RpcInfo[] ParseRpcs(string[] objects, float delay) => objects.Select(s => new RpcInfo(s, delay)).ToArray();
   private static CustomRpcInfo[]? ParseCustomRpcs(Data data)
   {
-    if (data.customRpc != null && data.customRpc.Length > 0) return ParseCustomRpcs(data.customRpc);
+    if (data.customRpc != null && data.customRpc.Length > 0) return ParseCustomRpcs(data.customRpc, data.rpcDelay);
     return null;
   }
-  private static CustomRpcInfo[] ParseCustomRpcs(string[] objects)
+  private static CustomRpcInfo[] ParseCustomRpcs(string[] objects, float delay)
   {
     List<CustomRpcInfo> rpcs = [];
     var start = 0;
     for (var i = 1; i < objects.Length; i++)
     {
       if (CustomRpcInfo.IsType(objects[i])) continue;
-      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray()));
+      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray(), delay));
       start = i;
     }
-    rpcs.Add(new(objects.Skip(start).ToArray()));
+    rpcs.Add(new(objects.Skip(start).ToArray(), delay));
     return [.. rpcs];
   }
   private static Range<int>? ParseObjectsLimit(string str) => str == "" ?

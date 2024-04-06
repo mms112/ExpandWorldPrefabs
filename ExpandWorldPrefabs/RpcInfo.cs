@@ -10,17 +10,20 @@ public class RpcInfo
 {
   private readonly string Name;
   private readonly string[] Parameters;
+  private readonly float Delay;
 
-  public RpcInfo(string line)
+  public RpcInfo(string line, float delay)
   {
+    Delay = delay;
     var split = Parse.SplitWithEscape(line);
     Name = split[0];
     Parameters = split.Count() > 1 ? split.Skip(1).ToArray() : [];
+    // TODO: Get amount of pars to get delay.
   }
   public void Invoke(ZDO zdo, Dictionary<string, string> parameters)
   {
     if (zdo.GetOwner() == 0) return;
-    ZRoutedRpc.instance.InvokeRoutedRPC(zdo.GetOwner(), zdo.m_uid, Name, GetParameters(zdo, parameters));
+    DelayedRpc.Add(Delay, zdo.GetOwner(), zdo.m_uid, Name, GetParameters(zdo, parameters));
   }
   private object[] GetParameters(ZDO zdo, Dictionary<string, string> parameters)
   {
@@ -59,24 +62,26 @@ public class RpcInfo
 
 public class CustomRpcInfo
 {
-  private static readonly HashSet<string> Types = ["int", "float", "bool", "string", "vec", "quat", "hash", "hit", "messagetype"];
+  private static readonly HashSet<string> Types = ["int", "float", "bool", "string", "vec", "quat", "hash", "hit", "enum_reason", "enum_message", "zdo"];
   public static bool IsType(string line) => Types.Contains(Parse.Kvp(line).Key);
   private readonly string Name;
   private readonly bool OnlyOwner = true;
   private readonly string[] Parameters;
+  private readonly float Delay;
 
-  public CustomRpcInfo(string[] lines)
+  public CustomRpcInfo(string[] lines, float delay)
   {
     var first = Parse.Split(lines[0]);
     Name = first[0];
-    OnlyOwner = first.Length < 2 || first[1].ToLowerInvariant() != "all";
+    OnlyOwner = first.Length < 2 || first[3].ToLowerInvariant() != "all";
+    Delay = first.Length < 3 ? delay : Parse.Float(first[2], delay);
     Parameters = lines.Skip(1).ToArray();
   }
   public void Invoke(ZDO zdo, Dictionary<string, string> parameters)
   {
     if (OnlyOwner && zdo.GetOwner() == 0) return;
     var target = OnlyOwner ? zdo.GetOwner() : 0;
-    ZRoutedRpc.instance.InvokeRoutedRPC(target, zdo.m_uid, Name, GetParameters(parameters));
+    DelayedRpc.Add(Delay, target, zdo.m_uid, Name, GetParameters(parameters));
   }
   private object[] GetParameters(Dictionary<string, string> parameters)
   {
@@ -94,7 +99,9 @@ public class CustomRpcInfo
       if (type == "quat") pars[i] = Parse.AngleYXZ(arg);
       if (type == "hash") pars[i] = arg.GetStableHashCode();
       if (type == "hit") pars[i] = Parse.Hit(arg);
-      if (type == "messagetype") pars[i] = Enum.TryParse(arg, true, out MessageHud.MessageType message) ? (int)message : 2;
+      if (type == "zdo") pars[i] = Parse.ZDOID(arg);
+      if (type == "enum_message") pars[i] = Enum.TryParse(arg, true, out MessageHud.MessageType message) ? (int)message : 2;
+      if (type == "enum_reason") pars[i] = Enum.TryParse(arg, true, out BaseAI.AggravatedReason message) ? (int)message : 0;
 
     }
     return pars;

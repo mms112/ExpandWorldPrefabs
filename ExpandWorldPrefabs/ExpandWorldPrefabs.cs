@@ -45,6 +45,8 @@ public class EWP : BaseUnityPlugin
     HandleCreated.Execute();
     DelayedSpawn.Execute(Time.deltaTime);
     DelayedRemove.Execute(Time.deltaTime);
+    DelayedPoke.Execute(Time.deltaTime);
+    DelayedRpc.Execute(Time.deltaTime);
   }
 
   public static RandomEvent GetCurrentEvent(Vector3 pos)
