@@ -8,6 +8,49 @@ Recommended RPC target is shown after the RPC name.
 - Calls with `all` can be used just with `owner` too, but this might not show all visual effects to the clients.
 - Calls with `target` need a custom ZDO id to do anything meaningful.
 
+## Data types
+
+Complex data types are defined as spacebar separated key-pair values.
+
+Currently hit data is the only complex data type.
+
+### Hit data
+
+For example `- hit, fire=20 blunt=50`.
+
+Options:
+
+- damage: Raw damage that ignores resistances and armor.
+- blunt: Amount of blunt damage (float)
+- slash: Amount of slash damage (float)
+- pierce: Amount of pierce damage (float)
+- chop: Amount of chop damage (float)
+- pickaxe: Amount of pickaxe damage (float)
+- fire: Amount of fire damage (float)
+- frost: Amount of frost damage (float)
+- lightning: Amount of lightning damage (float)
+- poison: Amount of poison damage (float)
+- spirit: Amount of spirit damage (float)
+- tier: Tool tier (int)
+- force: Knockback force (float)
+- backstab: Backstab multiplier (float)
+- stagger: Stagger multiplier (float)
+- dodge: Can be dodged? (bool)
+. block: Can be blocked? (bool)
+- dir: Direction of the hit (vec)
+- ranged: Is ranged attack? (bool)
+- attacker: Attacker ZDO id (zdo)
+- pvp: Ignores PvP setting? (bool)
+- pos: Position of the hit (vec)
+- status: Status effect (string)
+- skill: Skill level for status effect (float)
+- level: Item level for status effect (int)
+- world: World level tier (int)
+- type: Hit type, used for player stats if dying to this hit (string)
+  - Undefined, EnemyHit, PlayerHit, Fall, Drowning, Burning, Freezing, Poisoned
+  - Water, Smoke, EdgeOfWorld, Impact, Cart, Tree, Self, Structural, Turret, Boat, Stalagtite
+- spot: Index of Weak spot (int)
+
 ## ArmorStand
 
 ```yaml
