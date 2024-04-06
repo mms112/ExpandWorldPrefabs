@@ -89,6 +89,8 @@ public class Loading
     var filters = ParseFilters(data.filters ?? (data.filter == null ? [] : [data.filter]));
     var bannedFilters = ParseFilters(data.bannedFilters ?? (data.bannedFilter == null ? [] : [data.bannedFilter]));
     var pokes = ParseObjects(data.pokes ?? []);
+    var rpcs = ParseRpcs(data);
+    var customRpcs = ParseCustomRpcs(data);
     return types.Select(t =>
     {
       return new Info()
@@ -135,6 +137,8 @@ public class Loading
         Filters = filters,
         BannedFilters = bannedFilters,
         TriggerRules = data.triggerRules,
+        Rpcs = rpcs,
+        CustomRpcs = customRpcs,
       };
     }).ToArray();
   }
@@ -157,6 +161,31 @@ public class Loading
 
   private static Filter[] ParseFilters(string[] filters) => filters.Select(Filter.Create).Where(s => s != null).ToArray();
   private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
+  private static RpcInfo[]? ParseRpcs(Data data)
+  {
+    if (data.rpcs != null && data.rpcs.Length > 0) return ParseRpcs(data.rpcs);
+    if (data.rpc != null) return ParseRpcs([data.rpc]);
+    return null;
+  }
+  private static RpcInfo[] ParseRpcs(string[] objects) => objects.Select(s => new RpcInfo(s)).ToArray();
+  private static CustomRpcInfo[]? ParseCustomRpcs(Data data)
+  {
+    if (data.customRpc != null && data.customRpc.Length > 0) return ParseCustomRpcs(data.customRpc);
+    return null;
+  }
+  private static CustomRpcInfo[] ParseCustomRpcs(string[] objects)
+  {
+    List<CustomRpcInfo> rpcs = [];
+    var start = 0;
+    for (var i = 1; i < objects.Length; i++)
+    {
+      if (CustomRpcInfo.IsType(objects[i])) continue;
+      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray()));
+      start = i;
+    }
+    rpcs.Add(new(objects.Skip(start).ToArray()));
+    return [.. rpcs];
+  }
   private static Range<int>? ParseObjectsLimit(string str) => str == "" ?
     null : int.TryParse(str, out var limit) ?
       new Range<int>(limit, 0) : Parse.IntRange(str);

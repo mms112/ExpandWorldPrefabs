@@ -100,6 +100,12 @@ public class Data
 
   [DefaultValue(false)]
   public bool triggerRules = false;
+  [DefaultValue(null)]
+  public string? rpc = null;
+  [DefaultValue(null)]
+  public string[]? rpcs = null;
+  [DefaultValue(null)]
+  public string[]? customRpc = null;
 }
 
 
@@ -144,6 +150,8 @@ public class Info
   public float PlayerSearchDistance = 0f;
   public float PlayerSearchHeight = 0f;
   public bool TriggerRules = false;
+  public RpcInfo[]? Rpcs;
+  public CustomRpcInfo[]? CustomRpcs;
 }
 public class Spawn
 {

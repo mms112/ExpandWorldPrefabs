@@ -18,9 +18,11 @@ public class Helper
   }
   public static Dictionary<string, string> CreateParameters(string prefab, string args, ZDO zdo)
   {
+    // TODO: Info could track requuired parameters to get info from zdo.
     var split = args.Split(' ');
     var zone = ZoneSystem.instance.GetZone(zdo.m_position);
     return new Dictionary<string, string> {
+      { "<id>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
       { "<par0>", split.Length > 0 ? split[0] : "" },
       { "<par1>", split.Length > 1 ? split[1] : "" },

@@ -21,6 +21,10 @@ public class Manager
     Commands.Run(info, zdo, parameters, source);
     HandleSpawns(info, zdo, parameters);
     Poke(info, zdo, parameters);
+    if (info.Rpcs != null)
+      Rpc(info.Rpcs, zdo, parameters);
+    if (info.CustomRpcs != null)
+      CustomRpc(info.CustomRpcs, zdo, parameters);
     if (info.Drops)
       SpawnDrops(zdo);
     // Original object was regenerated to apply data.
@@ -119,5 +123,17 @@ public class Manager
     var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters);
     foreach (var z in zdos)
       Handle(ActionType.Poke, pokeParameter, z);
+  }
+
+  public static void Rpc(RpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
+  {
+    foreach (var i in info)
+      i.Invoke(zdo, parameters);
+  }
+  public static void CustomRpc(CustomRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
+  {
+    foreach (var i in info)
+      i.Invoke(zdo, parameters);
+
   }
 }

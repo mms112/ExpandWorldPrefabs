@@ -1,4 +1,5 @@
 - v1.10
+  - Adds a new field `customRpc` to trigger any RPC call.
   - Breaking change: Poke can now also poke the poker.
 
 - v1.9
