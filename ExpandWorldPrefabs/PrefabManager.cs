@@ -140,8 +140,19 @@ public class Manager
       i.Invoke(zdo, parameters);
 
   }
-  public static void Rpc(long target, ZDOID id, string name, object[] parameters)
+  public static void Rpc(long target, ZDOID id, int hash, object[] parameters)
   {
-    ZRoutedRpc.instance.InvokeRoutedRPC(target, id, name, parameters);
+    var router = ZRoutedRpc.instance;
+    ZRoutedRpc.RoutedRPCData routedRPCData = new()
+    {
+      m_msgID = router.m_id + router.m_rpcMsgID++,
+      m_senderPeerID = router.m_id,
+      m_targetPeerID = target,
+      m_targetZDO = id,
+      m_methodHash = hash
+    };
+    ZRpc.Serialize(parameters, ref routedRPCData.m_parameters);
+    routedRPCData.m_parameters.SetPos(0);
+    router.RouteRPC(routedRPCData);
   }
 }

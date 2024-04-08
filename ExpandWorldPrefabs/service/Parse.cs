@@ -51,6 +51,10 @@ public static class Parse
       return defaultValue;
     return result;
   }
+  public static bool TryLong(string arg, out long result)
+  {
+    return long.TryParse(arg, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
+  }
   public static int Int(string[] args, int index, int defaultValue = 0)
   {
     if (args.Length <= index) return defaultValue;
@@ -252,14 +256,18 @@ public static class Parse
   public static int Hash(string[] args, int index) => args.Length > index ? args[index].GetStableHashCode() : 0;
   public static bool Boolean(string[] args, int index) => args.Length > index && Boolean(args[index]);
   public static bool Boolean(string arg) => arg.ToLowerInvariant() == "true";
+  public static bool BooleanTrue(string arg) => arg.ToLowerInvariant() == "false";
   public static ZDOID ZDOID(string arg)
   {
     var split = Split(arg, true, ':');
     return new ZDOID(Long(split[0]), UInt(split[1]));
   }
-  public static HitData Hit(string arg)
+  public static HitData Hit(ZDO zdo, string arg)
   {
-    HitData hit = new();
+    HitData hit = new()
+    {
+      m_point = zdo.m_position
+    };
     var split = Split(arg, true, ' ');
     foreach (var s in split)
     {
@@ -297,5 +305,17 @@ public static class Parse
 
     }
     return hit;
+  }
+  public static int EnumMessage(string arg)
+  {
+    return Enum.TryParse(arg, true, out MessageHud.MessageType state) ? (int)state : Int(arg, 2);
+  }
+  public static int EnumReason(string arg)
+  {
+    return Enum.TryParse(arg, true, out BaseAI.AggravatedReason state) ? (int)state : Int(arg, 0);
+  }
+  public static int EnumTrap(string arg)
+  {
+    return Enum.TryParse(arg, true, out Trap.TrapState state) ? (int)state : Int(arg, 0);
   }
 }

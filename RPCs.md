@@ -1,12 +1,6 @@
-# List of Valheim RPCs
+# Expand World Prefabs: RPCs
 
-This list all RPC calls registered in the vanilla game.
-
-Recommended RPC target is shown after the RPC name.
-
-- Most calls check for ZDO ownership. Using `all` would just increase the network traffic without any effect.
-- Calls with `all` can be used just with `owner` too, but this might not show all visual effects to the clients.
-- Calls with `target` need a custom ZDO id to do anything meaningful.
+RPCs provide a way to call client code from the server.
 
 ## Data types
 
@@ -51,62 +45,117 @@ Options:
   - Water, Smoke, EdgeOfWorld, Impact, Cart, Tree, Self, Structural, Turret, Boat, Stalagtite
 - spot: Index of Weak spot (int)
 
-## ArmorStand
+## Simple RPCs
+
+Some RPCs have simplified versions for ease of use.
+
+```yaml
+# Aggravates the creature (Dverger).
+  rpc: aggravate
+# Alerts the creature.
+  rpc: alert
+# Adds ammo to the turret.
+  rpc: ammo, "item name"
+# Decreases the ship speed.
+  rpc: backward
+# Broadcasts a message in the center.
+  rpc: broadcast, "message"
+# Calms the creature (Dverger).
+  rpc: calm
+# Damages the target.
+  rpc: damage, "hit data"
+# Toggles the door. Open direction is true by default.
+  rpc: door, "open forward?"
+# Increases the ship speed.
+  rpc: forward
+# Heals the target. Text is shown by default.
+  rpc: heal, "amount", "show text?"
+# Shows message at the top left.
+  rpc: message, "message"
+# Removes the structure.
+  rpc: remove
+# Repairs the structure.
+  rpc: repair
+# Sets the rudder angle.
+  rpc: rudder, "rudder angle"
+# Adds a status effect to the target. Timer is reset by default.
+  rpc: status, "name", "reset timer?"
+# Staggers the target. Direction is optional.
+  rpc: stagger, "direction"
+# Causes the player to lose or again stamina.
+  rpc: stamina, "amount"
+# Stops the ship.
+  rpc: stop
+# Teleports the player.
+  rpc: teleport, x, z, y, rotY
+```
+
+## Custom RPCs
+
+This list all RPC calls registered in the vanilla game.
+
+Recommended RPC target is shown after the RPC name.
+
+- Most calls check for ZDO ownership. Using `all` would just increase the network traffic without any effect.
+- Calls with `all` can be used just with `owner` too, but this might not show all visual effects to the clients.
+- Calls with `target` need a custom ZDO id to do anything meaningful.
+
+### ArmorStand
 
 ```yaml
 # Destroys item at specific slot.
-- customRpc:
+  customRpc:
   - RPC_DestroyAttachment, owner
   - int, "index of the item slot"
 ```
 
 ```yaml
 # Drops item from specific slot.
-- customRpc:
+  customRpc:
   - RPC_DropItem, owner
   - int, "index of the item slot"
 ```
 
 ```yaml
 # Drops item with specific name.
-- customRpc:
+  customRpc:
   - RPC_DropItemByName, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-- customRpc:
+  customRpc:
   - RPC_RequestOwn, owner
 ```
 
 ```yaml
 # Sets specific pose.
-- customRpc:
+  customRpc:
   - RPC_SetPose, all
   - int, "number of the pose"
 ```
 
 ```yaml
 # Sets item to a specific slot.
-- customRpc:
+  customRpc:
   - RPC_SetVisualItem, all
   - int, "index of the item slot"
   - string, "name of the item"
   - int, "variant number of the item"
 ```
 
-## BaseAI (AnimalAI + MonsterAI)
+### BaseAI (AnimalAI + MonsterAI)
 
 ```yaml
 # Alerts the creature.
-- customRpc:
+  customRpc:
   - Alert, owner
 ```
 
 ```yaml
 # Alerts the creature and sets the attacker zdo as the target.
-- customRpc:
+  customRpc:
   - OnNearProjectileHit, owner
   - vec, "location of the projectile, unused"
   - float, "trigger range, unused"
@@ -115,56 +164,56 @@ Options:
 
 ```yaml
 # Sets the aggravated state.
-- customRpc:
+  customRpc:
   - SetAggravated, owner
   - bool, "is aggravated"
   - enum_reason, Damage/Building/Theif # - int, 0/1/2
 ```
 
-## Bed
+### Bed
 
 ```yaml
 # Sets bed owner.
-- customRpc:
+  customRpc:
   - SetOwner, owner
   - long, "player id"
   - name, "owner name"
 ```
 
-## Beehive
+### Beehive
 
 ```yaml
 # Alerts the creature.
-- customRpc:
+  customRpc:
   - RPC_Extract, owner
 ```
 
-## Character (Humanoid + Player)
+### Character (Humanoid + Player)
 
 ```yaml
 # Sets noise level of the creature (which attracts enemies).
-- customRpc:
+  customRpc:
   - AddNoise, owner
   - float, "noise level"
 ```
 
 ```yaml
 # Deals damage to the creature.
-- customRpc:
+  customRpc:
   - Damage, owner
   - hit, "hit data"
 ```
 
 ```yaml
 # Freezes animations.
-- customRpc:
+  customRpc:
   - FreezeFrame, all
   - float, "duration of the freeze frame"
 ```
 
 ```yaml
 # Heals the creature.
-- customRpc:
+  customRpc:
   - Heal, owner
   - float, "amount of health"
   - bool, "whether to show text"
@@ -172,95 +221,95 @@ Options:
 
 ```yaml
 # Staggers the creature.
-- customRpc:
+  customRpc:
   - Stagger, owner
   - vec, "direction of the stagger"
 ```
 
 ```yaml
 # Resets clothing.
-- customRpc:
+  customRpc:
   - ResetCloth, all
 ```
 
 ```yaml
 # Sets the tame state.
-- customRpc:
+  customRpc:
   - SetTamed, owner
   - bool, "is tamed"
 ```
 
 ```yaml
 # Teleports the creature. Only implemented for players.
-- customRpc:
+  customRpc:
   - RPC_TeleportTo, owner
   - vec, "location to teleport to"
   - quat, "rotation to teleport to"
   - bool, "whether is distant teleport"
 ```
 
-## Container
+### Container
 
 ```yaml
 # Requests to open the container.
-- customRpc:
+  customRpc:
   - RequestOpen, owner
   - long, "player id"
 ```
 
 ```yaml
 # Opens the container.
-- customRpc:
+  customRpc:
   - OpenRespons, target
   - bool, "can be opened?"
 ```
 
 ```yaml
 # Requests to stack items.
-- customRpc:
+  customRpc:
   - RPC_RequestStack, owner
   - long, "player id"
 ```
 
 ```yaml
 # Stacks items to the chest.
-- customRpc:
+  customRpc:
   - RPC_StackResponse, all
   - bool, "can be stacked?"
 ```
 
 ```yaml
 # Requests to take items.
-- customRpc:
+  customRpc:
   - RequestTakeAll, all
   - long, "player id"
 ```
 
 ```yaml
 # Takes items from the chest.
-- customRpc:
+  customRpc:
   - TakeAllRespons, all
   - bool, "can be taken?"
 ```
 
-## CookingStation
+### CookingStation
 
 ```yaml
 # Adds a single fuel.
-- customRpc:
+  customRpc:
   - AddFuel, owner
 ```
 
 ```yaml
 # Adds a single item.
-- customRpc:
+  customRpc:
   - AddItem, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Sets visual item of a slot.
-- customRpc:
+  customRpc:
   - SetSlotVisual, all
   - int, "index of the slot"
   - name, "name of the item"
@@ -268,146 +317,146 @@ Options:
 
 ```yaml
 # Removes cooked items and spawns them at specific position.
-- customRpc:
+  customRpc:
   - RemoveDoneItem, owner
   - vec, "spawn position"
 ```
 
-## Destructible
+### Destructible
 
 ```yaml
 # Creates visual fragments (if m_autoCreateFragments is true).
-- customRpc:
+  customRpc:
   - CreateFragments, all
 ```
 
 ```yaml
 # Deals damage to the creature.
-- customRpc:
+  customRpc:
   - Damage, owner
   - hit, "hit data"
 ```
 
-## Door
+### Door
 
 ```yaml
 # Destroys item at specific slot.
-- customRpc:
+  customRpc:
   - UseDoor, owner
   - bool, "forward or backward"
 ```
 
-## FishingFloat
+### FishingFloat
 
 ```yaml
 # Nibbles???
-- customRpc:
+  customRpc:
   - RPC_Nibble, owner
   - zdo, "fish id"
   - bool, "is correct bait?"
 ```
 
-## FootStep
+### FootStep
 
 ```yaml
 # Shows a footstep.
-- customRpc:
+  customRpc:
   - Step, all
   - int, "effect index"
   - vec, "position"
 ```
 
-## Fermenter
+### Fermenter
 
 ```yaml
 # Adds a single item.
-- customRpc:
+  customRpc:
   - AddItem, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Drop the fermented item.
-- customRpc:
+  customRpc:
   - Tap, owner
 ```
 
-## Fireplace
+### Fireplace
 
 ```yaml
 # Adds a single fuel.
-- customRpc:
+  customRpc:
   - AddFuel, owner
 ```
 
-## Fish
+### Fish
 
 ```yaml
 # Part 2 of the pick up logic.
 # Picks up the fish to the player inventory (doesn't do anything as the server).
-- customRpc:
+  customRpc:
   - Pickup, target
 ```
 
 ```yaml
 # Part 1 of the pick up logic.
 # Client sends this to the ZDO owner, that then sends back PickUp to cause the original client to pick up the fish.
-- customRpc:
+  customRpc:
   - RequestPickup, owner
 ```
 
-## Incinerator
+### Incinerator
 
 ```yaml
 # Sets the lever pulled.
-- customRpc:
+  customRpc:
   - RPC_AnimateLever, all
 `
 
 ```yaml
 # Sets the lever back.
-- customRpc:
+  customRpc:
   - RPC_AnimateLeverReturn, all
 ```
 
 ```yaml
 # Attempts to incinerate the items.
-- customRpc:
+  customRpc:
   - RPC_RequestIncinerate, owner
 ```
 
 ```yaml
 # Shows the incinerate message.
-- customRpc:
+  customRpc:
   - RPC_IncinerateRespons, owner
   - int, "result (0, 1, 2, 3)"
 ```
 
-## ItemDrop
+### ItemDrop
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-- customRpc:
+  customRpc:
   - RPC_RequestOwn, owner
 ```
 
-## ItemStand
+### ItemStand
 
 ```yaml
 # Destroys the item.
-- customRpc:
+  customRpc:
   - DestroyAttachment, owner
 ```
 
 ```yaml
 # Drops the item.
-- customRpc:
+  customRpc:
   - DropItem, owner
 ```
 
 ```yaml
 # Sets the visual item.
-- customRpc:
+  customRpc:
   - SetVisualItem, all
   - string, "name of the item"
   - int, "variant number of the item"
@@ -416,24 +465,24 @@ Options:
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-- customRpc:
+  customRpc:
   - RPC_RequestOwn, owner
 ```
 
-## MapTable
+### MapTable
 
 ```yaml
 # Sets data.
-- customRpc:
+  customRpc:
   - MapData, owner
   - zpkg, "unusable"
 ```
 
-## MineRock
+### MineRock
 
 ```yaml
 # Deals damage to a part of the rock.
-- customRpc:
+  customRpc:
   - Hit, owner
   - hit, "hit data"
   - int, "part index"
@@ -441,16 +490,16 @@ Options:
 
 ```yaml
 # Hides part of a rock as destroyed,
-- customRpc:
+  customRpc:
   - Hide, all
   - int, "part index"
 ```
 
-## MineRock5
+### MineRock5
 
 ```yaml
 # Deals damage to a part of the rock.
-- customRpc:
+  customRpc:
   - Hit, owner
   - hit, "hit data"
   - int, "part index"
@@ -458,64 +507,64 @@ Options:
 
 ```yaml
 # Sets health of a part.
-- customRpc:
+  customRpc:
   - SetAreaHealth, all
   - int, "part index"
   - float, "health"
 ```
 
-## MonsterAI
+### MonsterAI
 
 ```yaml
 # Awakens the creature.
-- customRpc:
+  customRpc:
   - RPC_Wakeup, owner
 ```
 
-## MusicLocation
+### MusicLocation
 
 ```yaml
 # Sets the music as played.
-- customRpc:
+  customRpc:
   - SetPlayed, owner
 ```
 
-## MusicVolume
+### MusicVolume
 
 ```yaml
 # Starts playing the music.
-- customRpc:
+  customRpc:
   - RPC_PlayMusic, all
 ```
 
-## Pickable
+### Pickable
 
 ```yaml
 # Spawns the picked item.
-- customRpc:
+  customRpc:
   - Pick, owner
 ```
 
 ```yaml
 # Sets the picked state.
-- customRpc:
+  customRpc:
   - SetPicked, all
   - bool, "is picked"
 ```
 
-## PickableItem
+### PickableItem
 
 ```yaml
 # Spawns the picked item.
-- customRpc:
+  customRpc:
   - Pick, owner
 ```
 
-## Player
+### Player
 
 ```yaml
 # Shows message.
-- customRpc:
+  customRpc:
   - Message, owner
   - enum_message, TopLeft/Center  # - int, 1/2
   - string, "shown message"
@@ -524,13 +573,13 @@ Options:
 
 ```yaml
 # Removes visuals.
-- customRpc:
+  customRpc:
   - OnDeath, all
 ```
 
 ```yaml
 # Triggers UI/music based on detection status.
-- customRpc:
+  customRpc:
   - OnTargeted, owner
   - bool, "is sensed"
   - bool, "is targeted"
@@ -538,17 +587,17 @@ Options:
 
 ```yaml
 # Uses stamina.
-- customRpc:
+  customRpc:
   - UseStamina, owner
   - float, "amount of stamina"
 ```
 
-## PrivateArea
+### PrivateArea
 
 ```yaml
 # Toggles the ward on or off. 
 # Only works if the player id matches the creator.
-- customRpc:
+  customRpc:
   - ToggleEnabled, owner
   - long, "player id"
 ```
@@ -556,7 +605,7 @@ Options:
 ```yaml
 # Toggles a permitted player on or off.
 # Only works if the ward is not enabled.
-- customRpc:
+  customRpc:
   - TogglePermitted, owner
   - long, "player id"
   - string, "player name"
@@ -564,39 +613,39 @@ Options:
 
 ```yaml
 # Flashes the ward.
-- customRpc:
+  customRpc:
   - FlashShield, all
 ```
 
-## Projectile
+### Projectile
 
 ```yaml
 # Attaches the projectile to an object.
-- customRpc:
+  customRpc:
   - RPC_Attach, owner
   - zdo, "attached zdo"
 ```
 
 ```yaml
 # Sets the project as it has hit something.
-- customRpc:
+  customRpc:
   - RPC_OnHit, owner
 ```
 
-## ResourceRoot
+### ResourceRoot
 
 ```yaml
 # Drains from the resource.
-- customRpc:
+  customRpc:
   - RPC_Drain, owner
   - float, "amount"
 ```
 
-## Saddle
+### Saddle
 
 ```yaml
 # Controls the creature.
-- customRpc:
+  customRpc:
   - Controls, owner
   - vec, "direction"
   - int, "speed"
@@ -605,52 +654,52 @@ Options:
 
 ```yaml
 # Tries to get control of the creature.
-- customRpc:
+  customRpc:
   - RequestControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Releases control of the creature.
-- customRpc:
+  customRpc:
   - ReleaseControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Response from the control request.
-- customRpc:
+  customRpc:
   - RequestRespons, target
   - bool, "was request ok?"
 ```
 
 ```yaml
 # Drops the saddle at specific position.
-- customRpc:
+  customRpc:
   - RemoveSaddle, owner
   - vec, "position"
 ```
 
-## SapCollector
+### SapCollector
 
 ```yaml
 # Drops the sap.
-- customRpc:
+  customRpc:
   - RPC_Extract, owner
   - zdo, "attached zdo"
 ```
 
 ```yaml
 # Updates the visual based on the status.
-- customRpc:
+  customRpc:
   - RPC_UpdateEffects, all
 ```
 
-## SEMan
+### SEMan
 
 ```yaml
 # Adds a status effect.
-- customRpc:
+  customRpc:
   - RPC_AddStatusEffect, owner
   - hash, "status effect"
   - bool, "reset time?",
@@ -658,82 +707,82 @@ Options:
   - float, "skill level"
 ```
 
-## Ship
+### Ship
 
 ```yaml
 # Stops the ship.
-- customRpc:
+  customRpc:
   - Stop, owner
 ```
 
 ```yaml
 # Increases the speed.
-- customRpc:
+  customRpc:
   - Forward, owner
 ```
 
 ```yaml
 # Decreases the speed.
-- customRpc:
+  customRpc:
   - Backward, owner
 ```
 
 ```yaml
 # Sets the rudder angle.
-- customRpc:
+  customRpc:
   - Rudder, owner
   - float, "rudder angle"
 ```
 
-## ShipControl
+### ShipControl
 
 ```yaml
 # Tries to get control of the ship.
-- customRpc:
+  customRpc:
   - RequestControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Releases control of the ship.
-- customRpc:
+  customRpc:
   - ReleaseControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Response from the control request.
-- customRpc:
+  customRpc:
   - RequestRespons, target
   - bool, "was request ok?"
 ```
 
-## Smelter
+### Smelter
 
 ```yaml
 # Adds a single fuel.
-- customRpc:
+  customRpc:
   - AddFuel, owner
 ```
 
 ```yaml
 # Adds a single item.
-- customRpc:
+  customRpc:
   - AddOre, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Drops the smelted items
-- customRpc:
+  customRpc:
   - EmptyProcessed, owner
 ```
 
-## Talker
+### Talker
 
 ```yaml
 # Stops the ship.
-- customRpc:
+  customRpc:
   - Say, all
   - int, 0/1/2 # Whisper, normal, shout
   - userinfo, "unusable"
@@ -741,17 +790,17 @@ Options:
   - string, "sender network id"
 ```
 
-## Tameable
+### Tameable
 
 ```yaml
 # Adds a saddle. Only works if the creature can be saddled.
-- customRpc:
+  customRpc:
   - AddSaddle, owner
 ```
 
 ```yaml
 # Toggles the command state.
-- customRpc:
+  customRpc:
   - Command, owner
   - zdo, "commanding player"
   - bool, "whether to show the message"
@@ -759,7 +808,7 @@ Options:
 
 ```yaml
 # Sets the name.
-- customRpc:
+  customRpc:
   - SetName, owner
   - string, "name of the creature"
   - string, "name of the author, for console parental controls"
@@ -767,159 +816,159 @@ Options:
 
 ```yaml
 # Destroyes the creature and shows the unsummoning effect.
-- customRpc:
+  customRpc:
   - RPC_UnSummon, all
 ```
 
 ```yaml
 # Sets the saddle visual.
-- customRpc:
+  customRpc:
   - SetSaddle, all
   - bool, "is saddled"
 ```
 
-## TeleportWorld
+### TeleportWorld
 
 ```yaml
 # Sets portal tag.
-- customRpc:
+  customRpc:
   - SetTag, owner
   - string, "tag"
   - string, "name of the author for console parental controls"
 ```
 
-## TerrainComp
+### TerrainComp
 
 ```yaml
 # Performs a terrain operation.
-- customRpc:
+  customRpc:
   - ApplyOperation, owner
   - zpkg, "unusabke"
 ```
 
-## Trap
+### Trap
 
 ```yaml
 # Sets trap state.
-- customRpc:
+  customRpc:
   - RPC_RequestStateChange, owner
   - enum_trap, Armed/Disarmed/Triggered  # - int, 0/1/2
 ```
 
 ```yaml
 # Shows trap state.
-- customRpc:
+  customRpc:
   - RPC_OnStateChanged, all
   - enum_trap, Armed/Disarmed/Triggered  # - int, 0/1/2
 ```
 
-## TreeBase
+### TreeBase
 
 ```yaml
 # Deals damage to the tree.
-- customRpc:
+  customRpc:
   - Damage, owner
   - hit, "hit data"
 ```
 
 ```yaml
 # Grows the tree showing the growth effect.
-- customRpc:
+  customRpc:
   - Grow, all
 ```
 
 ```yaml
 # Shows the shake effect.
-- customRpc:
+  customRpc:
   - Shake, all
 ```
 
-## TreeLog
+### TreeLog
 
 ```yaml
 # Deals damage to the tree.
-- customRpc:
+  customRpc:
   - Damage, owner
   - hit, "hit data"
 ```
 
-## TriggerSpawner
+### TriggerSpawner
 
 ```yaml
 # Triggers the spawner.
-- customRpc:
+  customRpc:
   - Trigger, owner
 ```
 
-## Turret
+### Turret
 
 ```yaml
 # Adds a single ammo.
-- customRpc:
+  customRpc:
   - RPC_AddAmmo, owner
   - name, "name of the ammo"
 ```
 
 ```yaml
 # Sets the target.
-- customRpc:
+  customRpc:
   - RPC_SetTarget, all
   - zdo, "target zdo"
 ```
 
-## Vagon
+### Vagon
 
 ```yaml
 # Shows denied message.
-- customRpc:
+  customRpc:
   - RequestDenied, target
 ```
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-- customRpc:
+  customRpc:
   - RequestOwn, owner
 ```
 
-## WearNTear
+### WearNTear
 
 ```yaml
 # Deals damage to the object.
-- customRpc:
+  customRpc:
   - WNTDamage, owner
   - hit, "hit data"
 ```
 
 ```yaml
 # Sets health for visual style.
-- customRpc:
+  customRpc:
   - WNTHealthChanged, all
   - float, "amount of health"
 ```
 
 ```yaml
 # Removes the object.
-- customRpc:
+  customRpc:
   - WNTRemove, owner
 ```
 
 ```yaml
 # Repairs the object.
-- customRpc:
+  customRpc:
   - WNTRepair, owner
 ```
 
 ```yaml
 # Shows visual fragments (if m_autoCreateFragments is true).
-- customRpc:
+  customRpc:
   - WNTCreateFragments, all
 ```
 
-## ZSyncAnimation
+### ZSyncAnimation
 
 ```yaml
 # Triggers animation state.
-- customRpc:
+  customRpc:
   - SetTrigger, all
   - name, "name of the trigger"
 ```

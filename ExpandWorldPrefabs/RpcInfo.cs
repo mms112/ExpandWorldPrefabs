@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Service;
@@ -6,56 +5,110 @@ using Service;
 namespace ExpandWorld.Prefab;
 
 
+public class RpcMapping(string call, string[] types, object[]? baseParameters = null)
+{
+  private static readonly int DamageHash = "Damage".GetStableHashCode();
+  private static readonly int WNTDamageHash = "WNTDamage".GetStableHashCode();
+  private static readonly Dictionary<int, bool> IsWearNTear = [];
+  private readonly int CallHash = call.GetStableHashCode();
+  public int GetHash()
+  {
+    if (CallHash != DamageHash) return CallHash;
+    // Currently only damage hash is dynamic so the logic can be hardcoded.
+    if (IsWearNTear.TryGetValue(CallHash, out var value)) return value ? WNTDamageHash : CallHash;
+    var isWNT = ZNetScene.instance.GetPrefab(call)?.GetComponent<WearNTear>() != null;
+    IsWearNTear[CallHash] = isWNT;
+    return isWNT ? WNTDamageHash : CallHash;
+  }
+  private readonly string[] Types = types;
+  private readonly object[] BaseParameters = baseParameters ?? [];
+
+  public object[] GetParameters(string pars, ZDO zdo, Dictionary<string, string> parameters)
+  {
+    var result = BaseParameters.ToList();
+    var args = Parse.Split(Helper.ReplaceParameters(pars, parameters));
+    for (var i = 0; i < Types.Length; i++)
+    {
+      var type = Types[i];
+      var arg = args[i];
+      if (type == "int") result.Add(Parse.Int(arg));
+      if (type == "float") result.Add(Parse.Float(arg));
+      if (type == "bool") result.Add(Parse.BooleanTrue(arg));
+      if (type == "string") result.Add(arg);
+      if (type == "vec")
+      {
+        result.Add(Parse.VectorXZY(args, i));
+        i += 2;
+      }
+      if (type == "quat")
+      {
+        result.Add(Parse.AngleYXZ(args, i));
+        i += 2;
+      }
+      if (type == "hash") result.Add(arg.GetStableHashCode());
+      if (type == "hit") result.Add(Parse.Hit(zdo, arg));
+      if (type == "zdo") result.Add(Parse.ZDOID(arg));
+      if (type == "enum_message") result.Add(Parse.EnumMessage(arg));
+      if (type == "enum_reason") result.Add(Parse.EnumReason(arg));
+      if (type == "enum_trap") result.Add(Parse.EnumTrap(arg));
+    }
+    return [.. result];
+  }
+
+
+  public static readonly Dictionary<int, RpcMapping> Mappings = new(){
+    { "damage".GetStableHashCode(), new RpcMapping("Damage", ["hit"]) },
+    { "heal".GetStableHashCode(), new RpcMapping("Heal", ["float", "bool"]) },
+    { "stamina".GetStableHashCode(), new RpcMapping("UseStamina", ["float"]) },
+    { "message".GetStableHashCode(), new RpcMapping("Message", ["string", "int"], [1]) },
+    { "broadcast".GetStableHashCode(), new RpcMapping("Message", ["string", "int"], [2]) },
+    { "forward".GetStableHashCode(), new RpcMapping("Forward", []) },
+    { "backward".GetStableHashCode(), new RpcMapping("Backward", []) },
+    { "rudder".GetStableHashCode(), new RpcMapping("Rudder", ["float"]) },
+    { "stop".GetStableHashCode(), new RpcMapping("Stop", []) },
+    { "trap".GetStableHashCode(), new RpcMapping("RPC_RequestStateChange", ["enum_trap"]) },
+    { "ammo".GetStableHashCode(), new RpcMapping("RPC_AddAmmo", ["string"]) },
+    { "repair".GetStableHashCode(), new RpcMapping("WNTRepair", []) },
+    { "remove".GetStableHashCode(), new RpcMapping("WNTRemove", []) },
+    { "stagger".GetStableHashCode(), new RpcMapping("Stagger", ["vec"]) },
+    { "aggravate".GetStableHashCode(), new RpcMapping("SetAggravated", [], [true]) },
+    { "calm".GetStableHashCode(), new RpcMapping("SetAggravated", [], [false]) },
+    { "pick".GetStableHashCode(), new RpcMapping("Pick", []) },
+    { "alert".GetStableHashCode(), new RpcMapping("Alert", []) },
+    { "door".GetStableHashCode(), new RpcMapping("UseDoor", ["bool"]) },
+    { "teleport".GetStableHashCode(), new RpcMapping("RPC_TeleportTo", ["vec", "quat", "bool"]) },
+    { "status".GetStableHashCode(), new RpcMapping("RPC_AddStatusEffect", ["hash", "bool", "int", "float"]) },
+  };
+}
+
+
 public class RpcInfo
 {
-  private readonly string Name;
-  private readonly string[] Parameters;
+  private readonly string Parameters = "";
   private readonly float Delay;
+  private readonly RpcMapping? Mapping;
 
   public RpcInfo(string line, float delay)
   {
     Delay = delay;
     var split = Parse.SplitWithEscape(line);
-    Name = split[0];
-    Parameters = split.Count() > 1 ? split.Skip(1).ToArray() : [];
-    // TODO: Get amount of pars to get delay.
+    var hash = split[0].ToLowerInvariant().GetStableHashCode();
+    if (RpcMapping.Mappings.TryGetValue(hash, out var mapping))
+    {
+      Mapping = mapping;
+      Parameters = string.Join(",", split.Skip(1));
+    }
+    else
+    {
+      Log.Warning($"Unknown RPC: {split[0]}");
+    }
   }
   public void Invoke(ZDO zdo, Dictionary<string, string> parameters)
   {
+    if (Mapping == null) return;
     if (zdo.GetOwner() == 0) return;
-    DelayedRpc.Add(Delay, zdo.GetOwner(), zdo.m_uid, Name, GetParameters(zdo, parameters));
-  }
-  private object[] GetParameters(ZDO zdo, Dictionary<string, string> parameters)
-  {
-    var pars = Parameters.Select(p => Helper.ReplaceParameters(p, parameters)).ToArray();
-    if (Name == "AddItem") return [Parse.String(pars, 0)];
-    if (Name == "SetAggravated") return [Parse.Boolean(pars, 0), Parse.Int(pars, 1)];
-    if (Name == "Damage")
-    {
-      var hit = Parse.Hit(pars[0]);
-      hit.m_point = zdo.m_position;
-      return [hit, Parse.Int(pars, 1)];
-    }
-    if (Name == "Heal") return [Parse.Float(pars, 0), Parse.Boolean(pars, 1)];
-    if (Name == "UseDoor") return [Parse.Boolean(pars, 0)];
-    if (Name == "Pick") return [];
-    if (Name == "Alert") return [];
-    if (Name == "UseStamina") return [Parse.Float(pars, 0)];
-    if (Name == "RPC_TeleportTo") return [Parse.VectorXZY(pars, 0), Parse.AngleYXZ(pars, 3), Parse.Boolean(pars, 6)];
-    if (Name == "OnTargeted") return [Parse.Boolean(pars, 0), Parse.Boolean(pars, 1)];
-    if (Name == "Message") return [Parse.Int(pars, 0), Parse.String(pars, 1), Parse.Int(pars, 2)];
-    if (Name == "RPC_AddStatusEffect") return [Parse.Hash(pars, 0), Parse.Boolean(pars, 1), Parse.Int(pars, 2), Parse.Float(pars, 3)];
-    if (Name == "Forward") return [];
-    if (Name == "Backward") return [];
-    if (Name == "Rudder") return [Parse.Float(pars, 0)];
-    if (Name == "Stop") return [];
-    if (Name == "SetTag") return [Parse.String(pars, 0), Parse.String(pars, 1)];
-    if (Name == "RPC_RequestStateChange") return [Parse.Int(pars, 0)];
-    if (Name == "RPC_AddAmmo") return [Parse.String(pars, 0)];
-    if (Name == "WNTRepair") return [];
-    if (Name == "WNTRemove") return [];
-    if (Name == "Stagger") return [Parse.VectorXZY(pars, 0)];
-    return pars;
+    var pars = Mapping.GetParameters(Parameters, zdo, parameters);
+    DelayedRpc.Add(Delay, zdo.GetOwner(), zdo.m_uid, Mapping.GetHash(), pars);
   }
 }
 
@@ -64,26 +117,38 @@ public class CustomRpcInfo
 {
   private static readonly HashSet<string> Types = ["int", "float", "bool", "string", "vec", "quat", "hash", "hit", "enum_reason", "enum_message", "enum_trap", "zdo"];
   public static bool IsType(string line) => Types.Contains(Parse.Kvp(line).Key);
-  private readonly string Name;
-  private readonly bool OnlyOwner = true;
+  private readonly int Hash;
+  private readonly long? FixedTarget;
+  private readonly string? VariableTarget;
   private readonly string[] Parameters;
   private readonly float Delay;
 
   public CustomRpcInfo(string[] lines, float delay)
   {
     var first = Parse.Split(lines[0]);
-    Name = first[0];
-    OnlyOwner = first.Length < 2 || first[3].ToLowerInvariant() != "all";
+    Hash = first[0].GetStableHashCode();
+    if (first.Length > 1)
+    {
+      if (first[1] == "all")
+        FixedTarget = ZNetView.Everybody;
+      else if (first[1] == "owner")
+        FixedTarget = null;
+      else if (Parse.TryLong(first[1], out var target))
+        FixedTarget = target;
+      else
+        VariableTarget = first[1];
+    }
     Delay = first.Length < 3 ? delay : Parse.Float(first[2], delay);
     Parameters = lines.Skip(1).ToArray();
   }
   public void Invoke(ZDO zdo, Dictionary<string, string> parameters)
   {
-    if (OnlyOwner && zdo.GetOwner() == 0) return;
-    var target = OnlyOwner ? zdo.GetOwner() : 0;
-    DelayedRpc.Add(Delay, target, zdo.m_uid, Name, GetParameters(parameters));
+    var target = zdo.GetOwner();
+    if (FixedTarget.HasValue) target = FixedTarget.Value;
+    if (VariableTarget != null) target = Parse.Long(Helper.ReplaceParameters(VariableTarget, parameters));
+    DelayedRpc.Add(Delay, target, zdo.m_uid, Hash, GetParameters(zdo, parameters));
   }
-  private object[] GetParameters(Dictionary<string, string> parameters)
+  private object[] GetParameters(ZDO zdo, Dictionary<string, string> parameters)
   {
     var pars = Parameters.Select(p => Helper.ReplaceParameters(p, parameters)).ToArray<object>();
     for (var i = 0; i < pars.Length; i++)
@@ -98,11 +163,11 @@ public class CustomRpcInfo
       if (type == "vec") pars[i] = Parse.VectorXZY(arg);
       if (type == "quat") pars[i] = Parse.AngleYXZ(arg);
       if (type == "hash") pars[i] = arg.GetStableHashCode();
-      if (type == "hit") pars[i] = Parse.Hit(arg);
+      if (type == "hit") pars[i] = Parse.Hit(zdo, arg);
       if (type == "zdo") pars[i] = Parse.ZDOID(arg);
-      if (type == "enum_message") pars[i] = Enum.TryParse(arg, true, out MessageHud.MessageType state) ? (int)state : 2;
-      if (type == "enum_reason") pars[i] = Enum.TryParse(arg, true, out BaseAI.AggravatedReason state) ? (int)state : 0;
-      if (type == "enum_trap") pars[i] = Enum.TryParse(arg, true, out Trap.TrapState state) ? (int)state : 0;
+      if (type == "enum_message") pars[i] = Parse.EnumMessage(arg);
+      if (type == "enum_reason") pars[i] = Parse.EnumReason(arg);
+      if (type == "enum_trap") pars[i] = Parse.EnumTrap(arg);
     }
     return pars;
   }

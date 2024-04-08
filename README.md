@@ -25,6 +25,7 @@ This mod uses the [data system](https://github.com/JereKuusela/valheim-world_edi
 Following parameters are available to be used in the yaml file:
 
 - `<prefab>`: Original prefab id.
+- `<zdo>`: ZDO id.
 - `<par>`: Triggered parameter.
 - `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
 - `<x>`, `<y>` and `<z>`: Object center point.
@@ -162,19 +163,17 @@ See object filtering [examples](examples_object_filtering.md).
 
 RPC calls are way to send data to clients. Usually these are used by clients but server can call them too.
 
-- rpc: Hardcoded RPC call with the parameters.
-  - See list of supported calls:
-  - Delay can be added after all parameters.
+- rpc: Hardcoded RPC calls for ease of use.
+  - See list of supported calls: (RPCs.md)
 - rpcDelay: Delay in seconds for RPC calls.
 - customRpc: Advanced way for calling any RPC. No handholding.
-  - The first line is the RPC name and properties: `- name, all/owner, delay`.
+  - The first line is the RPC name and properties: `- name, target, delay`.
     - Target is optional. By default, the RPC is only sent to the ZDO owner. If target is `all`, it is sent to all clients.
-    - You must know whether the RPC should be sent to all clients or only the owner.
     - Delay is optional. It can be used to override the delay for this RPC.
   - The next lines are the parameters: `- type, value`.
     - Supported types are `int`, `float`, `string`, `bool`, `vec`, `quat`, `hash`, `hit` and `messagetype`.
     - All parameters must be set with the correct data types.
-  - For more than one RPC,  add more lines starting with the first line format.
+  - For more than one RPC, add more lines starting with the first line format.
 
 ### Lists
 

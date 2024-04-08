@@ -1,6 +1,7 @@
 - v1.10
   - Adds a new field `pokeDelay` to delay pokes.
   - Adds a new field `rpcDelay` to delay RPC calls.
+  - Adds a new field `rpc` to trigger hardcoded RPC calls.
   - Adds a new field `customRpc` to trigger any RPC call.
   - Adds a new parameter `<zdo>` that contains the zdoid of the object.
   - Changes the field `delay` to `spawnDelay` to make it more explicit.
