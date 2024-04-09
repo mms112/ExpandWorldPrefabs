@@ -8,17 +8,16 @@ namespace ExpandWorld.Prefab;
 public class Commands
 {
 
-  public static void Run(Info info, ZDO zdo, Dictionary<string, string> parameters, ZDO? source)
+  public static void Run(Info info, ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[] players)
   {
     if (info.Commands.Length == 0) return;
-    var players = FindPlayers(zdo, source, info);
-    var commands = info.Commands.Select(s => Helper.ReplaceParameters(s, parameters)).ToArray();
+    var commands = info.Commands.Select(s => Helper.ReplaceParameters(s, parameters, zdo)).ToArray();
     if (info.PlayerSearch == PlayerSearch.None)
       CommandManager.Run(commands, players.Length == 0 ? null : players[0]);
     else
       CommandManager.Run(commands, players);
   }
-  private static PlayerInfo[] FindPlayers(ZDO zdo, ZDO? source, Info info)
+  public static PlayerInfo[] FindPlayers(ZDO zdo, ZDO? source, Info info)
   {
     var players = ZNet.instance.GetPeers().Select(p => new PlayerInfo(p)).ToList();
     if (ZNet.instance.IsServer() && !ZNet.instance.IsDedicated())
@@ -40,5 +39,12 @@ public class Commands
       return player == null ? [] : [player];
     }
     return [];
+  }
+  public static long? FindPeerIdByZDOID(ZDOID id)
+  {
+    var players = ZNet.instance.GetPeers().Select(p => new PlayerInfo(p)).ToList();
+    if (ZNet.instance.IsServer() && !ZNet.instance.IsDedicated())
+      players.Add(new(Player.m_localPlayer));
+    return players.FirstOrDefault(p => p.ZDOID == id)?.PeerId;
   }
 }

@@ -17,8 +17,9 @@ public class DelayedRemove(float delay, ZDO zdo, bool triggerRules)
   public static void Execute(float dt)
   {
     // Two loops to preserve order.
-    foreach (var remove in Removes)
+    for (var i = 0; i < Removes.Count; i++)
     {
+      var remove = Removes[i];
       remove.Delay -= dt;
       if (remove.Delay > -0.001) continue;
       remove.Execute();

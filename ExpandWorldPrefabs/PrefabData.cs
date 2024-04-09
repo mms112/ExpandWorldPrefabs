@@ -109,7 +109,11 @@ public class Data
   [DefaultValue(null)]
   public string[]? rpcs = null;
   [DefaultValue(null)]
-  public string[]? customRpc = null;
+  public string[]? objectRpc = null;
+  [DefaultValue(null)]
+  public string[]? clientRpc = null;
+  [DefaultValue(null)]
+  public string? rpcSource = null;
   [DefaultValue(0f)]
   public float rpcDelay = 0f;
 }
@@ -157,8 +161,9 @@ public class Info
   public float PlayerSearchDistance = 0f;
   public float PlayerSearchHeight = 0f;
   public bool TriggerRules = false;
-  public RpcInfo[]? Rpcs;
-  public CustomRpcInfo[]? CustomRpcs;
+  public SimpleRpcInfo[]? Rpcs;
+  public ObjectRpcInfo[]? ObjectRpcs;
+  public ClientRpcInfo[]? ClientRpcs;
 }
 public class Spawn
 {
@@ -203,7 +208,7 @@ public class Spawn
   public int GetPrefab(Dictionary<string, string> parameters)
   {
     if (Prefab != 0) return Prefab;
-    var prefabName = Helper.ReplaceParameters(WildPrefab, parameters);
+    var prefabName = Helper.ReplaceParameters(WildPrefab, parameters, null);
     var prefab = prefabName.GetStableHashCode();
     return ZNetScene.instance.GetPrefab(prefab) ? prefab : 0;
   }
@@ -324,7 +329,7 @@ public class Object
     if (Prefabs != null && !Prefabs.Contains(zdo.GetPrefab())) return false;
     if (WildPrefab != "")
     {
-      var prefabName = Helper.ReplaceParameters(WildPrefab, parameters);
+      var prefabName = Helper.ReplaceParameters(WildPrefab, parameters, zdo);
       var hash = prefabName.GetStableHashCode();
       if (zdo.GetPrefab() != hash) return false;
     }

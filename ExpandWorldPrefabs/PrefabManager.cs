@@ -18,13 +18,22 @@ public class Manager
     var parameters = Helper.CreateParameters(name, args, zdo);
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
     if (info == null) return;
-    Commands.Run(info, zdo, parameters, source);
-    HandleSpawns(info, zdo, parameters);
-    Poke(info, zdo, parameters);
+    PlayerInfo[]? players = null;
+    if (info.Commands.Length > 0
+      || (info.ObjectRpcs != null && info.ObjectRpcs.Any(rpc => rpc.IsTarget))
+      || (info.ClientRpcs != null && info.ClientRpcs.Any(rpc => rpc.IsTarget)))
+    {
+      players = Commands.FindPlayers(zdo, source, info);
+      Commands.Run(info, zdo, parameters, players);
+    }
     if (info.Rpcs != null)
       Rpc(info.Rpcs, zdo, parameters);
-    if (info.CustomRpcs != null)
-      CustomRpc(info.CustomRpcs, zdo, parameters);
+    if (info.ObjectRpcs != null)
+      ObjectRpc(info.ObjectRpcs, zdo, parameters, players);
+    if (info.ClientRpcs != null)
+      ClientRpc(info.ClientRpcs, zdo, parameters, players);
+    HandleSpawns(info, zdo, parameters);
+    Poke(info, zdo, parameters);
     if (info.Drops)
       SpawnDrops(zdo);
     // Original object was regenerated to apply data.
@@ -120,7 +129,7 @@ public class Manager
   public static void Poke(Info info, ZDO zdo, Dictionary<string, string> parameters)
   {
     var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.Pokes, zdo, parameters);
-    var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters);
+    var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, zdo);
     DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
   }
   public static void Poke(ZDO[] zdos, string parameter)
@@ -129,30 +138,37 @@ public class Manager
       Handle(ActionType.Poke, parameter, z);
   }
 
-  public static void Rpc(RpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
+  public static void Rpc(SimpleRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
   {
     foreach (var i in info)
       i.Invoke(zdo, parameters);
   }
-  public static void CustomRpc(CustomRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
+  public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
   {
     foreach (var i in info)
-      i.Invoke(zdo, parameters);
-
+      i.Invoke(zdo, parameters, players);
   }
-  public static void Rpc(long target, ZDOID id, int hash, object[] parameters)
+  public static void ClientRpc(ClientRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
+  {
+    foreach (var i in info)
+      i.Invoke(zdo, parameters, players);
+  }
+  public static void Rpc(long source, long target, ZDOID id, int hash, object[] parameters)
   {
     var router = ZRoutedRpc.instance;
     ZRoutedRpc.RoutedRPCData routedRPCData = new()
     {
       m_msgID = router.m_id + router.m_rpcMsgID++,
-      m_senderPeerID = router.m_id,
+      m_senderPeerID = source,
       m_targetPeerID = target,
       m_targetZDO = id,
       m_methodHash = hash
     };
     ZRpc.Serialize(parameters, ref routedRPCData.m_parameters);
     routedRPCData.m_parameters.SetPos(0);
-    router.RouteRPC(routedRPCData);
+    if (target == router.m_id || target == ZRoutedRpc.Everybody)
+      router.HandleRoutedRPC(routedRPCData);
+    if (target != router.m_id)
+      router.RouteRPC(routedRPCData);
   }
 }

@@ -1,23 +1,24 @@
 using System.Collections.Generic;
 namespace ExpandWorld.Prefab;
 
-public class DelayedRpc(float delay, long target, ZDOID id, int hash, object[] parameters)
+public class DelayedRpc(float delay, long source, long target, ZDOID id, int hash, object[] parameters)
 {
   private static readonly List<DelayedRpc> Rpcs = [];
-  public static void Add(float delay, long target, ZDOID id, int hash, object[] parameters)
+  public static void Add(float delay, long source, long target, ZDOID id, int hash, object[] parameters)
   {
     if (delay <= 0f)
     {
-      Manager.Rpc(target, id, hash, parameters);
+      Manager.Rpc(source, target, id, hash, parameters);
       return;
     }
-    Rpcs.Add(new(delay, target, id, hash, parameters));
+    Rpcs.Add(new(delay, source, target, id, hash, parameters));
   }
   public static void Execute(float dt)
   {
     // Two loops to preserve order.
-    foreach (var rpc in Rpcs)
+    for (var i = 0; i < Rpcs.Count; i++)
     {
+      var rpc = Rpcs[i];
       rpc.Delay -= dt;
       if (rpc.Delay > -0.001) continue;
       rpc.Execute();
@@ -29,6 +30,7 @@ public class DelayedRpc(float delay, long target, ZDOID id, int hash, object[] p
     }
   }
   public float Delay = delay;
+  private readonly long Source = source;
   private readonly long Target = target;
   private readonly ZDOID Id = id;
   private readonly int Hash = hash;
@@ -36,6 +38,6 @@ public class DelayedRpc(float delay, long target, ZDOID id, int hash, object[] p
 
   public void Execute()
   {
-    Manager.Rpc(Target, Id, Hash, Parameters);
+    Manager.Rpc(Source, Target, Id, Hash, Parameters);
   }
 }

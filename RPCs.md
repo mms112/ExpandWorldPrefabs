@@ -90,9 +90,9 @@ Some RPCs have simplified versions for ease of use.
   rpc: teleport, x, z, y, rotY
 ```
 
-## Custom RPCs
+## Object RPCs
 
-This list all RPC calls registered in the vanilla game.
+This list all RPC calls related to some object.
 
 Recommended RPC target is shown after the RPC name.
 
@@ -104,41 +104,41 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Destroys item at specific slot.
-  customRpc:
+  objectRpc:
   - RPC_DestroyAttachment, owner
   - int, "index of the item slot"
 ```
 
 ```yaml
 # Drops item from specific slot.
-  customRpc:
+  objectRpc:
   - RPC_DropItem, owner
   - int, "index of the item slot"
 ```
 
 ```yaml
 # Drops item with specific name.
-  customRpc:
+  objectRpc:
   - RPC_DropItemByName, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-  customRpc:
+  objectRpc:
   - RPC_RequestOwn, owner
 ```
 
 ```yaml
 # Sets specific pose.
-  customRpc:
+  objectRpc:
   - RPC_SetPose, all
   - int, "number of the pose"
 ```
 
 ```yaml
 # Sets item to a specific slot.
-  customRpc:
+  objectRpc:
   - RPC_SetVisualItem, all
   - int, "index of the item slot"
   - string, "name of the item"
@@ -149,13 +149,13 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Alerts the creature.
-  customRpc:
+  objectRpc:
   - Alert, owner
 ```
 
 ```yaml
 # Alerts the creature and sets the attacker zdo as the target.
-  customRpc:
+  objectRpc:
   - OnNearProjectileHit, owner
   - vec, "location of the projectile, unused"
   - float, "trigger range, unused"
@@ -164,7 +164,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets the aggravated state.
-  customRpc:
+  objectRpc:
   - SetAggravated, owner
   - bool, "is aggravated"
   - enum_reason, Damage/Building/Theif # - int, 0/1/2
@@ -174,7 +174,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets bed owner.
-  customRpc:
+  objectRpc:
   - SetOwner, owner
   - long, "player id"
   - name, "owner name"
@@ -184,7 +184,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Alerts the creature.
-  customRpc:
+  objectRpc:
   - RPC_Extract, owner
 ```
 
@@ -192,28 +192,28 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets noise level of the creature (which attracts enemies).
-  customRpc:
+  objectRpc:
   - AddNoise, owner
   - float, "noise level"
 ```
 
 ```yaml
 # Deals damage to the creature.
-  customRpc:
+  objectRpc:
   - Damage, owner
   - hit, "hit data"
 ```
 
 ```yaml
 # Freezes animations.
-  customRpc:
+  objectRpc:
   - FreezeFrame, all
   - float, "duration of the freeze frame"
 ```
 
 ```yaml
 # Heals the creature.
-  customRpc:
+  objectRpc:
   - Heal, owner
   - float, "amount of health"
   - bool, "whether to show text"
@@ -221,27 +221,27 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Staggers the creature.
-  customRpc:
+  objectRpc:
   - Stagger, owner
   - vec, "direction of the stagger"
 ```
 
 ```yaml
 # Resets clothing.
-  customRpc:
+  objectRpc:
   - ResetCloth, all
 ```
 
 ```yaml
 # Sets the tame state.
-  customRpc:
+  objectRpc:
   - SetTamed, owner
   - bool, "is tamed"
 ```
 
 ```yaml
 # Teleports the creature. Only implemented for players.
-  customRpc:
+  objectRpc:
   - RPC_TeleportTo, owner
   - vec, "location to teleport to"
   - quat, "rotation to teleport to"
@@ -252,42 +252,42 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Requests to open the container.
-  customRpc:
+  objectRpc:
   - RequestOpen, owner
   - long, "player id"
 ```
 
 ```yaml
 # Opens the container.
-  customRpc:
+  objectRpc:
   - OpenRespons, target
   - bool, "can be opened?"
 ```
 
 ```yaml
 # Requests to stack items.
-  customRpc:
+  objectRpc:
   - RPC_RequestStack, owner
   - long, "player id"
 ```
 
 ```yaml
 # Stacks items to the chest.
-  customRpc:
+  objectRpc:
   - RPC_StackResponse, all
   - bool, "can be stacked?"
 ```
 
 ```yaml
 # Requests to take items.
-  customRpc:
+  objectRpc:
   - RequestTakeAll, all
   - long, "player id"
 ```
 
 ```yaml
 # Takes items from the chest.
-  customRpc:
+  objectRpc:
   - TakeAllRespons, all
   - bool, "can be taken?"
 ```
@@ -296,20 +296,20 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Adds a single fuel.
-  customRpc:
+  objectRpc:
   - AddFuel, owner
 ```
 
 ```yaml
 # Adds a single item.
-  customRpc:
+  objectRpc:
   - AddItem, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Sets visual item of a slot.
-  customRpc:
+  objectRpc:
   - SetSlotVisual, all
   - int, "index of the slot"
   - name, "name of the item"
@@ -317,7 +317,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Removes cooked items and spawns them at specific position.
-  customRpc:
+  objectRpc:
   - RemoveDoneItem, owner
   - vec, "spawn position"
 ```
@@ -326,13 +326,13 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Creates visual fragments (if m_autoCreateFragments is true).
-  customRpc:
+  objectRpc:
   - CreateFragments, all
 ```
 
 ```yaml
 # Deals damage to the creature.
-  customRpc:
+  objectRpc:
   - Damage, owner
   - hit, "hit data"
 ```
@@ -341,7 +341,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Destroys item at specific slot.
-  customRpc:
+  objectRpc:
   - UseDoor, owner
   - bool, "forward or backward"
 ```
@@ -350,7 +350,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Nibbles???
-  customRpc:
+  objectRpc:
   - RPC_Nibble, owner
   - zdo, "fish id"
   - bool, "is correct bait?"
@@ -360,7 +360,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Shows a footstep.
-  customRpc:
+  objectRpc:
   - Step, all
   - int, "effect index"
   - vec, "position"
@@ -370,14 +370,14 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Adds a single item.
-  customRpc:
+  objectRpc:
   - AddItem, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Drop the fermented item.
-  customRpc:
+  objectRpc:
   - Tap, owner
 ```
 
@@ -385,7 +385,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Adds a single fuel.
-  customRpc:
+  objectRpc:
   - AddFuel, owner
 ```
 
@@ -394,14 +394,14 @@ Recommended RPC target is shown after the RPC name.
 ```yaml
 # Part 2 of the pick up logic.
 # Picks up the fish to the player inventory (doesn't do anything as the server).
-  customRpc:
+  objectRpc:
   - Pickup, target
 ```
 
 ```yaml
 # Part 1 of the pick up logic.
 # Client sends this to the ZDO owner, that then sends back PickUp to cause the original client to pick up the fish.
-  customRpc:
+  objectRpc:
   - RequestPickup, owner
 ```
 
@@ -409,25 +409,25 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets the lever pulled.
-  customRpc:
+  objectRpc:
   - RPC_AnimateLever, all
 `
 
 ```yaml
 # Sets the lever back.
-  customRpc:
+  objectRpc:
   - RPC_AnimateLeverReturn, all
 ```
 
 ```yaml
 # Attempts to incinerate the items.
-  customRpc:
+  objectRpc:
   - RPC_RequestIncinerate, owner
 ```
 
 ```yaml
 # Shows the incinerate message.
-  customRpc:
+  objectRpc:
   - RPC_IncinerateRespons, owner
   - int, "result (0, 1, 2, 3)"
 ```
@@ -436,7 +436,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-  customRpc:
+  objectRpc:
   - RPC_RequestOwn, owner
 ```
 
@@ -444,19 +444,19 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Destroys the item.
-  customRpc:
+  objectRpc:
   - DestroyAttachment, owner
 ```
 
 ```yaml
 # Drops the item.
-  customRpc:
+  objectRpc:
   - DropItem, owner
 ```
 
 ```yaml
 # Sets the visual item.
-  customRpc:
+  objectRpc:
   - SetVisualItem, all
   - string, "name of the item"
   - int, "variant number of the item"
@@ -465,7 +465,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-  customRpc:
+  objectRpc:
   - RPC_RequestOwn, owner
 ```
 
@@ -473,7 +473,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets data.
-  customRpc:
+  objectRpc:
   - MapData, owner
   - zpkg, "unusable"
 ```
@@ -482,7 +482,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Deals damage to a part of the rock.
-  customRpc:
+  objectRpc:
   - Hit, owner
   - hit, "hit data"
   - int, "part index"
@@ -490,7 +490,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Hides part of a rock as destroyed,
-  customRpc:
+  objectRpc:
   - Hide, all
   - int, "part index"
 ```
@@ -499,7 +499,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Deals damage to a part of the rock.
-  customRpc:
+  objectRpc:
   - Hit, owner
   - hit, "hit data"
   - int, "part index"
@@ -507,7 +507,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets health of a part.
-  customRpc:
+  objectRpc:
   - SetAreaHealth, all
   - int, "part index"
   - float, "health"
@@ -517,7 +517,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Awakens the creature.
-  customRpc:
+  objectRpc:
   - RPC_Wakeup, owner
 ```
 
@@ -525,7 +525,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets the music as played.
-  customRpc:
+  objectRpc:
   - SetPlayed, owner
 ```
 
@@ -533,7 +533,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Starts playing the music.
-  customRpc:
+  objectRpc:
   - RPC_PlayMusic, all
 ```
 
@@ -541,13 +541,13 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Spawns the picked item.
-  customRpc:
+  objectRpc:
   - Pick, owner
 ```
 
 ```yaml
 # Sets the picked state.
-  customRpc:
+  objectRpc:
   - SetPicked, all
   - bool, "is picked"
 ```
@@ -556,7 +556,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Spawns the picked item.
-  customRpc:
+  objectRpc:
   - Pick, owner
 ```
 
@@ -564,7 +564,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Shows message.
-  customRpc:
+  objectRpc:
   - Message, owner
   - enum_message, TopLeft/Center  # - int, 1/2
   - string, "shown message"
@@ -573,13 +573,13 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Removes visuals.
-  customRpc:
+  objectRpc:
   - OnDeath, all
 ```
 
 ```yaml
 # Triggers UI/music based on detection status.
-  customRpc:
+  objectRpc:
   - OnTargeted, owner
   - bool, "is sensed"
   - bool, "is targeted"
@@ -587,7 +587,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Uses stamina.
-  customRpc:
+  objectRpc:
   - UseStamina, owner
   - float, "amount of stamina"
 ```
@@ -597,7 +597,7 @@ Recommended RPC target is shown after the RPC name.
 ```yaml
 # Toggles the ward on or off. 
 # Only works if the player id matches the creator.
-  customRpc:
+  objectRpc:
   - ToggleEnabled, owner
   - long, "player id"
 ```
@@ -605,7 +605,7 @@ Recommended RPC target is shown after the RPC name.
 ```yaml
 # Toggles a permitted player on or off.
 # Only works if the ward is not enabled.
-  customRpc:
+  objectRpc:
   - TogglePermitted, owner
   - long, "player id"
   - string, "player name"
@@ -613,7 +613,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Flashes the ward.
-  customRpc:
+  objectRpc:
   - FlashShield, all
 ```
 
@@ -621,14 +621,14 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Attaches the projectile to an object.
-  customRpc:
+  objectRpc:
   - RPC_Attach, owner
   - zdo, "attached zdo"
 ```
 
 ```yaml
 # Sets the project as it has hit something.
-  customRpc:
+  objectRpc:
   - RPC_OnHit, owner
 ```
 
@@ -636,7 +636,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Drains from the resource.
-  customRpc:
+  objectRpc:
   - RPC_Drain, owner
   - float, "amount"
 ```
@@ -645,7 +645,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Controls the creature.
-  customRpc:
+  objectRpc:
   - Controls, owner
   - vec, "direction"
   - int, "speed"
@@ -654,28 +654,28 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Tries to get control of the creature.
-  customRpc:
+  objectRpc:
   - RequestControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Releases control of the creature.
-  customRpc:
+  objectRpc:
   - ReleaseControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Response from the control request.
-  customRpc:
+  objectRpc:
   - RequestRespons, target
   - bool, "was request ok?"
 ```
 
 ```yaml
 # Drops the saddle at specific position.
-  customRpc:
+  objectRpc:
   - RemoveSaddle, owner
   - vec, "position"
 ```
@@ -684,14 +684,14 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Drops the sap.
-  customRpc:
+  objectRpc:
   - RPC_Extract, owner
   - zdo, "attached zdo"
 ```
 
 ```yaml
 # Updates the visual based on the status.
-  customRpc:
+  objectRpc:
   - RPC_UpdateEffects, all
 ```
 
@@ -699,7 +699,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Adds a status effect.
-  customRpc:
+  objectRpc:
   - RPC_AddStatusEffect, owner
   - hash, "status effect"
   - bool, "reset time?",
@@ -711,25 +711,25 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Stops the ship.
-  customRpc:
+  objectRpc:
   - Stop, owner
 ```
 
 ```yaml
 # Increases the speed.
-  customRpc:
+  objectRpc:
   - Forward, owner
 ```
 
 ```yaml
 # Decreases the speed.
-  customRpc:
+  objectRpc:
   - Backward, owner
 ```
 
 ```yaml
 # Sets the rudder angle.
-  customRpc:
+  objectRpc:
   - Rudder, owner
   - float, "rudder angle"
 ```
@@ -738,21 +738,21 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Tries to get control of the ship.
-  customRpc:
+  objectRpc:
   - RequestControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Releases control of the ship.
-  customRpc:
+  objectRpc:
   - ReleaseControl, owner
   - long, "player id"
 ```
 
 ```yaml
 # Response from the control request.
-  customRpc:
+  objectRpc:
   - RequestRespons, target
   - bool, "was request ok?"
 ```
@@ -761,20 +761,20 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Adds a single fuel.
-  customRpc:
+  objectRpc:
   - AddFuel, owner
 ```
 
 ```yaml
 # Adds a single item.
-  customRpc:
+  objectRpc:
   - AddOre, owner
   - string, "name of the item"
 ```
 
 ```yaml
 # Drops the smelted items
-  customRpc:
+  objectRpc:
   - EmptyProcessed, owner
 ```
 
@@ -782,7 +782,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Stops the ship.
-  customRpc:
+  objectRpc:
   - Say, all
   - int, 0/1/2 # Whisper, normal, shout
   - userinfo, "unusable"
@@ -794,13 +794,13 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Adds a saddle. Only works if the creature can be saddled.
-  customRpc:
+  objectRpc:
   - AddSaddle, owner
 ```
 
 ```yaml
 # Toggles the command state.
-  customRpc:
+  objectRpc:
   - Command, owner
   - zdo, "commanding player"
   - bool, "whether to show the message"
@@ -808,7 +808,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets the name.
-  customRpc:
+  objectRpc:
   - SetName, owner
   - string, "name of the creature"
   - string, "name of the author, for console parental controls"
@@ -816,13 +816,13 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Destroyes the creature and shows the unsummoning effect.
-  customRpc:
+  objectRpc:
   - RPC_UnSummon, all
 ```
 
 ```yaml
 # Sets the saddle visual.
-  customRpc:
+  objectRpc:
   - SetSaddle, all
   - bool, "is saddled"
 ```
@@ -831,7 +831,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets portal tag.
-  customRpc:
+  objectRpc:
   - SetTag, owner
   - string, "tag"
   - string, "name of the author for console parental controls"
@@ -841,7 +841,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Performs a terrain operation.
-  customRpc:
+  objectRpc:
   - ApplyOperation, owner
   - zpkg, "unusabke"
 ```
@@ -850,14 +850,14 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Sets trap state.
-  customRpc:
+  objectRpc:
   - RPC_RequestStateChange, owner
   - enum_trap, Armed/Disarmed/Triggered  # - int, 0/1/2
 ```
 
 ```yaml
 # Shows trap state.
-  customRpc:
+  objectRpc:
   - RPC_OnStateChanged, all
   - enum_trap, Armed/Disarmed/Triggered  # - int, 0/1/2
 ```
@@ -866,20 +866,20 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Deals damage to the tree.
-  customRpc:
+  objectRpc:
   - Damage, owner
   - hit, "hit data"
 ```
 
 ```yaml
 # Grows the tree showing the growth effect.
-  customRpc:
+  objectRpc:
   - Grow, all
 ```
 
 ```yaml
 # Shows the shake effect.
-  customRpc:
+  objectRpc:
   - Shake, all
 ```
 
@@ -887,7 +887,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Deals damage to the tree.
-  customRpc:
+  objectRpc:
   - Damage, owner
   - hit, "hit data"
 ```
@@ -896,7 +896,7 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Triggers the spawner.
-  customRpc:
+  objectRpc:
   - Trigger, owner
 ```
 
@@ -904,14 +904,14 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Adds a single ammo.
-  customRpc:
+  objectRpc:
   - RPC_AddAmmo, owner
   - name, "name of the ammo"
 ```
 
 ```yaml
 # Sets the target.
-  customRpc:
+  objectRpc:
   - RPC_SetTarget, all
   - zdo, "target zdo"
 ```
@@ -920,13 +920,13 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Shows denied message.
-  customRpc:
+  objectRpc:
   - RequestDenied, target
 ```
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
-  customRpc:
+  objectRpc:
   - RequestOwn, owner
 ```
 
@@ -934,33 +934,33 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Deals damage to the object.
-  customRpc:
+  objectRpc:
   - WNTDamage, owner
   - hit, "hit data"
 ```
 
 ```yaml
 # Sets health for visual style.
-  customRpc:
+  objectRpc:
   - WNTHealthChanged, all
   - float, "amount of health"
 ```
 
 ```yaml
 # Removes the object.
-  customRpc:
+  objectRpc:
   - WNTRemove, owner
 ```
 
 ```yaml
 # Repairs the object.
-  customRpc:
+  objectRpc:
   - WNTRepair, owner
 ```
 
 ```yaml
 # Shows visual fragments (if m_autoCreateFragments is true).
-  customRpc:
+  objectRpc:
   - WNTCreateFragments, all
 ```
 
@@ -968,7 +968,154 @@ Recommended RPC target is shown after the RPC name.
 
 ```yaml
 # Triggers animation state.
-  customRpc:
+  objectRpc:
   - SetTrigger, all
   - name, "name of the trigger"
+```
+
+## Client rpcs
+
+This list all RPC calls that are not related to any object.
+
+If target is not give, the RPC is sent to all clients.
+
+```yaml
+# Teleports the client.
+  clientRpc:
+  - ChatMessage, target
+  - vec, "text position"
+  - int, type
+  - userinfo, "unusable"
+  - string, "message"
+  - string, "sender network id"
+```
+
+```yaml
+# Shows a damage text.
+  clientRpc:
+  - DamageText, target
+  - zpkg, "unusable"
+```
+
+```yaml
+# Destroys an object.
+  clientRpc:
+  - DestroyZDO, target
+  - zpkg, "unusable"
+```
+
+```yaml
+# Sends global keys. Only implemented for the client.
+  clientRpc:
+  - GlobalKeys, target
+  - string list, "unusable"
+```
+
+```yaml
+# Sends location icons. Only implemented for the client.
+  clientRpc:
+  - LocationIcons, target
+  - zpkg, "unusable"
+```
+
+```yaml
+# Calls pong RPC on the sender.
+  clientRpc:
+  - Ping, target
+```
+
+```yaml
+# Prints network delay.
+  clientRpc:
+  - Pong, target
+```
+
+```yaml
+# Requests ZDO from the server.
+  clientRpc:
+  - RequestZDO, target
+  - zdo, "requested zdo"
+```
+
+```yaml
+# Removes a global key. Only implemented for the server.
+  clientRpc:
+  - RemoveGlobalKey, target
+  - string, "key"
+```
+
+```yaml
+# Shows a message.
+  clientRpc:
+  - ShowMessage, target
+  - enum_message, TopLeft/Center  # - int, 1/2
+  - string, "message"
+```
+
+```yaml
+# Sets the client event.
+  clientRpc:
+  - SetEvent, target
+  - string, "name of event"
+  - float, "event timer"
+  - vec, "event position"
+```
+
+```yaml
+# Adds a global key. Only implemented for the server.
+  clientRpc:
+  - SetGlobalKey, target
+  - string, "key"
+```
+
+```yaml
+# Starts sleeping.
+  clientRpc:
+  - SleepStart, target
+```
+
+```yaml
+# Stops sleeping.
+  clientRpc:
+  - SleepStop, target
+```
+
+```yaml
+# Sets the client event.
+  clientRpc:
+  - SpawnObject, target
+  - vec, "spawn position"
+  - quat, "spawn rotation"
+  - hash, "prefab id"
+```
+
+```yaml
+# Adds a location pin to the map.
+  clientRpc:
+  - RPC_DiscoverLocationResponse, target
+  - string, "name of pin"
+  - int, "pin type"
+  - vec, "position"
+  - bool, "open map"
+```
+
+```yaml
+# Requests location discovery from the server.
+  clientRpc:
+  - RPC_DiscoverClosestLocation, target
+  - string, "location name"
+  - vec, "position"
+  - string, "name of pin"
+  - int, "pin type"
+  - bool, "open map"
+  - bool "discover all"
+```
+
+```yaml
+# Teleports the client.
+  clientRpc:
+  - RPC_TeleportPlayer, target
+  - vec, "location to teleport to"
+  - quat, "rotation to teleport to"
+  - bool, "is distant teleport"
 ```

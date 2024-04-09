@@ -26,14 +26,15 @@ public class RpcMapping(string call, string[] types, object[]? baseParameters = 
   public object[] GetParameters(string pars, ZDO zdo, Dictionary<string, string> parameters)
   {
     var result = BaseParameters.ToList();
-    var args = Parse.Split(Helper.ReplaceParameters(pars, parameters));
+    var args = Parse.Split(Helper.ReplaceParameters(pars, parameters, zdo));
     for (var i = 0; i < Types.Length; i++)
     {
       var type = Types[i];
-      var arg = args[i];
+      var arg = args.Length <= i ? "" : args[i];
       if (type == "int") result.Add(Parse.Int(arg));
       if (type == "float") result.Add(Parse.Float(arg));
       if (type == "bool") result.Add(Parse.BooleanTrue(arg));
+      if (type == "long") result.Add(Parse.Long(arg));
       if (type == "string") result.Add(arg);
       if (type == "vec")
       {
@@ -82,13 +83,13 @@ public class RpcMapping(string call, string[] types, object[]? baseParameters = 
 }
 
 
-public class RpcInfo
+public class SimpleRpcInfo
 {
   private readonly string Parameters = "";
   private readonly float Delay;
   private readonly RpcMapping? Mapping;
 
-  public RpcInfo(string line, float delay)
+  public SimpleRpcInfo(string line, float delay)
   {
     Delay = delay;
     var split = Parse.SplitWithEscape(line);
@@ -108,55 +109,87 @@ public class RpcInfo
     if (Mapping == null) return;
     if (zdo.GetOwner() == 0) return;
     var pars = Mapping.GetParameters(Parameters, zdo, parameters);
-    DelayedRpc.Add(Delay, zdo.GetOwner(), zdo.m_uid, Mapping.GetHash(), pars);
+    DelayedRpc.Add(Delay, ZRoutedRpc.instance.m_id, zdo.GetOwner(), zdo.m_uid, Mapping.GetHash(), pars);
   }
 }
-
-
-public class CustomRpcInfo
+public enum RpcTarget
 {
-  private static readonly HashSet<string> Types = ["int", "float", "bool", "string", "vec", "quat", "hash", "hit", "enum_reason", "enum_message", "enum_trap", "zdo"];
+  All,
+  Owner,
+  Target,
+  ZDO
+}
+
+public abstract class RpcInfo
+{
+  protected abstract ZDOID GetId(ZDO zdo);
+  private static readonly HashSet<string> Types = ["int", "long", "float", "bool", "string", "vec", "quat", "hash", "hit", "enum_reason", "enum_message", "enum_trap", "zdo"];
   public static bool IsType(string line) => Types.Contains(Parse.Kvp(line).Key);
   private readonly int Hash;
-  private readonly long? FixedTarget;
-  private readonly string? VariableTarget;
+  private readonly RpcTarget Target;
+  private readonly string? TargetParameter;
+  private readonly string? SourceParameter;
   private readonly string[] Parameters;
   private readonly float Delay;
+  public bool IsTarget => Target == RpcTarget.Target;
 
-  public CustomRpcInfo(string[] lines, float delay)
+  public RpcInfo(string[] lines, float delay, string? rpcSource)
   {
     var first = Parse.Split(lines[0]);
     Hash = first[0].GetStableHashCode();
+    Target = RpcTarget.Owner;
+    SourceParameter = rpcSource;
     if (first.Length > 1)
     {
       if (first[1] == "all")
-        FixedTarget = ZNetView.Everybody;
+        Target = RpcTarget.All;
+      else if (first[1] == "target")
+        Target = RpcTarget.Target;
       else if (first[1] == "owner")
-        FixedTarget = null;
-      else if (Parse.TryLong(first[1], out var target))
-        FixedTarget = target;
-      else
-        VariableTarget = first[1];
+        Target = RpcTarget.Owner;
+      else if (first[1] == "zdo")
+      {
+        Target = RpcTarget.ZDO;
+        TargetParameter = first[1];
+      }
     }
     Delay = first.Length < 3 ? delay : Parse.Float(first[2], delay);
     Parameters = lines.Skip(1).ToArray();
   }
-  public void Invoke(ZDO zdo, Dictionary<string, string> parameters)
+  public void Invoke(ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
   {
-    var target = zdo.GetOwner();
-    if (FixedTarget.HasValue) target = FixedTarget.Value;
-    if (VariableTarget != null) target = Parse.Long(Helper.ReplaceParameters(VariableTarget, parameters));
-    DelayedRpc.Add(Delay, target, zdo.m_uid, Hash, GetParameters(zdo, parameters));
+    var source = ZRoutedRpc.instance.m_id;
+    if (SourceParameter != null)
+    {
+      var id = Parse.ZDOID(Helper.ReplaceParameters(SourceParameter, parameters, zdo));
+      source = Commands.FindPeerIdByZDOID(id) ?? source;
+    }
+    var pars = GetParameters(zdo, parameters);
+    if (Target == RpcTarget.Owner)
+      DelayedRpc.Add(Delay, source, zdo.GetOwner(), GetId(zdo), Hash, pars);
+    else if (Target == RpcTarget.All)
+      DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, GetId(zdo), Hash, pars);
+    else if (Target == RpcTarget.ZDO)
+    {
+      var id = Parse.ZDOID(Helper.ReplaceParameters(TargetParameter ?? "", parameters, zdo));
+      var peerId = Commands.FindPeerIdByZDOID(id);
+      if (peerId.HasValue)
+        DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, pars);
+    }
+    else if (Target == RpcTarget.Target && players != null)
+      foreach (var player in players)
+        DelayedRpc.Add(Delay, source, player.PeerId, GetId(zdo), Hash, pars);
   }
   private object[] GetParameters(ZDO zdo, Dictionary<string, string> parameters)
   {
-    var pars = Parameters.Select(p => Helper.ReplaceParameters(p, parameters)).ToArray<object>();
+    var pars = Parameters.Select(p => Helper.ReplaceParameters(p, parameters, zdo)).ToArray<object>();
     for (var i = 0; i < pars.Length; i++)
     {
       var split = Parse.Kvp((string)pars[i]);
       var type = split.Key;
       var arg = split.Value;
       if (type == "int") pars[i] = Parse.Int(arg);
+      if (type == "long") pars[i] = Parse.Long(arg);
       if (type == "float") pars[i] = Parse.Float(arg);
       if (type == "bool") pars[i] = Parse.Boolean(arg);
       if (type == "string") pars[i] = arg;
@@ -171,4 +204,14 @@ public class CustomRpcInfo
     }
     return pars;
   }
+}
+
+
+public class ObjectRpcInfo(string[] lines, float delay, string? rpcSource) : RpcInfo(lines, delay, rpcSource)
+{
+  protected override ZDOID GetId(ZDO zdo) => zdo.m_uid;
+}
+public class ClientRpcInfo(string[] lines, float delay, string? rpcSource) : RpcInfo(lines, delay, rpcSource)
+{
+  protected override ZDOID GetId(ZDO zdo) => ZDOID.None;
 }

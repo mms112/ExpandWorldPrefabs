@@ -15,12 +15,14 @@ public class PlayerInfo
   public long Character;
   public string HostId;
   public ZDOID ZDOID;
+  public long PeerId;
   public PlayerInfo(ZNetPeer peer)
   {
     HostId = peer.m_rpc.GetSocket().GetHostName();
     Name = peer.m_playerName;
     Pos = peer.m_refPos;
     ZDOID = peer.m_characterID;
+    PeerId = peer.m_uid;
     var zdo = ZDOMan.instance.GetZDO(peer.m_characterID);
     if (zdo != null)
     {
@@ -38,6 +40,7 @@ public class PlayerInfo
     Character = player.GetPlayerID();
     Pos = player.transform.position;
     Rot = player.transform.rotation;
+    PeerId = ZRoutedRpc.instance.m_id;
   }
 }
 

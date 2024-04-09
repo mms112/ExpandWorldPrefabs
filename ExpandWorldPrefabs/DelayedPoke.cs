@@ -16,8 +16,9 @@ public class DelayedPoke(float delay, ZDO[] zdos, string parameter)
   public static void Execute(float dt)
   {
     // Two loops to preserve order.
-    foreach (var poke in Pokes)
+    for (var i = 0; i < Pokes.Count; i++)
     {
+      var poke = Pokes[i];
       poke.Delay -= dt;
       if (poke.Delay > -0.001) continue;
       poke.Execute();

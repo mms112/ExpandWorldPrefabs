@@ -19,8 +19,9 @@ public class DelayedSpawn(float delay, Vector3 pos, Quaternion rot, int prefab, 
   public static void Execute(float dt)
   {
     // Two loops to preserve order.
-    foreach (var spawn in Spawns)
+    for (var i = 0; i < Spawns.Count; i++)
     {
+      var spawn = Spawns[i];
       spawn.Delay -= dt;
       if (spawn.Delay > -0.001) continue;
       spawn.Execute();

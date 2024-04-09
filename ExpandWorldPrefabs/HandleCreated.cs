@@ -24,15 +24,17 @@ public class HandleCreated
   public static bool Skip = false;
   public static void Execute()
   {
-    foreach (var uid in CreatedZDOs)
+    for (var i = 0; i < CreatedZDOs.Count; i++)
     {
+      var uid = CreatedZDOs[i];
       var zdo = ZDOMan.instance.GetZDO(uid);
       if (zdo == null) continue;
       Manager.Handle(ActionType.Create, "", zdo);
     }
     ZNetView.m_ghostInit = true;
-    foreach (var uid in GhostZDOs)
+    for (var i = 0; i < GhostZDOs.Count; i++)
     {
+      var uid = GhostZDOs[i];
       var zdo = ZDOMan.instance.GetZDO(uid);
       if (zdo == null) continue;
       Manager.Handle(ActionType.Create, "", zdo);

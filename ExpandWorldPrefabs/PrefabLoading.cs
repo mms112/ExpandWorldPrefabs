@@ -91,7 +91,8 @@ public class Loading
     var bannedFilters = ParseFilters(data.bannedFilters ?? (data.bannedFilter == null ? [] : [data.bannedFilter]));
     var pokes = ParseObjects(data.pokes ?? []);
     var rpcs = ParseRpcs(data);
-    var customRpcs = ParseCustomRpcs(data);
+    var objectRpcs = ParseObjectRpcs(data);
+    var clientRpcs = ParseClientRpcs(data);
     return types.Select(t =>
     {
       return new Info()
@@ -140,7 +141,8 @@ public class Loading
         BannedFilters = bannedFilters,
         TriggerRules = data.triggerRules,
         Rpcs = rpcs,
-        CustomRpcs = customRpcs,
+        ObjectRpcs = objectRpcs,
+        ClientRpcs = clientRpcs,
       };
     }).ToArray();
   }
@@ -163,29 +165,47 @@ public class Loading
 
   private static Filter[] ParseFilters(string[] filters) => filters.Select(Filter.Create).Where(s => s != null).ToArray();
   private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
-  private static RpcInfo[]? ParseRpcs(Data data)
+  private static SimpleRpcInfo[]? ParseRpcs(Data data)
   {
     if (data.rpcs != null && data.rpcs.Length > 0) return ParseRpcs(data.rpcs, data.rpcDelay);
     if (data.rpc != null) return ParseRpcs([data.rpc], data.rpcDelay);
     return null;
   }
-  private static RpcInfo[] ParseRpcs(string[] objects, float delay) => objects.Select(s => new RpcInfo(s, delay)).ToArray();
-  private static CustomRpcInfo[]? ParseCustomRpcs(Data data)
+  private static SimpleRpcInfo[] ParseRpcs(string[] objects, float delay) => objects.Select(s => new SimpleRpcInfo(s, delay)).ToArray();
+  private static ObjectRpcInfo[]? ParseObjectRpcs(Data data)
   {
-    if (data.customRpc != null && data.customRpc.Length > 0) return ParseCustomRpcs(data.customRpc, data.rpcDelay);
+    if (data.objectRpc != null && data.objectRpc.Length > 0) return ParseObjectRpcs(data.objectRpc, data.rpcDelay, data.rpcSource);
     return null;
   }
-  private static CustomRpcInfo[] ParseCustomRpcs(string[] objects, float delay)
+  private static ObjectRpcInfo[] ParseObjectRpcs(string[] objects, float delay, string? rpcSource)
   {
-    List<CustomRpcInfo> rpcs = [];
+    List<ObjectRpcInfo> rpcs = [];
     var start = 0;
     for (var i = 1; i < objects.Length; i++)
     {
-      if (CustomRpcInfo.IsType(objects[i])) continue;
-      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray(), delay));
+      if (RpcInfo.IsType(objects[i])) continue;
+      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray(), delay, rpcSource));
       start = i;
     }
-    rpcs.Add(new(objects.Skip(start).ToArray(), delay));
+    rpcs.Add(new(objects.Skip(start).ToArray(), delay, rpcSource));
+    return [.. rpcs];
+  }
+  private static ClientRpcInfo[]? ParseClientRpcs(Data data)
+  {
+    if (data.objectRpc != null && data.objectRpc.Length > 0) return ParseClientRpcs(data.objectRpc, data.rpcDelay, data.rpcSource);
+    return null;
+  }
+  private static ClientRpcInfo[] ParseClientRpcs(string[] objects, float delay, string? rpcSource)
+  {
+    List<ClientRpcInfo> rpcs = [];
+    var start = 0;
+    for (var i = 1; i < objects.Length; i++)
+    {
+      if (RpcInfo.IsType(objects[i])) continue;
+      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray(), delay, rpcSource));
+      start = i;
+    }
+    rpcs.Add(new(objects.Skip(start).ToArray(), delay, rpcSource));
     return [.. rpcs];
   }
   private static Range<int>? ParseObjectsLimit(string str) => str == "" ?

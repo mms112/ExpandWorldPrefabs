@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Policy;
+using Data;
 using Service;
 using UnityEngine;
 
@@ -9,34 +11,77 @@ namespace ExpandWorld.Prefab;
 
 public class Helper
 {
-
-  public static string ReplaceParameters(string str, Dictionary<string, string> parameters)
+  public static string ReplaceParameters(string str, Dictionary<string, string> parameters, ZDO? zdo)
   {
-    foreach (var pair in parameters)
-      str = str.Replace(pair.Key, pair.Value);
+    for (int i = str.Length; i >= 0; i--)
+    {
+      var end = str.LastIndexOf(">", i);
+      if (end == -1) break;
+      var start = str.LastIndexOf("<", end);
+      if (start == -1) break;
+      i = start;
+      var key = str.Substring(start + 1, end - start - 1);
+      str = str.Remove(start, end - start + 1);
+      if (parameters.ContainsKey(key))
+      {
+        str = str.Insert(start, parameters[key]);
+        continue;
+      }
+      if (zdo == null) continue;
+      var kvp = Parse.Kvp(key, '_');
+      if (kvp.Value != "")
+      {
+        var value = GetZdoValue(zdo, kvp.Key, kvp.Value);
+        str = str.Insert(start, value);
+      }
+    }
     return str;
   }
   public static Dictionary<string, string> CreateParameters(string prefab, string args, ZDO zdo)
   {
-    // TODO: Info could track requuired parameters to get info from zdo.
     var split = args.Split(' ');
     var zone = ZoneSystem.instance.GetZone(zdo.m_position);
     return new Dictionary<string, string> {
-      { "<zdo>", zdo.m_uid.ToString() },
-      { "<prefab>", prefab },
-      { "<par0>", split.Length > 0 ? split[0] : "" },
-      { "<par1>", split.Length > 1 ? split[1] : "" },
-      { "<par2>", split.Length > 2 ? split[2] : "" },
-      { "<par3>", split.Length > 3 ? split[3] : "" },
-      { "<par4>", split.Length > 4 ? split[4] : "" },
-      { "<par>", args },
-      { "<x>", Format(zdo.m_position.x) },
-      { "<y>", Format(zdo.m_position.y) },
-      { "<z>", Format(zdo.m_position.z) },
-      { "<i>", zone.x.ToString() },
-      { "<j>", zone.y.ToString() },
-      { "<a>", Format(zdo.m_rotation.y) },
+      { "zdo", zdo.m_uid.ToString() },
+      { "prefab", prefab },
+      { "par0", split.Length > 0 ? split[0] : "" },
+      { "par1", split.Length > 1 ? split[1] : "" },
+      { "par2", split.Length > 2 ? split[2] : "" },
+      { "par3", split.Length > 3 ? split[3] : "" },
+      { "par4", split.Length > 4 ? split[4] : "" },
+      { "par", args },
+      { "x", Format(zdo.m_position.x) },
+      { "y", Format(zdo.m_position.y) },
+      { "z", Format(zdo.m_position.z) },
+      { "i", zone.x.ToString() },
+      { "j", zone.y.ToString() },
+      { "a", Format(zdo.m_rotation.y) },
     };
+  }
+
+  public static string GetZdoValue(ZDO zdo, string key, string value)
+  {
+    if (key == "string")
+      return zdo.GetString(value);
+    else if (key == "float")
+      return zdo.GetFloat(value).ToString(CultureInfo.InvariantCulture);
+    else if (key == "int")
+      return zdo.GetInt(value).ToString(CultureInfo.InvariantCulture);
+    else if (key == "long")
+      return zdo.GetLong(value).ToString(CultureInfo.InvariantCulture);
+    else if (key == "bool")
+      return zdo.GetBool(value).ToString();
+    else if (key == "hash")
+      return zdo.GetInt(value).ToString(CultureInfo.InvariantCulture);
+    else if (key == "vec")
+      return DataEntry.PrintVectorXZY(zdo.GetVec3(value, Vector3.zero));
+    else if (key == "quat")
+      return DataEntry.PrintAngleYXZ(zdo.GetQuaternion(value, Quaternion.identity));
+    else if (key == "byte")
+      return Convert.ToBase64String(zdo.GetByteArray(value));
+    else if (key == "zdo")
+      return zdo.GetZDOID(value).ToString();
+    return "";
   }
   private static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   public static bool CheckWild(string wild, string str)
@@ -67,7 +112,7 @@ public class Helper
     {
       if (key.Contains("<"))
       {
-        if (ZoneSystem.instance.m_globalKeys.Contains(ReplaceParameters(key, parameters))) return true;
+        if (ZoneSystem.instance.m_globalKeys.Contains(ReplaceParameters(key, parameters, null))) return true;
       }
       else
       {
@@ -82,7 +127,7 @@ public class Helper
     {
       if (key.Contains("<"))
       {
-        if (!ZoneSystem.instance.m_globalKeys.Contains(ReplaceParameters(key, parameters))) return false;
+        if (!ZoneSystem.instance.m_globalKeys.Contains(ReplaceParameters(key, parameters, null))) return false;
       }
       else
       {

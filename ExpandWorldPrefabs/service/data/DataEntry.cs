@@ -467,11 +467,11 @@ public class DataEntry
         pars[key] = PrintAngleYXZ(zdo.GetRotation());
     }
   }
-  private static string PrintVectorXZY(Vector3 vector)
+  public static string PrintVectorXZY(Vector3 vector)
   {
     return vector.x.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.z.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.y.ToString("0.##", CultureInfo.InvariantCulture);
   }
-  private static string PrintAngleYXZ(Quaternion quaternion)
+  public static string PrintAngleYXZ(Quaternion quaternion)
   {
     return PrintVectorYXZ(quaternion.eulerAngles);
   }
