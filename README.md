@@ -168,7 +168,10 @@ RPC calls are way to send data to clients. Usually these are used by clients but
 - rpcDelay: Delay in seconds for RPC calls.
 - objectRpc: Advanced way for calling any object RPC. No handholding.
   - The first line is the RPC name and properties: `- name, target, delay`.
-    - Target is optional. By default, the RPC is only sent to the ZDO owner. If target is `all`, it is sent to all clients.
+    - Target is optional. By default, the RPC is only sent to the ZDO owner.
+    - If target is `all`, it is sent to all clients.
+    - If target is `target`, it uses playerSearch to find the targets.
+    - If the target is a parameter, it should be zdo of the target player.
     - Delay is optional. It can be used to override the delay for this RPC.
   - The next lines are the parameters: `- type, value`.
     - All parameters must be set with the correct data types.

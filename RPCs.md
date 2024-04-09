@@ -977,8 +977,6 @@ Recommended RPC target is shown after the RPC name.
 
 This list all RPC calls that are not related to any object.
 
-If target is not give, the RPC is sent to all clients.
-
 ```yaml
 # Teleports the client.
   clientRpc:
