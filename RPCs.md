@@ -537,6 +537,29 @@ Recommended RPC target is shown after the RPC name.
   - RPC_PlayMusic, all
 ```
 
+### OfferingBowl
+
+```yaml
+# Shows the boss spawn message.
+  objectRpc:
+  - RPC_BossSpawnInitiated, target
+```
+
+```yaml
+# Removes items from the player inventory.
+# Requires actually interacting with the bowl.
+  objectRpc:
+  - RPC_RemoveBossSpawnInventoryItems, target
+```
+
+```yaml
+# Attempts to spawn the boss.
+  objectRpc:
+  - RPC_SpawnBoss, owner
+  - vec, "spawn position"
+  - bool, "remove spawn items?"
+```
+
 ### Pickable
 
 ```yaml
