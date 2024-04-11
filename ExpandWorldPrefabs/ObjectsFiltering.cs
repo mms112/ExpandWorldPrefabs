@@ -16,6 +16,20 @@ public class ObjectsFiltering
     var zdoLists = GetSectorIndices(zdo.m_position, maxRadius);
     return GetObjects(limit, zdoLists, objects, zdo, parameters);
   }
+  public static ZDO[] GetNearby(int limit, Object objects, ZDO zdo, Dictionary<string, string> parameters)
+  {
+    var zdoLists = GetSectorIndices(zdo.m_position, objects.MaxDistance);
+    return GetObjects(limit, zdoLists, objects, zdo, parameters);
+  }
+  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object objects, ZDO zdo, Dictionary<string, string> parameters)
+  {
+    var pos = zdo.m_position;
+    var zm = ZDOMan.instance;
+    var query = zdoLists.SelectMany(z => z).Where(z => objects.IsValid(z, pos, parameters));
+    if (limit > 0)
+      query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
+    return query.ToArray();
+  }
   private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
   {
     var pos = zdo.m_position;

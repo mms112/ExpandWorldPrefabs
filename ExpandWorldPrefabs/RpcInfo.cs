@@ -162,7 +162,7 @@ public abstract class RpcInfo
     if (SourceParameter != null)
     {
       var id = Parse.ZDOID(Helper.ReplaceParameters(SourceParameter, parameters, zdo));
-      source = Commands.FindPeerIdByZDOID(id) ?? source;
+      source = ZDOMan.instance.GetZDO(id)?.GetOwner() ?? 0;
     }
     var pars = GetParameters(zdo, parameters);
     if (Target == RpcTarget.Owner)
@@ -172,7 +172,7 @@ public abstract class RpcInfo
     else if (Target == RpcTarget.ZDO)
     {
       var id = Parse.ZDOID(Helper.ReplaceParameters(TargetParameter ?? "", parameters, zdo));
-      var peerId = Commands.FindPeerIdByZDOID(id);
+      var peerId = ZDOMan.instance.GetZDO(id)?.GetOwner();
       if (peerId.HasValue)
         DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, pars);
     }

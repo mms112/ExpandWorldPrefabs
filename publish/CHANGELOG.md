@@ -5,6 +5,8 @@
   - Adds a new field `clientRpc` to trigger any client RPC call.
   - Adds a new field `objectRpc` to trigger any object RPC call.
   - Adds a new parameter `<zdo>` that contains the zdoid of the object.
+  - Adds a new field `fallback` to only use the rule when no other rule is found.
+  - Adds a new field `poke` for alternative way of doing pokes.
   - Changes the field `delay` to `spawnDelay` to make it more explicit.
   - Breaking change: Poke can now also poke the poker.
   - Fixes objects sometimes not found when out of the map bounds.

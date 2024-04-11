@@ -128,9 +128,19 @@ public class Manager
 
   public static void Poke(Info info, ZDO zdo, Dictionary<string, string> parameters)
   {
-    var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.Pokes, zdo, parameters);
-    var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, zdo);
-    DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
+    if (info.LegacyPokes.Length > 0)
+    {
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, zdo, parameters);
+      var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, zdo);
+      DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
+    }
+    foreach (var poke in info.Pokes)
+    {
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, zdo, parameters);
+      var pokeParameter = Helper.ReplaceParameters(poke.Parameter, parameters, zdo);
+      DelayedPoke.Add(poke.Delay, zdos, pokeParameter);
+
+    }
   }
   public static void Poke(ZDO[] zdos, string parameter)
   {

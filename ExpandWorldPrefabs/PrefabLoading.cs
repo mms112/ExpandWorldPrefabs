@@ -82,14 +82,15 @@ public class Loading
     var commands = ParseCommands(data.commands ?? (data.command == null ? [] : [data.command]));
     HashSet<string> environments = [.. Parse.ToList(data.environments).Select(s => s.ToLower())];
     HashSet<string> bannedEnvironments = [.. Parse.ToList(data.bannedEnvironments).Select(s => s.ToLower())];
-    HashSet<int> locations = [.. Parse.ToList(data.locations).Select(s => s.GetStableHashCode())];
+    HashSet<string> locations = [.. Parse.ToList(data.locations)];
     var objectsLimit = ParseObjectsLimit(data.objectsLimit);
     var objects = ParseObjects(data.objects ?? []);
     var bannedObjects = ParseObjects(data.bannedObjects ?? []);
     var bannedObjectsLimit = ParseObjectsLimit(data.bannedObjectsLimit);
     var filters = ParseFilters(data.filters ?? (data.filter == null ? [] : [data.filter]));
     var bannedFilters = ParseFilters(data.bannedFilters ?? (data.bannedFilter == null ? [] : [data.bannedFilter]));
-    var pokes = ParseObjects(data.pokes ?? []);
+    var legacyPokes = ParseObjects(data.pokes ?? []);
+    var pokes = ParsePokes(data.poke ?? []);
     var rpcs = ParseRpcs(data);
     var objectRpcs = ParseObjectRpcs(data);
     var clientRpcs = ParseClientRpcs(data);
@@ -99,6 +100,7 @@ public class Loading
       {
         Prefabs = data.prefab,
         Type = t.Type,
+        Fallback = data.fallback,
         Args = t.Parameters,
         Remove = t.Type != ActionType.Destroy && (data.remove || swaps.Length > 0),
         RemoveDelay = data.removeDelay,
@@ -132,6 +134,7 @@ public class Loading
         PokeLimit = data.pokeLimit,
         PokeParameter = data.pokeParameter,
         Pokes = pokes,
+        LegacyPokes = legacyPokes,
         PokeDelay = data.pokeDelay,
         ObjectsLimit = objectsLimit,
         Objects = objects,
@@ -165,6 +168,7 @@ public class Loading
 
   private static Filter[] ParseFilters(string[] filters) => filters.Select(Filter.Create).Where(s => s != null).ToArray();
   private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
+  private static Poke[] ParsePokes(PokeData[] objects) => objects.Select(s => new Poke(s)).ToArray();
   private static SimpleRpcInfo[]? ParseRpcs(Data data)
   {
     if (data.rpcs != null && data.rpcs.Length > 0) return ParseRpcs(data.rpcs, data.rpcDelay);

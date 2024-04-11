@@ -14,6 +14,8 @@ public class Data
   public string type = "";
   [DefaultValue(null)]
   public string[]? types = null;
+  [DefaultValue(false)]
+  public bool fallback = false;
   [DefaultValue(1f)]
   public float weight = 1f;
   [DefaultValue(null)]
@@ -71,6 +73,8 @@ public class Data
   [DefaultValue(null)]
   public float? eventDistance = null;
   [DefaultValue(null)]
+  public PokeData[]? poke = null;
+  [DefaultValue(null)]
   public string[]? pokes = null;
   [DefaultValue(0)]
   public int pokeLimit = 0;
@@ -123,6 +127,7 @@ public class Info
 {
   public string Prefabs = "";
   public ActionType Type = ActionType.Create;
+  public bool Fallback = false;
   public string[] Args = [];
   public float Weight = 1f;
   public Spawn[] Swaps = [];
@@ -145,7 +150,8 @@ public class Info
   public HashSet<string> BannedEnvironments = [];
   public List<string> GlobalKeys = [];
   public List<string> BannedGlobalKeys = [];
-  public Object[] Pokes = [];
+  public Object[] LegacyPokes = [];
+  public Poke[] Pokes = [];
   public int PokeLimit = 0;
   public string PokeParameter = "";
   public float PokeDelay = 0f;
@@ -153,7 +159,7 @@ public class Info
   public Object[] Objects = [];
   public Range<int>? BannedObjectsLimit = null;
   public Object[] BannedObjects = [];
-  public HashSet<int> Locations = [];
+  public HashSet<string> Locations = [];
   public float LocationDistance = 0f;
   public Filter[] Filters = [];
   public Filter[] BannedFilters = [];
@@ -275,6 +281,13 @@ public enum PlayerSearch
   All,
   Closest
 }
+public class Poke(PokeData data)
+{
+  public Object Filter = new(data.prefab, data.minDistance, data.maxDistance, data.data);
+  public string Parameter = data.parameter;
+  public int Limit = data.limit;
+  public float Delay = data.delay;
+}
 public class Object
 {
   public int Prefab = 0;
@@ -284,25 +297,27 @@ public class Object
   public float MaxDistance = 100f;
   public int Data = 0;
   public int Weight = 1;
+  public Object(string prefab, float minDistance, float maxDistance, string data)
+  {
+    ParsePrefabs(prefab);
+    MinDistance = minDistance;
+    if (maxDistance > 0)
+      MaxDistance = maxDistance;
+    if (data != "")
+    {
+      Data = data.GetStableHashCode();
+      if (!DataHelper.Exists(Data))
+      {
+        Log.Error($"Invalid object filter data: {data}");
+        Data = 0;
+      }
+    }
+  }
   public Object(string line)
   {
     var split = Parse.ToList(line);
-    if (split[0].Contains("<") && split[0].Contains(">"))
-      WildPrefab = split[0];
-    else
-    {
-      var hash = split[0].GetStableHashCode();
-      if (ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
-        Prefab = hash;
-      else
-      {
-        var values = DataHelper.GetValuesFromGroup(split[0]);
-        if (values == null)
-          Log.Error($"Invalid object filter prefab: {split[0]}");
-        else
-          Prefabs = values.Select(v => v.GetStableHashCode()).ToHashSet();
-      }
-    }
+    ParsePrefabs(split[0]);
+
     if (split.Count > 1)
     {
       var range = Parse.FloatRange(split[1]);
@@ -323,6 +338,36 @@ public class Object
       Weight = Parse.Int(split[3]);
     }
   }
+  private void ParsePrefabs(string prefabs)
+  {
+    if (prefabs.Contains("<") && prefabs.Contains(">"))
+      WildPrefab = prefabs;
+    else
+    {
+      var hash = prefabs.GetStableHashCode();
+      if (ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
+        Prefab = hash;
+      else
+      {
+        var split = Parse.ToList(prefabs);
+        Prefabs = [];
+        foreach (var prefab in split)
+        {
+          hash = prefab.GetStableHashCode();
+          if (ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
+            Prefabs.Add(hash);
+          else
+          {
+            var values = DataHelper.GetValuesFromGroup(prefab);
+            if (values == null)
+              Log.Error($"Invalid object filter prefab: {prefab}");
+            else
+              Prefabs.UnionWith(values.Select(v => v.GetStableHashCode()));
+          }
+        }
+      }
+    }
+  }
   public bool IsValid(ZDO zdo, Vector3 pos, Dictionary<string, string> parameters)
   {
     if (Prefab != 0 && zdo.GetPrefab() != Prefab) return false;
@@ -339,6 +384,25 @@ public class Object
     if (Data == 0) return true;
     return DataHelper.Match(Data, zdo, parameters);
   }
+}
+
+public class PokeData
+{
+
+  [DefaultValue("")]
+  public string prefab = "";
+  [DefaultValue(0f)]
+  public float delay = 0f;
+  [DefaultValue("")]
+  public string parameter = "";
+  [DefaultValue(0f)]
+  public float maxDistance = 0f;
+  [DefaultValue(0f)]
+  public float minDistance = 0f;
+  [DefaultValue(0)]
+  public int limit = 0;
+  [DefaultValue("")]
+  public string data = "";
 }
 
 public class InfoType

@@ -63,6 +63,7 @@ Most fields are put on a single line. List values are separated by `,`.
 - weight (default: `1`): Chance to be selected if multiple entries match.
   - All weights are summed and the probability is `weight / sum`.
   - If the sum is less than 1, the probability is `weight`, so there is a chance to not select any entry.
+- fallback (default: `false`): If true, this entry can only be selected if no other entries match.
 
 ### Actions
 
@@ -150,14 +151,27 @@ See object filtering [examples](examples_object_filtering.md).
 
 ### Pokes
 
+- poke: List of poke objects:
+  - prefab: Target object id or value group.
+  - parameter: Custom value used as the parameter for the `poke` type.
+  - delay: Delay in seconds for poking. Default is 0 seconds.
+  - limit: Maximum amount of poked objects. If not set, all matching objects are poked.
+  - minDistance: Minimum distance from the poker. Default is 0 meters.
+  - maxDistance: Maximum distance from the poker. Default is 100 meters.
+  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
+
+### Legacy pokes
+
+Old way of poking.
+
+- pokeDelay: Delay in seconds for poking.
 - pokeParameter: Custom value used as the parameter for the `poke` type.
 - pokeLimit: Maximum amount of poked objects.
   - If not set, all matching objects are poked.
 - pokes: List of object information. Format is `- id, distance, data`:
-  - id: Object id. Keywords are supported ("all", "creature" and "<>").
+  - id: Object id or value group.
   - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
   - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
-- pokeDelay: Delay in seconds for poking.
 
 ### RPCs
 

@@ -100,12 +100,14 @@ public class InfoManager
 public class PrefabInfo
 {
   public readonly Dictionary<int, List<Info>> Prefabs = [];
-  public bool Exists => Prefabs.Count > 0;
+  public readonly Dictionary<int, List<Info>> PrefabsFallback = [];
+  public bool Exists => Prefabs.Count > 0 || PrefabsFallback.Count > 0;
 
 
   public void Clear()
   {
     Prefabs.Clear();
+    PrefabsFallback.Clear();
   }
   public void Add(Info info)
   {
@@ -116,9 +118,18 @@ public class PrefabInfo
     ParsePrefabs(prefabs, hashes);
     foreach (var hash in hashes)
     {
-      if (!Prefabs.TryGetValue(hash, out var list))
-        Prefabs[hash] = list = [];
-      list.Add(info);
+      if (info.Fallback)
+      {
+        if (!PrefabsFallback.TryGetValue(hash, out var list))
+          PrefabsFallback[hash] = list = [];
+        list.Add(info);
+      }
+      else
+      {
+        if (!Prefabs.TryGetValue(hash, out var list))
+          Prefabs[hash] = list = [];
+        list.Add(info);
+      }
     }
   }
   private void ParsePrefabs(List<string> prefabs, HashSet<int> hashes)
@@ -145,5 +156,6 @@ public class PrefabInfo
     }
   }
   public bool TryGetValue(int prefab, out List<Info> list) => Prefabs.TryGetValue(prefab, out list);
+  public bool TryGetFallbackValue(int prefab, out List<Info> list) => PrefabsFallback.TryGetValue(prefab, out list);
 
 }

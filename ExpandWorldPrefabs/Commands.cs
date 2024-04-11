@@ -40,11 +40,4 @@ public class Commands
     }
     return [];
   }
-  public static long? FindPeerIdByZDOID(ZDOID id)
-  {
-    var players = ZNet.instance.GetPeers().Select(p => new PlayerInfo(p)).ToList();
-    if (ZNet.instance.IsServer() && !ZNet.instance.IsDedicated())
-      players.Add(new(Player.m_localPlayer));
-    return players.FirstOrDefault(p => p.ZDOID == id)?.PeerId;
-  }
 }

@@ -8,12 +8,24 @@ namespace ExpandWorld.Prefab;
 public class InfoSelector
 {
   public static Info? Select(ActionType type, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source) => Select(InfoManager.Select(type), zdo, arg, parameters, source);
-  private static Info? Select(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  private static Info? Select(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source) =>
+    SelectDefault(infos, zdo, arg, parameters, source) ?? SelectFallback(infos, zdo, arg, parameters, source);
+  private static Info? SelectDefault(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
   {
     var prefab = zdo.m_prefab;
-    var pos = zdo.m_position;
     if (!infos.TryGetValue(prefab, out var data)) return null;
+    return SelectInfo(data, zdo, arg, parameters, source);
+  }
+  private static Info? SelectFallback(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  {
+    var prefab = zdo.m_prefab;
+    if (!infos.TryGetFallbackValue(prefab, out var data)) return null;
+    return SelectInfo(data, zdo, arg, parameters, source);
+  }
+  private static Info? SelectInfo(List<Info> data, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  {
     if (data.Count == 0) return null;
+    var pos = zdo.m_position;
     var biome = WorldGenerator.instance.GetBiome(pos);
     var distance = Utils.DistanceXZ(pos, Vector3.zero);
     var day = EnvMan.instance.IsDay();
@@ -83,7 +95,7 @@ public class InfoSelector
           {
             var key = new Vector2i(i, j);
             if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
-            if (!d.Locations.Contains(loc.m_location.m_hash)) continue;
+            if (!d.Locations.Contains(loc.m_location.m_prefabName)) continue;
             var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
             if (Utils.DistanceXZ(loc.m_position, pos) > dist) continue;
             return true;
