@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Data;
 using Service;
+using UnityEngine;
 
 namespace ExpandWorld.Prefab;
 
@@ -31,19 +33,19 @@ public class RpcMapping(string call, string[] types, object[]? baseParameters = 
     {
       var type = Types[i];
       var arg = args.Length <= i ? "" : args[i];
-      if (type == "int") result.Add(Parse.Int(arg));
-      if (type == "float") result.Add(Parse.Float(arg));
+      if (type == "int") result.Add(Calculator.EvaluateInt(arg) ?? 0);
+      if (type == "float") result.Add(Calculator.EvaluateFloat(arg) ?? 0f);
       if (type == "bool") result.Add(Parse.BooleanTrue(arg));
-      if (type == "long") result.Add(Parse.Long(arg));
+      if (type == "long") result.Add(Calculator.EvaluateLong(arg) ?? 0L);
       if (type == "string") result.Add(arg);
       if (type == "vec")
       {
-        result.Add(Parse.VectorXZY(args, i));
+        result.Add(Calculator.EvaluateVector3(args, i));
         i += 2;
       }
       if (type == "quat")
       {
-        result.Add(Parse.AngleYXZ(args, i));
+        result.Add(Calculator.EvaluateQuaternion(args, i));
         i += 2;
       }
       if (type == "hash") result.Add(arg.GetStableHashCode());
@@ -188,13 +190,13 @@ public abstract class RpcInfo
       var split = Parse.Kvp((string)pars[i]);
       var type = split.Key;
       var arg = split.Value;
-      if (type == "int") pars[i] = Parse.Int(arg);
-      if (type == "long") pars[i] = Parse.Long(arg);
-      if (type == "float") pars[i] = Parse.Float(arg);
+      if (type == "int") pars[i] = Calculator.EvaluateInt(arg) ?? 0;
+      if (type == "long") pars[i] = Calculator.EvaluateLong(arg) ?? 0;
+      if (type == "float") pars[i] = Calculator.EvaluateFloat(arg) ?? 0f;
       if (type == "bool") pars[i] = Parse.Boolean(arg);
       if (type == "string") pars[i] = arg;
-      if (type == "vec") pars[i] = Parse.VectorXZY(arg);
-      if (type == "quat") pars[i] = Parse.AngleYXZ(arg);
+      if (type == "vec") pars[i] = Calculator.EvaluateVector3(arg);
+      if (type == "quat") pars[i] = Calculator.EvaluateQuaternion(arg);
       if (type == "hash") pars[i] = arg.GetStableHashCode();
       if (type == "hit") pars[i] = Parse.Hit(zdo, arg);
       if (type == "zdo") pars[i] = Parse.ZDOID(arg);

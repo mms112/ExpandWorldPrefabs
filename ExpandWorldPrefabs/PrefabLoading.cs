@@ -196,7 +196,7 @@ public class Loading
   }
   private static ClientRpcInfo[]? ParseClientRpcs(Data data)
   {
-    if (data.objectRpc != null && data.objectRpc.Length > 0) return ParseClientRpcs(data.objectRpc, data.rpcDelay, data.rpcSource);
+    if (data.clientRpc != null && data.clientRpc.Length > 0) return ParseClientRpcs(data.clientRpc, data.rpcDelay, data.rpcSource);
     return null;
   }
   private static ClientRpcInfo[] ParseClientRpcs(string[] objects, float delay, string? rpcSource)
