@@ -106,9 +106,21 @@ public class Manager
 
   public static void SpawnDrops(ZDO zdo)
   {
-    var obj = ZNetScene.instance.CreateObject(zdo);
-    obj.GetComponent<ZNetView>().m_ghost = true;
-    ZNetScene.instance.m_instances.Remove(zdo);
+    if (ZNetScene.instance.m_instances.ContainsKey(zdo))
+    {
+      SpawnDrops(ZNetScene.instance.m_instances[zdo].gameObject);
+    }
+    else
+    {
+      var obj = ZNetScene.instance.CreateObject(zdo);
+      obj.GetComponent<ZNetView>().m_ghost = true;
+      ZNetScene.instance.m_instances.Remove(zdo);
+      SpawnDrops(obj);
+      UnityEngine.Object.Destroy(obj);
+    }
+  }
+  private static void SpawnDrops(GameObject obj)
+  {
     HandleCreated.Skip = true;
     if (obj.TryGetComponent<DropOnDestroyed>(out var drop))
       drop.OnDestroyed();
@@ -121,7 +133,6 @@ public class Manager
     if (obj.TryGetComponent<Piece>(out var piece))
       piece.DropResources();
     HandleCreated.Skip = false;
-    UnityEngine.Object.Destroy(obj);
   }
 
   public static void Poke(Info info, ZDO zdo, Dictionary<string, string> parameters)

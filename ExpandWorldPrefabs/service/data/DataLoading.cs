@@ -56,7 +56,7 @@ public class DataLoading
     var files = Directory.GetFiles(GamePath, "*.yaml")
       .Concat(Directory.GetFiles(ProfilePath, "*.yaml"))
       .Concat(Directory.GetFiles(Yaml.BaseDirectory, Pattern))
-      .Select(Path.GetFullPath).ToArray();
+      .Select(Path.GetFullPath).Distinct().ToArray();
     foreach (var file in files)
       LoadEntry(file, prev);
     Log.Info($"Loaded {Data.Count} data entries.");

@@ -178,40 +178,28 @@ Old way of poking.
 
 RPC calls are way to send data to clients. Usually these are used by clients but server can call them too.
 
-- rpc: Hardcoded RPC calls for ease of use.
-  - See list of supported calls: (RPCs.md)
-- rpcDelay: Delay in seconds for RPC calls.
-- objectRpc: List of RPC objects.
-  - The first line is the RPC name and properties: `- name, target, delay`.
-    - Target is optional. By default, the RPC is only sent to the ZDO owner.
-    - If target is `all`, it is sent to all clients.
-    - If target is `target`, it uses playerSearch to find the targets.
-    - If the target is a parameter, it should be zdo of the target player.
-    - Delay is optional. It can be used to override the delay for this RPC.
-  - The next lines are the parameters: `- type, value`.
-    - All parameters must be set with the correct data types.
-  - For more than one RPC, add more lines starting with the first line format.
-- clientRpc: Advanced way for calling any client RPC. No handholding.
-  - The first line is the RPC name and properties: `- name, target, delay`.
-    - Target is optional. By default, the RPC is sent to all clients.
-    - Delay is optional. It can be used to override the delay for this RPC.
-  - The next lines are the parameters: `- type, value`.
-    - All parameters must be set with the correct data types.
-  - For more than one RPC, add more lines starting with the first line format.
+Checks possible RPCs [here](RPCs.md).
+
+- objectRpc: List of RPC calls. The RPC must be related to the triggering object.
+- clientRpc: List of RPC calls. These calls are not related to any object.
 
 Rpc format:
 
 - name: Name of the RPC call. Must be exact match.
   - See list of supported calls: (RPCs.md)
 - target: Target of the RPC call. Default is `owner`.
-  - `owner` is sent to the owner of the object.
-  - `all` is sent to all clients.
-  - `target` is sent to the clients found with playerSearch.
-  - `parameter` is sent to the client with the given zdo.
+  - `owner`: The RPC is sent to the owner of the object.
+  - `all`: The is sent to all clients.
+  - `search`: The is sent to the clients found with playerSearch.
+  - ZDO id: The RPC is sent to the owner of this ZDO.
+    - Parameters are supported. For example `<zdo>` can be useful.
 - delay: Delay in seconds for the RPC call.
-- source: ZDO id of the source object. Used for `parameter` target.
+- source: ZDO id. The RPC call is faked to be from owner of this ZDO.
+  - Parameters are supported. For example `<zdo>` can be useful.
 - 1: First parameter.
-- 2: Type of the second parameter.
+- 2: Second parameter.
+- 3: Third parameter.
+- ...: More parameters.
 
 ### Lists
 

@@ -9,7 +9,7 @@ public enum RpcTarget
 {
   All,
   Owner,
-  Target,
+  Search,
   ZDO
 }
 
@@ -24,7 +24,7 @@ public abstract class RpcInfo
   private readonly string? SourceParameter;
   private readonly KeyValuePair<string, string>[] Parameters;
   private readonly float Delay;
-  public bool IsTarget => Target == RpcTarget.Target;
+  public bool IsTarget => Target == RpcTarget.Search;
 
   public RpcInfo(Dictionary<string, string> lines)
   {
@@ -39,14 +39,14 @@ public abstract class RpcInfo
     {
       if (target == "all")
         Target = RpcTarget.All;
-      else if (target == "target")
-        Target = RpcTarget.Target;
+      else if (target == "search")
+        Target = RpcTarget.Search;
       else if (target == "owner")
         Target = RpcTarget.Owner;
-      else if (target == "zdo")
+      else
       {
         Target = RpcTarget.ZDO;
-        TargetParameter = lines["targetParameter"];
+        TargetParameter = target;
       }
     }
     Delay = 0f;
@@ -74,7 +74,7 @@ public abstract class RpcInfo
       if (peerId.HasValue)
         DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, pars);
     }
-    else if (Target == RpcTarget.Target && players != null)
+    else if (Target == RpcTarget.Search && players != null)
       foreach (var player in players)
         DelayedRpc.Add(Delay, source, player.PeerId, GetId(zdo), Hash, pars);
   }
