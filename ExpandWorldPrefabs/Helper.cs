@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Security.Policy;
 using Data;
 using Service;
 using UnityEngine;
@@ -20,10 +18,10 @@ public class Helper
       var start = str.LastIndexOf("<", end);
       if (start == -1) break;
       i = start;
-      var key = str.Substring(start + 1, end - start - 1);
-      str = str.Remove(start, end - start + 1);
+      var key = str.Substring(start, end - start + 1);
       if (parameters.ContainsKey(key))
       {
+        str = str.Remove(start, end - start + 1);
         str = str.Insert(start, parameters[key]);
         continue;
       }
@@ -31,7 +29,10 @@ public class Helper
       var kvp = Parse.Kvp(key, '_');
       if (kvp.Value != "")
       {
-        var value = GetZdoValue(zdo, kvp.Key, kvp.Value);
+        var zdoKey = kvp.Key.Substring(1);
+        var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
+        str = str.Remove(start, end - start + 1);
+        var value = GetZdoValue(zdo, zdoKey, zdoValue);
         str = str.Insert(start, value);
       }
     }
@@ -42,20 +43,20 @@ public class Helper
     var split = args.Split(' ');
     var zone = ZoneSystem.instance.GetZone(zdo.m_position);
     return new Dictionary<string, string> {
-      { "zdo", zdo.m_uid.ToString() },
-      { "prefab", prefab },
-      { "par0", split.Length > 0 ? split[0] : "" },
-      { "par1", split.Length > 1 ? split[1] : "" },
-      { "par2", split.Length > 2 ? split[2] : "" },
-      { "par3", split.Length > 3 ? split[3] : "" },
-      { "par4", split.Length > 4 ? split[4] : "" },
-      { "par", args },
-      { "x", Format(zdo.m_position.x) },
-      { "y", Format(zdo.m_position.y) },
-      { "z", Format(zdo.m_position.z) },
-      { "i", zone.x.ToString() },
-      { "j", zone.y.ToString() },
-      { "a", Format(zdo.m_rotation.y) },
+      { "<zdo>", zdo.m_uid.ToString() },
+      { "<prefab>", prefab },
+      { "<par0>", split.Length > 0 ? split[0] : "" },
+      { "<par1>", split.Length > 1 ? split[1] : "" },
+      { "<par2>", split.Length > 2 ? split[2] : "" },
+      { "<par3>", split.Length > 3 ? split[3] : "" },
+      { "<par4>", split.Length > 4 ? split[4] : "" },
+      { "<par>", args },
+      { "<x>", Format(zdo.m_position.x) },
+      { "<y>", Format(zdo.m_position.y) },
+      { "<z>", Format(zdo.m_position.z) },
+      { "<i>", zone.x.ToString() },
+      { "<j>", zone.y.ToString() },
+      { "<>", Format(zdo.m_rotation.y) },
     };
   }
 

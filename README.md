@@ -141,6 +141,7 @@ Most fields are put on a single line. List values are separated by `,`.
 - objects: List of object information. Format is `- id, distance, data, weight`:
   - id: Object id. Keywords are supported ("all", "creature" and "<>").
   - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
+    - Note: All objects are searched if the max distance is more than 10000 meters.
   - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
   - weight: Optional. How much tis match counts towards the `objectsLimit`. Default is 1.
   - Note: If `objectsLimit` is set and multiple filters match, the first one is matched.
@@ -180,7 +181,7 @@ RPC calls are way to send data to clients. Usually these are used by clients but
 - rpc: Hardcoded RPC calls for ease of use.
   - See list of supported calls: (RPCs.md)
 - rpcDelay: Delay in seconds for RPC calls.
-- objectRpc: Advanced way for calling any object RPC. No handholding.
+- objectRpc: List of RPC objects.
   - The first line is the RPC name and properties: `- name, target, delay`.
     - Target is optional. By default, the RPC is only sent to the ZDO owner.
     - If target is `all`, it is sent to all clients.
@@ -197,6 +198,20 @@ RPC calls are way to send data to clients. Usually these are used by clients but
   - The next lines are the parameters: `- type, value`.
     - All parameters must be set with the correct data types.
   - For more than one RPC, add more lines starting with the first line format.
+
+Rpc format:
+
+- name: Name of the RPC call. Must be exact match.
+  - See list of supported calls: (RPCs.md)
+- target: Target of the RPC call. Default is `owner`.
+  - `owner` is sent to the owner of the object.
+  - `all` is sent to all clients.
+  - `target` is sent to the clients found with playerSearch.
+  - `parameter` is sent to the client with the given zdo.
+- delay: Delay in seconds for the RPC call.
+- source: ZDO id of the source object. Used for `parameter` target.
+- 1: First parameter.
+- 2: Type of the second parameter.
 
 ### Lists
 

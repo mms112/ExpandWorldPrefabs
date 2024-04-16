@@ -10,6 +10,7 @@
   - Changes the field `delay` to `spawnDelay` to make it more explicit.
   - Breaking change: Poke can now also poke the poker.
   - Fixes objects sometimes not found when out of the map bounds.
+  - Fixes object filtering not working for far distances.
 
 - v1.9
   - Adds the new data system from World Edit Commands mod.

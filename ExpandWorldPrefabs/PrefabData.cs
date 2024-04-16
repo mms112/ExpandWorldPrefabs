@@ -87,7 +87,7 @@ public class Data
   public string[]? objects = null;
   [DefaultValue("")]
   public string objectsLimit = "";
-  [DefaultValue("")]
+  [DefaultValue(null)]
   public string[]? bannedObjects = null;
   [DefaultValue("")]
   public string bannedObjectsLimit = "";
@@ -109,17 +109,9 @@ public class Data
   [DefaultValue(false)]
   public bool triggerRules = false;
   [DefaultValue(null)]
-  public string? rpc = null;
+  public Dictionary<string, string>[]? objectRpc = null;
   [DefaultValue(null)]
-  public string[]? rpcs = null;
-  [DefaultValue(null)]
-  public string[]? objectRpc = null;
-  [DefaultValue(null)]
-  public string[]? clientRpc = null;
-  [DefaultValue(null)]
-  public string? rpcSource = null;
-  [DefaultValue(0f)]
-  public float rpcDelay = 0f;
+  public Dictionary<string, string>[]? clientRpc = null;
 }
 
 
@@ -167,7 +159,6 @@ public class Info
   public float PlayerSearchDistance = 0f;
   public float PlayerSearchHeight = 0f;
   public bool TriggerRules = false;
-  public SimpleRpcInfo[]? Rpcs;
   public ObjectRpcInfo[]? ObjectRpcs;
   public ClientRpcInfo[]? ClientRpcs;
 }
@@ -388,7 +379,6 @@ public class Object
 
 public class PokeData
 {
-
   [DefaultValue("")]
   public string prefab = "";
   [DefaultValue(0f)]

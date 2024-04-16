@@ -2,118 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Data;
 using Service;
-using UnityEngine;
 
 namespace ExpandWorld.Prefab;
 
-
-public class RpcMapping(string call, string[] types, object[]? baseParameters = null)
-{
-  private static readonly int DamageHash = "Damage".GetStableHashCode();
-  private static readonly int WNTDamageHash = "WNTDamage".GetStableHashCode();
-  private static readonly Dictionary<int, bool> IsWearNTear = [];
-  private readonly int CallHash = call.GetStableHashCode();
-  public int GetHash()
-  {
-    if (CallHash != DamageHash) return CallHash;
-    // Currently only damage hash is dynamic so the logic can be hardcoded.
-    if (IsWearNTear.TryGetValue(CallHash, out var value)) return value ? WNTDamageHash : CallHash;
-    var isWNT = ZNetScene.instance.GetPrefab(call)?.GetComponent<WearNTear>() != null;
-    IsWearNTear[CallHash] = isWNT;
-    return isWNT ? WNTDamageHash : CallHash;
-  }
-  private readonly string[] Types = types;
-  private readonly object[] BaseParameters = baseParameters ?? [];
-
-  public object[] GetParameters(string pars, ZDO zdo, Dictionary<string, string> parameters)
-  {
-    var result = BaseParameters.ToList();
-    var args = Parse.Split(Helper.ReplaceParameters(pars, parameters, zdo));
-    for (var i = 0; i < Types.Length; i++)
-    {
-      var type = Types[i];
-      var arg = args.Length <= i ? "" : args[i];
-      if (type == "int") result.Add(Calculator.EvaluateInt(arg) ?? 0);
-      if (type == "float") result.Add(Calculator.EvaluateFloat(arg) ?? 0f);
-      if (type == "bool") result.Add(Parse.BooleanTrue(arg));
-      if (type == "long") result.Add(Calculator.EvaluateLong(arg) ?? 0L);
-      if (type == "string") result.Add(arg);
-      if (type == "vec")
-      {
-        result.Add(Calculator.EvaluateVector3(args, i));
-        i += 2;
-      }
-      if (type == "quat")
-      {
-        result.Add(Calculator.EvaluateQuaternion(args, i));
-        i += 2;
-      }
-      if (type == "hash") result.Add(arg.GetStableHashCode());
-      if (type == "hit") result.Add(Parse.Hit(zdo, arg));
-      if (type == "zdo") result.Add(Parse.ZDOID(arg));
-      if (type == "enum_message") result.Add(Parse.EnumMessage(arg));
-      if (type == "enum_reason") result.Add(Parse.EnumReason(arg));
-      if (type == "enum_trap") result.Add(Parse.EnumTrap(arg));
-    }
-    return [.. result];
-  }
-
-
-  public static readonly Dictionary<int, RpcMapping> Mappings = new(){
-    { "damage".GetStableHashCode(), new RpcMapping("Damage", ["hit"]) },
-    { "heal".GetStableHashCode(), new RpcMapping("Heal", ["float", "bool"]) },
-    { "stamina".GetStableHashCode(), new RpcMapping("UseStamina", ["float"]) },
-    { "message".GetStableHashCode(), new RpcMapping("Message", ["string", "int"], [1]) },
-    { "broadcast".GetStableHashCode(), new RpcMapping("Message", ["string", "int"], [2]) },
-    { "forward".GetStableHashCode(), new RpcMapping("Forward", []) },
-    { "backward".GetStableHashCode(), new RpcMapping("Backward", []) },
-    { "rudder".GetStableHashCode(), new RpcMapping("Rudder", ["float"]) },
-    { "stop".GetStableHashCode(), new RpcMapping("Stop", []) },
-    { "trap".GetStableHashCode(), new RpcMapping("RPC_RequestStateChange", ["enum_trap"]) },
-    { "ammo".GetStableHashCode(), new RpcMapping("RPC_AddAmmo", ["string"]) },
-    { "repair".GetStableHashCode(), new RpcMapping("WNTRepair", []) },
-    { "remove".GetStableHashCode(), new RpcMapping("WNTRemove", []) },
-    { "stagger".GetStableHashCode(), new RpcMapping("Stagger", ["vec"]) },
-    { "aggravate".GetStableHashCode(), new RpcMapping("SetAggravated", [], [true]) },
-    { "calm".GetStableHashCode(), new RpcMapping("SetAggravated", [], [false]) },
-    { "pick".GetStableHashCode(), new RpcMapping("Pick", []) },
-    { "alert".GetStableHashCode(), new RpcMapping("Alert", []) },
-    { "door".GetStableHashCode(), new RpcMapping("UseDoor", ["bool"]) },
-    { "teleport".GetStableHashCode(), new RpcMapping("RPC_TeleportTo", ["vec", "quat", "bool"]) },
-    { "status".GetStableHashCode(), new RpcMapping("RPC_AddStatusEffect", ["hash", "bool", "int", "float"]) },
-  };
-}
-
-
-public class SimpleRpcInfo
-{
-  private readonly string Parameters = "";
-  private readonly float Delay;
-  private readonly RpcMapping? Mapping;
-
-  public SimpleRpcInfo(string line, float delay)
-  {
-    Delay = delay;
-    var split = Parse.SplitWithEscape(line);
-    var hash = split[0].ToLowerInvariant().GetStableHashCode();
-    if (RpcMapping.Mappings.TryGetValue(hash, out var mapping))
-    {
-      Mapping = mapping;
-      Parameters = string.Join(",", split.Skip(1));
-    }
-    else
-    {
-      Log.Warning($"Unknown RPC: {split[0]}");
-    }
-  }
-  public void Invoke(ZDO zdo, Dictionary<string, string> parameters)
-  {
-    if (Mapping == null) return;
-    if (zdo.GetOwner() == 0) return;
-    var pars = Mapping.GetParameters(Parameters, zdo, parameters);
-    DelayedRpc.Add(Delay, ZRoutedRpc.instance.m_id, zdo.GetOwner(), zdo.m_uid, Mapping.GetHash(), pars);
-  }
-}
 public enum RpcTarget
 {
   All,
@@ -131,32 +22,37 @@ public abstract class RpcInfo
   private readonly RpcTarget Target;
   private readonly string? TargetParameter;
   private readonly string? SourceParameter;
-  private readonly string[] Parameters;
+  private readonly KeyValuePair<string, string>[] Parameters;
   private readonly float Delay;
   public bool IsTarget => Target == RpcTarget.Target;
 
-  public RpcInfo(string[] lines, float delay, string? rpcSource)
+  public RpcInfo(Dictionary<string, string> lines)
   {
-    var first = Parse.Split(lines[0]);
-    Hash = first[0].GetStableHashCode();
     Target = RpcTarget.Owner;
-    SourceParameter = rpcSource;
-    if (first.Length > 1)
+    if (lines.TryGetValue("name", out var name))
+      Hash = name.GetStableHashCode();
+
+    if (lines.TryGetValue("source", out var source))
+      SourceParameter = source;
+
+    if (lines.TryGetValue("target", out var target))
     {
-      if (first[1] == "all")
+      if (target == "all")
         Target = RpcTarget.All;
-      else if (first[1] == "target")
+      else if (target == "target")
         Target = RpcTarget.Target;
-      else if (first[1] == "owner")
+      else if (target == "owner")
         Target = RpcTarget.Owner;
-      else if (first[1] == "zdo")
+      else if (target == "zdo")
       {
         Target = RpcTarget.ZDO;
-        TargetParameter = first[1];
+        TargetParameter = lines["targetParameter"];
       }
     }
-    Delay = first.Length < 3 ? delay : Parse.Float(first[2], delay);
-    Parameters = lines.Skip(1).ToArray();
+    Delay = 0f;
+    if (lines.TryGetValue("delay", out var d))
+      Delay = Parse.Float(d, 0f);
+    Parameters = lines.OrderBy(p => p.Key).Where(p => Parse.TryInt(p.Key, out var _)).Select(p => Parse.Kvp(p.Value)).ToArray();
   }
   public void Invoke(ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
   {
@@ -184,12 +80,11 @@ public abstract class RpcInfo
   }
   private object[] GetParameters(ZDO zdo, Dictionary<string, string> parameters)
   {
-    var pars = Parameters.Select(p => Helper.ReplaceParameters(p, parameters, zdo)).ToArray<object>();
+    var pars = Parameters.Select(p => Helper.ReplaceParameters(p.Value, parameters, zdo)).ToArray<object>();
     for (var i = 0; i < pars.Length; i++)
     {
-      var split = Parse.Kvp((string)pars[i]);
-      var type = split.Key;
-      var arg = split.Value;
+      var type = Parameters[i].Key;
+      var arg = (string)pars[i];
       if (type == "int") pars[i] = Calculator.EvaluateInt(arg) ?? 0;
       if (type == "long") pars[i] = Calculator.EvaluateLong(arg) ?? 0;
       if (type == "float") pars[i] = Calculator.EvaluateFloat(arg) ?? 0f;
@@ -209,11 +104,11 @@ public abstract class RpcInfo
 }
 
 
-public class ObjectRpcInfo(string[] lines, float delay, string? rpcSource) : RpcInfo(lines, delay, rpcSource)
+public class ObjectRpcInfo(Dictionary<string, string> lines) : RpcInfo(lines)
 {
   protected override ZDOID GetId(ZDO zdo) => zdo.m_uid;
 }
-public class ClientRpcInfo(string[] lines, float delay, string? rpcSource) : RpcInfo(lines, delay, rpcSource)
+public class ClientRpcInfo(Dictionary<string, string> lines) : RpcInfo(lines)
 {
   protected override ZDOID GetId(ZDO zdo) => ZDOID.None;
 }

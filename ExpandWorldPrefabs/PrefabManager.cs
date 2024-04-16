@@ -26,8 +26,6 @@ public class Manager
       players = Commands.FindPlayers(zdo, source, info);
       Commands.Run(info, zdo, parameters, players);
     }
-    if (info.Rpcs != null)
-      Rpc(info.Rpcs, zdo, parameters);
     if (info.ObjectRpcs != null)
       ObjectRpc(info.ObjectRpcs, zdo, parameters, players);
     if (info.ClientRpcs != null)
@@ -148,11 +146,6 @@ public class Manager
       Handle(ActionType.Poke, parameter, z);
   }
 
-  public static void Rpc(SimpleRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
-  {
-    foreach (var i in info)
-      i.Invoke(zdo, parameters);
-  }
   public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
   {
     foreach (var i in info)

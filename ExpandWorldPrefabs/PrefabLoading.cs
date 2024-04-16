@@ -41,12 +41,7 @@ public class Loading
     if (Helper.IsClient()) return;
     if (!File.Exists(FilePath))
     {
-      var yaml = Yaml.Serializer().Serialize(new Data[]{new(){
-        prefab = "Example",
-        type = "Create",
-        swap = "Surtling",
-        biomes = "Meadows",
-      }});
+      var yaml = "# Write your entries here. Good luck!";
       File.WriteAllText(FilePath, yaml);
       // Watcher triggers reload.
       return;
@@ -91,7 +86,6 @@ public class Loading
     var bannedFilters = ParseFilters(data.bannedFilters ?? (data.bannedFilter == null ? [] : [data.bannedFilter]));
     var legacyPokes = ParseObjects(data.pokes ?? []);
     var pokes = ParsePokes(data.poke ?? []);
-    var rpcs = ParseRpcs(data);
     var objectRpcs = ParseObjectRpcs(data);
     var clientRpcs = ParseClientRpcs(data);
     return types.Select(t =>
@@ -143,7 +137,6 @@ public class Loading
         Filters = filters,
         BannedFilters = bannedFilters,
         TriggerRules = data.triggerRules,
-        Rpcs = rpcs,
         ObjectRpcs = objectRpcs,
         ClientRpcs = clientRpcs,
       };
@@ -169,55 +162,25 @@ public class Loading
   private static Filter[] ParseFilters(string[] filters) => filters.Select(Filter.Create).Where(s => s != null).ToArray();
   private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
   private static Poke[] ParsePokes(PokeData[] objects) => objects.Select(s => new Poke(s)).ToArray();
-  private static SimpleRpcInfo[]? ParseRpcs(Data data)
-  {
-    if (data.rpcs != null && data.rpcs.Length > 0) return ParseRpcs(data.rpcs, data.rpcDelay);
-    if (data.rpc != null) return ParseRpcs([data.rpc], data.rpcDelay);
-    return null;
-  }
-  private static SimpleRpcInfo[] ParseRpcs(string[] objects, float delay) => objects.Select(s => new SimpleRpcInfo(s, delay)).ToArray();
   private static ObjectRpcInfo[]? ParseObjectRpcs(Data data)
   {
-    if (data.objectRpc != null && data.objectRpc.Length > 0) return ParseObjectRpcs(data.objectRpc, data.rpcDelay, data.rpcSource);
+    if (data.objectRpc != null && data.objectRpc.Length > 0) return data.objectRpc.Select(s => new ObjectRpcInfo(s)).ToArray();
     return null;
-  }
-  private static ObjectRpcInfo[] ParseObjectRpcs(string[] objects, float delay, string? rpcSource)
-  {
-    List<ObjectRpcInfo> rpcs = [];
-    var start = 0;
-    for (var i = 1; i < objects.Length; i++)
-    {
-      if (RpcInfo.IsType(objects[i])) continue;
-      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray(), delay, rpcSource));
-      start = i;
-    }
-    rpcs.Add(new(objects.Skip(start).ToArray(), delay, rpcSource));
-    return [.. rpcs];
   }
   private static ClientRpcInfo[]? ParseClientRpcs(Data data)
   {
-    if (data.clientRpc != null && data.clientRpc.Length > 0) return ParseClientRpcs(data.clientRpc, data.rpcDelay, data.rpcSource);
+    if (data.clientRpc != null && data.clientRpc.Length > 0) return data.clientRpc.Select(s => new ClientRpcInfo(s)).ToArray();
     return null;
   }
-  private static ClientRpcInfo[] ParseClientRpcs(string[] objects, float delay, string? rpcSource)
-  {
-    List<ClientRpcInfo> rpcs = [];
-    var start = 0;
-    for (var i = 1; i < objects.Length; i++)
-    {
-      if (RpcInfo.IsType(objects[i])) continue;
-      rpcs.Add(new(objects.Skip(start).Take(i - start).ToArray(), delay, rpcSource));
-      start = i;
-    }
-    rpcs.Add(new(objects.Skip(start).ToArray(), delay, rpcSource));
-    return [.. rpcs];
-  }
+
   private static Range<int>? ParseObjectsLimit(string str) => str == "" ?
     null : int.TryParse(str, out var limit) ?
       new Range<int>(limit, 0) : Parse.IntRange(str);
 
   public static void SetupWatcher()
   {
+    if (!Directory.Exists(Yaml.BaseDirectory))
+      Directory.CreateDirectory(Yaml.BaseDirectory);
     Yaml.SetupWatcher(Pattern, FromFile);
   }
 }
