@@ -1,3 +1,6 @@
+- v1.11
+  - Fixes arithmetics not working for int or long values.
+
 - v1.10
   - Adds a new field `pokeDelay` to delay pokes.
   - Adds a new field `clientRpc` to trigger any client RPC call.

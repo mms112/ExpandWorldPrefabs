@@ -494,10 +494,13 @@ public class DataEntry
     }
     return (T)(object)value;
   }
-
-  public void Write(Dictionary<string, string> pars, ZDO zdo)
+  public Dictionary<string, string> InsertParameters(Dictionary<string, string> pars, ZDO zdo)
   {
     AddParameters(pars, zdo);
+    return pars;
+  }
+  public void Write(Dictionary<string, string> pars, ZDO zdo)
+  {
     RollItems(pars);
     var id = zdo.m_uid;
     if (Floats?.Count > 0)

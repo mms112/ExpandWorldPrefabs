@@ -41,7 +41,11 @@ public class DataHelper
     if (!obj.TryGetComponent<ZNetView>(out var view)) return;
     var prefab = Utils.GetPrefabName(obj).GetStableHashCode();
     ZNetView.m_initZDO = ZDOMan.instance.CreateNewZDO(pos, prefab);
-    data?.Write(pars, ZNetView.m_initZDO);
+    if (data != null)
+    {
+      pars = data.InsertParameters(pars, ZNetView.m_initZDO);
+      data.Write(pars, ZNetView.m_initZDO);
+    }
     ZNetView.m_initZDO.m_rotation = rot.eulerAngles;
     ZNetView.m_initZDO.Type = view.m_type;
     ZNetView.m_initZDO.Distant = view.m_distant;
@@ -59,7 +63,11 @@ public class DataHelper
     if (!obj.TryGetComponent<ZNetView>(out var view)) return null;
     var prefab = Utils.GetPrefabName(obj).GetStableHashCode();
     ZNetView.m_initZDO = ZDOMan.instance.CreateNewZDO(pos, prefab);
-    data?.Write([], ZNetView.m_initZDO);
+    if (data != null)
+    {
+      var pars = data.InsertParameters([], ZNetView.m_initZDO);
+      data.Write(pars, ZNetView.m_initZDO);
+    }
     ZNetView.m_initZDO.m_rotation = rot.eulerAngles;
     ZNetView.m_initZDO.Type = view.m_type;
     ZNetView.m_initZDO.Distant = view.m_distant;
