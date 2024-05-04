@@ -57,7 +57,8 @@ public class Helper
       { "<z>", Format(zdo.m_position.z) },
       { "<i>", zone.x.ToString() },
       { "<j>", zone.y.ToString() },
-      { "<>", Format(zdo.m_rotation.y) },
+      { "<a>", Format(zdo.m_rotation.y) },
+      { "<time>", ZNet.instance.GetTime().Ticks.ToString() },
     };
   }
 
@@ -74,9 +75,9 @@ public class Helper
     else if (key == "long")
       return zdo.GetLong(value).ToString(CultureInfo.InvariantCulture);
     else if (key == "bool")
-      return zdo.GetBool(value).ToString();
+      return zdo.GetBool(value) ? "true" : "false";
     else if (key == "hash")
-      return zdo.GetInt(value).ToString(CultureInfo.InvariantCulture);
+      return ZNetScene.instance.GetPrefab(zdo.GetInt(value))?.name ?? "";
     else if (key == "vec")
       return DataEntry.PrintVectorXZY(zdo.GetVec3(value, Vector3.zero));
     else if (key == "quat")

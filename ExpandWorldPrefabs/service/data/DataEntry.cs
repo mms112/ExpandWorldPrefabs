@@ -428,14 +428,13 @@ public class DataEntry
       AddNestedParameters(value, pars, zdo);
       return;
     }
-    if (key.Contains("_"))
+    if (par.Contains("_"))
     {
       if (zdo == null) return;
-      var split = par.Split('_');
-      if (split.Length < 2) return;
-      var type = split[0];
-      var zdoKey = split[1];
-      key = $"<{type}_{zdoKey}>";
+      var split = Parse.Kvp(par, '_');
+      if (split.Value == "") return;
+      var type = split.Key;
+      var zdoKey = split.Value;
       if (type == "key")
         pars[key] = DataHelper.GetGlobalKey(zdoKey);
       if (type == "string")
@@ -459,7 +458,9 @@ public class DataEntry
     }
     else
     {
-      if (key == "<x>" && zdo != null)
+      if (key == "<time>")
+        pars[key] = ZNet.instance.GetTime().Ticks.ToString();
+      else if (key == "<x>" && zdo != null)
         pars[key] = zdo.m_position.x.ToString(CultureInfo.InvariantCulture);
       else if (key == "<y>" && zdo != null)
         pars[key] = zdo.m_position.y.ToString(CultureInfo.InvariantCulture);

@@ -1,6 +1,8 @@
 - v1.12
   - Adds support for parameter "<key_>" to get value of a global key.
+  - Adds wild card matching to string filters.
   - Changes the fields `filter` and `bannedFilter` to use the new data system.
+  - Fixes parameters not working on spawn or swap specific data.
 
 - v1.11
   - Fixes arithmetics not working for int or long values.

@@ -45,16 +45,11 @@ public class Manager
     if (info.Spawns.Length == 0 && info.Swaps.Length == 0 && !regenerateOriginal) return;
 
     var customData = DataHelper.Get(info.Data);
-    if (customData != null)
-      parameters = customData.InsertParameters(parameters, zdo);
     foreach (var p in info.Spawns)
       CreateObject(p, zdo, customData, parameters, info.TriggerRules);
 
     if (info.Swaps.Length == 0 && !regenerateOriginal) return;
     var data = DataHelper.Merge(new DataEntry(zdo), customData);
-    if (data != null)
-      parameters = data.InsertParameters(parameters, zdo);
-
     foreach (var p in info.Swaps)
       CreateObject(p, zdo, data, parameters, info.TriggerRules);
     if (regenerateOriginal)
@@ -74,6 +69,8 @@ public class Manager
     pos += rot * spawn.Pos;
     rot *= spawn.Rot;
     data = DataHelper.Merge(data, DataHelper.Get(spawn.Data));
+    if (data != null)
+      parameters = data.InsertParameters(parameters, originalZdo);
     DelayedSpawn.Add(spawn.Delay, pos, rot, spawn.GetPrefab(parameters), originalZdo.GetOwner(), data, parameters, triggerRules);
   }
   public static void CreateObject(ZDO source, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules) => CreateObject(source.m_prefab, source.m_position, source.GetRotation(), source.GetOwner(), data, parameters, triggerRules);

@@ -31,6 +31,18 @@ Following parameters are available to be used in the yaml file:
 - `<x>`, `<y>` and `<z>`: Object center point.
 - `<i>` and `<j>`: Object zone indices.
 - `<a>`: Object rotation.
+- `<time>`: Current time stamp.
+- `<key_*>`: Global key value.
+- `<int_*>`: Integer value from the ZDO.
+- `<float_*>`: Decimal value from the ZDO.
+- `<long_*>`: Big integer value from the ZDO.
+- `<string_*>`: Text value from the ZDO.
+- `<bool_*>`: Integer value from the ZDO converted to true or false.
+- `<hash_*>`: Integer value from the ZDO converted to prefab name.
+- `<vec_*>`: Vector3 value from the ZDO converted to x,z,y.
+- `<quat_*>`: Quaternion value from the ZDO converted to y,x,z.
+- `<byte_*>`: Byte value from the ZDO converted to base64 text.
+- `<zdo_*>`: ZDO id value from the ZDO.
 
 Following parameters are available for commands and playerSearch:
 
@@ -128,6 +140,8 @@ Most fields are put on a single line. List values are separated by `,`.
   - Ranges are supported for int and float.
     - `filter: int, level, 2;3` would apply to creatures with 1 or 2 stars
     - `filter: int, level, 0;1` is required for 1 star because 0 is the default value.
+  - Wildcards are suppored for strings.
+    - `filter: string, TamedName, *(S)*` would apply to pets with name containing "(S)".
   - For type `repair`, the filter is also checked for the player who did the repair.
     - Filter is valid if either the player or the object matches.
 - bannedFilter: Data filter that must not be true.
