@@ -83,6 +83,7 @@ public class CommandManager
     var expressions = cmd.Split(' ').Select(s => s.Split('=')).Select(a => a[a.Length - 1].Trim()).SelectMany(s => s.Split(',')).ToArray();
     foreach (var expression in expressions)
     {
+      if (expression.Length == 0) continue;
       // Single negative number would get handled as expression.
       var sub = expression.Substring(1);
       if (!sub.Contains('*') && !sub.Contains('/') && !sub.Contains('+') && !sub.Contains('-')) continue;

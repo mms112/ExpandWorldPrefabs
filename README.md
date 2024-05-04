@@ -121,13 +121,13 @@ Most fields are put on a single line. List values are separated by `,`.
   - If set without `eventDistance`, the search distance is 100 meters.
 - eventDistance: Search distance for nearby events.
   - If set without `events`, any nearby event is valid.
-- filter: Data filter for the object.
-  - Format is `type, key, value`. Supported types are bool, int, hash, float and string.
+- filter: Data filter for the object. This can be a data entry or a single data value.
+  - Format for a single data value is `type, key, value`. Supported types are bool, int, hash, float and string.
     - `filter: bool, boss, true` would apply only to boss creatures.
     - `filter: string, Humanoid.m_name, Piggy` would apply only to creatures with name "Piggy".
   - Ranges are supported for int and float.
-    - `filter: int, level, 2-3` would apply to creatures with 1 or 2 stars
-    - `filter: int, level, 0-1` is required for 1 star because 0 is the default value.
+    - `filter: int, level, 2;3` would apply to creatures with 1 or 2 stars
+    - `filter: int, level, 0;1` is required for 1 star because 0 is the default value.
   - For type `repair`, the filter is also checked for the player who did the repair.
     - Filter is valid if either the player or the object matches.
 - bannedFilter: Data filter that must not be true.
@@ -183,7 +183,7 @@ Checks possible RPCs [here](RPCs.md).
 - objectRpc: List of RPC calls. The RPC must be related to the triggering object.
 - clientRpc: List of RPC calls. These calls are not related to any object.
 
-Rpc format:
+RPC format:
 
 - name: Name of the RPC call. Must be exact match.
   - See list of supported calls: (RPCs.md)
@@ -209,9 +209,8 @@ To set multiple values, following fields can be used instead:
 - swaps: Swaps the object with multiple objects.
 - spawns: Spawns multiple objects.
 - commands: List of console commands to run.
-- filters: List of data filters. All must match.
-- bannedFilters: List of data filters. None must match.
-- rcps: List of hardcoded RPC calls.
+- filters: List of data value filters. All must match.
+- bannedFilters: List of data value filters. None must match.
 
 ### States
 

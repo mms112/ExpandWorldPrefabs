@@ -153,8 +153,8 @@ public class Info
   public Object[] BannedObjects = [];
   public HashSet<string> Locations = [];
   public float LocationDistance = 0f;
-  public Filter[] Filters = [];
-  public Filter[] BannedFilters = [];
+  public DataEntry? Filter;
+  public DataEntry? BannedFilter;
   public PlayerSearch PlayerSearch = PlayerSearch.None;
   public float PlayerSearchDistance = 0f;
   public float PlayerSearchHeight = 0f;
@@ -210,62 +210,7 @@ public class Spawn
     return ZNetScene.instance.GetPrefab(prefab) ? prefab : 0;
   }
 }
-public abstract class Filter
-{
-  public int Key;
-  public abstract bool Valid(ZDO zdo);
 
-  public static Filter Create(string filter)
-  {
-    var split = Parse.ToList(filter);
-    if (split.Count < 3)
-    {
-      Log.Error($"Invalid filter: {filter}");
-      return null!;
-    }
-    var type = split[0].ToLowerInvariant();
-    var key = split[1].GetStableHashCode();
-    var value = split[2];
-    if (type == "hash") return new IntFilter() { Key = key, MinValue = value.GetStableHashCode(), MaxValue = value.GetStableHashCode() };
-    if (type == "string") return new StringFilter() { Key = key, Value = value };
-    if (type == "bool") return new BoolFilter() { Key = key, Value = value == "true" };
-    var range = Parse.StringRange(value);
-    if (type == "int") return new IntFilter() { Key = key, MinValue = Parse.Int(range.Min), MaxValue = Parse.Int(range.Max) };
-    if (type == "float") return new FloatFilter() { Key = key, MinValue = Parse.Float(range.Min), MaxValue = Parse.Float(range.Max) };
-    Log.Error($"Invalid filter type: {type}");
-    return null!;
-  }
-}
-public class IntFilter : Filter
-{
-  public int MinValue;
-  public int MaxValue;
-  public override bool Valid(ZDO zdo)
-  {
-    var value = zdo.GetInt(Key);
-    return MinValue <= value && value <= MaxValue;
-  }
-}
-public class BoolFilter : Filter
-{
-  public bool Value;
-  public override bool Valid(ZDO zdo) => zdo.GetBool(Key) == Value;
-}
-public class FloatFilter : Filter
-{
-  public float MinValue;
-  public float MaxValue;
-  public override bool Valid(ZDO zdo)
-  {
-    var value = zdo.GetFloat(Key);
-    return MinValue <= value && value <= MaxValue;
-  }
-}
-public class StringFilter : Filter
-{
-  public string Value = "";
-  public override bool Valid(ZDO zdo) => zdo.GetString(Key) == Value;
-}
 public enum PlayerSearch
 {
   None,

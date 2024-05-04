@@ -436,6 +436,8 @@ public class DataEntry
       var type = split[0];
       var zdoKey = split[1];
       key = $"<{type}_{zdoKey}>";
+      if (type == "key")
+        pars[key] = DataHelper.GetGlobalKey(zdoKey);
       if (type == "string")
         pars[key] = zdo.GetString(zdoKey);
       else if (type == "float")

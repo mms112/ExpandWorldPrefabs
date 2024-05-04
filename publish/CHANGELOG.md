@@ -1,3 +1,7 @@
+- v1.12
+  - Adds support for parameter "<key_>" to get value of a global key.
+  - Changes the fields `filter` and `bannedFilter` to use the new data system.
+
 - v1.11
   - Fixes arithmetics not working for int or long values.
 

@@ -48,8 +48,8 @@ public class InfoSelector
     var checkObjects = linq.Any(d => d.Objects.Length > 0);
     var checkBannedObjects = linq.Any(d => d.BannedObjects.Length > 0);
     var checkLocations = linq.Any(d => d.Locations.Count > 0);
-    var checkFilters = linq.Any(d => d.Filters.Length > 0);
-    var checkBannedFilters = linq.Any(d => d.BannedFilters.Length > 0);
+    var checkFilters = linq.Any(d => d.Filter != null);
+    var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
     if (checkEnvironments)
     {
       var environment = GetEnvironment(biome);
@@ -104,13 +104,18 @@ public class InfoSelector
         return false;
       }).ToArray();
     }
-    if (checkFilters)
+    if (checkFilters || checkBannedFilters)
     {
-      linq = linq.Where(d => d.Filters.All(f => f.Valid(zdo) || source != null && f.Valid(source))).ToArray();
-    }
-    if (checkBannedFilters)
-    {
-      linq = linq.Where(d => d.BannedFilters.All(f => !f.Valid(zdo) || source != null && !f.Valid(source))).ToArray();
+      Dictionary<string, string> pars = [];
+      Dictionary<string, string> sourcePars = [];
+      if (checkFilters)
+      {
+        linq = linq.Where(d => d.Filter == null || d.Filter.Match(pars, zdo) || (source != null && d.Filter.Match(sourcePars, source))).ToArray();
+      }
+      if (checkBannedFilters)
+      {
+        linq = linq.Where(d => d.BannedFilter == null || d.BannedFilter.Unmatch(pars, zdo) || (source != null && d.BannedFilter.Unmatch(sourcePars, source))).ToArray();
+      }
     }
     var valid = linq.ToArray();
     if (valid.Length == 0) return null;

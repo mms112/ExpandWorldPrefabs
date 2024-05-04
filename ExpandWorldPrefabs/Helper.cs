@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Data;
 using Service;
 using UnityEngine;
@@ -62,6 +63,8 @@ public class Helper
 
   public static string GetZdoValue(ZDO zdo, string key, string value)
   {
+    if (key == "key")
+      return DataHelper.GetGlobalKey(value);
     if (key == "string")
       return zdo.GetString(value);
     else if (key == "float")

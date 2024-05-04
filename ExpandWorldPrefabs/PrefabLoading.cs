@@ -134,8 +134,8 @@ public class Loading
         Objects = objects,
         BannedObjects = bannedObjects,
         BannedObjectsLimit = bannedObjectsLimit,
-        Filters = filters,
-        BannedFilters = bannedFilters,
+        Filter = filters,
+        BannedFilter = bannedFilters,
         TriggerRules = data.triggerRules,
         ObjectRpcs = objectRpcs,
         ClientRpcs = clientRpcs,
@@ -159,7 +159,60 @@ public class Loading
 
   private static Spawn[] ParseSpawns(string[] spawns, float delay) => spawns.Select(s => new Spawn(s, delay)).ToArray();
 
-  private static Filter[] ParseFilters(string[] filters) => filters.Select(Filter.Create).Where(s => s != null).ToArray();
+  private static DataEntry? ParseFilters(string[] filters)
+  {
+    if (filters.Length == 0)
+      return null;
+    if (filters.Length == 1 && Parse.ToList(filters[0]).Count == 1)
+      return DataLoading.Get(filters[0]);
+    DataEntry entry = new();
+    foreach (var filter in filters)
+      AddFilter(entry, filter);
+    return entry;
+  }
+  private static void AddFilter(DataEntry entry, string filter)
+  {
+    var split = Parse.ToList(filter);
+    if (split.Count < 3)
+    {
+      Log.Error($"Invalid filter: {filter}");
+      return;
+    }
+    var type = split[0].ToLowerInvariant();
+    var key = split[1].GetStableHashCode();
+    var value = split[2];
+    if (type == "hash")
+    {
+      entry.Hashes ??= [];
+      entry.Hashes.Add(key, DataValue.Hash(value, entry.RequiredParameters));
+      return;
+    }
+    if (type == "string")
+    {
+      entry.Strings ??= [];
+      entry.Strings.Add(key, DataValue.String(value, entry.RequiredParameters));
+      return;
+    }
+    if (type == "bool")
+    {
+      entry.Bools ??= [];
+      entry.Bools.Add(key, DataValue.Bool(value, entry.RequiredParameters));
+      return;
+    }
+    if (type == "int")
+    {
+      entry.Ints ??= [];
+      entry.Ints.Add(key, DataValue.Int(value, entry.RequiredParameters));
+      return;
+    }
+    if (type == "float")
+    {
+      entry.Floats ??= [];
+      entry.Floats.Add(key, DataValue.Float(value, entry.RequiredParameters));
+      return;
+    }
+    Log.Error($"Invalid filter type: {type}");
+  }
   private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
   private static Poke[] ParsePokes(PokeData[] objects) => objects.Select(s => new Poke(s)).ToArray();
   private static ObjectRpcInfo[]? ParseObjectRpcs(Data data)
