@@ -167,6 +167,7 @@ public class Spawn
   private readonly int Prefab = 0;
   private readonly string WildPrefab = "";
   public readonly Vector3 Pos = Vector3.zero;
+  public readonly bool Snap = false;
   public readonly Quaternion Rot = Quaternion.identity;
   public readonly string Data = "";
   public readonly float Delay = 0;
@@ -189,6 +190,8 @@ public class Spawn
     {
       if (Parse.TryFloat(split[1], out var x))
         Pos = new Vector3(x, Parse.Float(split[3]), Parse.Float(split[2]));
+      if (split[3] == "snap")
+        Snap = true;
     }
     if (split.Count > 6)
     {

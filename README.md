@@ -92,6 +92,7 @@ Most fields are put on a single line. List values are separated by `,`.
     - `id, posX,posZ,posY, data`
     - `id, data`
   - Id supports parameters.
+  - PosY can be `snap` to snap to the ground.
 - swap: Swaps the original object with another object.
   - Format and keywords are same as for `spawn`.
   - The initial data is copied from the original object.

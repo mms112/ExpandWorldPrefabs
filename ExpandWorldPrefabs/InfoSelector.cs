@@ -28,7 +28,7 @@ public class InfoSelector
     var pos = zdo.m_position;
     var biome = WorldGenerator.instance.GetBiome(pos);
     var distance = Utils.DistanceXZ(pos, Vector3.zero);
-    var day = EnvMan.instance.IsDay();
+    var day = EnvMan.IsDay();
     var args = arg.Split(' ');
     var linq = data
       .Where(d => CheckArgs(d, args))

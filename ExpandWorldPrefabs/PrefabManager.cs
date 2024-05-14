@@ -68,6 +68,8 @@ public class Manager
     var rot = originalZdo.GetRotation();
     pos += rot * spawn.Pos;
     rot *= spawn.Rot;
+    if (spawn.Snap)
+      pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
     data = DataHelper.Merge(data, DataHelper.Get(spawn.Data));
     if (data != null)
       parameters = data.InsertParameters(parameters, originalZdo);
