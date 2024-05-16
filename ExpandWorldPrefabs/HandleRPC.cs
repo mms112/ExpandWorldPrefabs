@@ -64,7 +64,7 @@ public class HandleRPC
   }
 
 
-  static readonly int RepairHash = "WNTHealthChanged".GetStableHashCode();
+  static readonly int RepairHash = "RPC_HealthChanged".GetStableHashCode();
   static readonly ParameterInfo[] RepairPars = AccessTools.Method(typeof(WearNTear), nameof(WearNTear.RPC_HealthChanged)).GetParameters();
   private static void WNTHealthChanged(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
   {
@@ -108,7 +108,7 @@ public class HandleRPC
     Manager.Handle(ActionType.State, targetPrefab.name, zdo);
     Manager.Handle(ActionType.State, "target", targetZDO);
   }
-  static readonly int ShakeHash = "Shake".GetStableHashCode();
+  static readonly int ShakeHash = "RPC_Shake".GetStableHashCode();
   static readonly ParameterInfo[] ShakePars = AccessTools.Method(typeof(TreeBase), nameof(TreeBase.RPC_Shake)).GetParameters();
   private static void Shake(ZDO zdo)
   {
@@ -155,7 +155,7 @@ public class HandleRPC
   {
     Manager.Handle(ActionType.State, "flash", zdo);
   }
-  static readonly int SetPickedHash = "SetPicked".GetStableHashCode();
+  static readonly int SetPickedHash = "RPC_SetPicked".GetStableHashCode();
   static readonly ParameterInfo[] SetPickedPars = AccessTools.Method(typeof(Pickable), nameof(Pickable.RPC_SetPicked)).GetParameters();
   private static void SetPicked(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
   {
@@ -177,7 +177,7 @@ public class HandleRPC
   {
     Manager.Handle(ActionType.State, "wakeup", zdo);
   }
-  static readonly int SetAreaHealthHash = "SetAreaHealth".GetStableHashCode();
+  static readonly int SetAreaHealthHash = "RPC_SetAreaHealth".GetStableHashCode();
   static readonly ParameterInfo[] SetAreaHealthPars = AccessTools.Method(typeof(MineRock5), nameof(MineRock5.RPC_SetAreaHealth)).GetParameters();
   private static void SetAreaHealth(ZDO zdo)
   {

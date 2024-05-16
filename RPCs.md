@@ -902,7 +902,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Shows the shake effect.
   objectRpc:
-  - name: Shake
+  - name: RPC_Shake
     target: all
 ```
 
@@ -968,7 +968,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Sets health for visual style.
   objectRpc:
-  - name: WNTHealthChanged
+  - name: RPC_HealthChanged
     target: all
     1: float, "amount of health"
 ```

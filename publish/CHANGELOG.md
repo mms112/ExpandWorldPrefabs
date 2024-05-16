@@ -1,3 +1,6 @@
+- v1.14
+  - Fixes some states not working.
+
 - v1.13
   - Adds support for value "snap" to y-coordinate for `spawn` field.
   - Fixed for the new game version.
