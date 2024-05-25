@@ -16,7 +16,8 @@ public enum ActionType
   Command,
   Say,
   Poke,
-  GlobalKey
+  GlobalKey,
+  Event
 }
 public class InfoManager
 {
@@ -29,6 +30,7 @@ public class InfoManager
   public static readonly PrefabInfo SayDatas = new();
   public static readonly PrefabInfo PokeDatas = new();
   public static readonly GlobalInfo GlobalKeyDatas = new();
+  public static readonly GlobalInfo EventDatas = new();
 
   public static void Clear()
   {
@@ -41,12 +43,18 @@ public class InfoManager
     SayDatas.Clear();
     PokeDatas.Clear();
     GlobalKeyDatas.Clear();
+    EventDatas.Clear();
   }
   public static void Add(Info info)
   {
     if (info.Type == ActionType.GlobalKey)
     {
       GlobalKeyDatas.Add(info);
+      return;
+    }
+    if (info.Type == ActionType.Event)
+    {
+      EventDatas.Add(info);
       return;
     }
     Select(info.Type).Add(info);
@@ -65,6 +73,8 @@ public class InfoManager
       HandleRPC.Patch(EWP.Harmony);
     if (GlobalKeyDatas.Exists)
       HandleGlobalKey.Patch(EWP.Harmony);
+    if (EventDatas.Exists)
+      HandleEvent.Patch(EWP.Harmony);
   }
 
 
@@ -78,13 +88,24 @@ public class InfoManager
     ActionType.Say => SayDatas,
     ActionType.Poke => PokeDatas,
     ActionType.Create => CreateDatas,
-    _ => CreateDatas,
+    _ => Error(type),
   };
+  private static PrefabInfo Error(ActionType type)
+  {
+    Log.Error($"Unknown entry type {type}");
+    return new();
+  }
   public static GlobalInfo SelectGlobal(ActionType type) => type switch
   {
     ActionType.GlobalKey => GlobalKeyDatas,
-    _ => GlobalKeyDatas,
+    ActionType.Event => EventDatas,
+    _ => ErrorGlobal(type),
   };
+  private static GlobalInfo ErrorGlobal(ActionType type)
+  {
+    Log.Error($"Unknown entry type {type}");
+    return new();
+  }
 
   private static Dictionary<string, int> PrefabCache = [];
   public static IEnumerable<int> GetPrefabs(string prefab)

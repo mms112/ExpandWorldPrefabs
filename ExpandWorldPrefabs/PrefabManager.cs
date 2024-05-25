@@ -8,11 +8,11 @@ namespace ExpandWorld.Prefab;
 
 public class Manager
 {
-  public static void HandleGlobal(ActionType type, string args, bool remove)
+  public static void HandleGlobal(ActionType type, string args, Vector3 pos, bool remove)
   {
     if (!ZNet.instance.IsServer()) return;
-    var parameters = Helper.CreateParameters(args);
-    var info = InfoSelector.SelectGlobal(type, args, parameters, remove);
+    var parameters = Helper.CreateParameters(args, pos);
+    var info = InfoSelector.SelectGlobal(type, args, parameters, pos, remove);
     if (info == null) return;
     List<PlayerInfo>? players = null;
     if (info.Commands.Length > 0 || (info.ClientRpcs != null && info.ClientRpcs.Any(rpc => rpc.IsTarget)))
@@ -22,7 +22,7 @@ public class Manager
     }
     if (info.ClientRpcs != null)
       GlobalClientRpc(info.ClientRpcs, parameters, players);
-    PokeGlobal(info, parameters);
+    PokeGlobal(info, parameters, pos);
   }
   public static void Handle(ActionType type, string args, ZDO zdo, ZDO? source = null)
   {
@@ -169,17 +169,17 @@ public class Manager
 
     }
   }
-  public static void PokeGlobal(Info info, Dictionary<string, string> parameters)
+  public static void PokeGlobal(Info info, Dictionary<string, string> parameters, Vector3 pos)
   {
     if (info.LegacyPokes.Length > 0)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, Vector3.zero, parameters);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, parameters);
       var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, null);
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
     foreach (var poke in info.Pokes)
     {
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, Vector3.zero, parameters);
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, pos, parameters);
       var pokeParameter = Helper.ReplaceParameters(poke.Parameter, parameters, null);
       DelayedPoke.Add(poke.Delay, zdos, pokeParameter);
 

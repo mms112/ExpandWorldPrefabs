@@ -73,6 +73,9 @@ Most fields are put on a single line. List values are separated by `,`.
     - `poke`: When `pokes` field is used.
     - `globalkey`: When a global key is set or removed. Parameter is the key name.
       - Use field `remove` to trigger on key removal.
+      - Note: There is no prefab or position for this type, so most fields won't work.
+    - `event`: When an event starts or ends. Parameter is the event name.
+      - Use field `end` to trigger on event end.
       - Note: There is no prefab for this type, so most fields won't work.
   - Objects spawned or removed by this mod won't trigger `create` or `destroy`.
 - weight (default: `1`): Chance to be selected if multiple entries match.

@@ -1,4 +1,6 @@
+
 using HarmonyLib;
+using UnityEngine;
 
 namespace ExpandWorld.Prefab;
 
@@ -17,11 +19,11 @@ public class HandleGlobalKey
   private static void RPC_SetGlobalKey(string name)
   {
     var keyValue = ZoneSystem.GetKeyValue(name.ToLower(), out _, out _);
-    Manager.HandleGlobal(ActionType.GlobalKey, keyValue, false);
+    Manager.HandleGlobal(ActionType.GlobalKey, keyValue, Vector3.zero, false);
   }
   private static void RPC_RemoveGlobalKey(string name)
   {
     var keyValue = ZoneSystem.GetKeyValue(name.ToLower(), out _, out _);
-    Manager.HandleGlobal(ActionType.GlobalKey, keyValue, true);
+    Manager.HandleGlobal(ActionType.GlobalKey, keyValue, Vector3.zero, true);
   }
 }

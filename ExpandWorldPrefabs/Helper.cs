@@ -61,9 +61,10 @@ public class Helper
       { "<time>", ZNet.instance.GetTime().Ticks.ToString() },
     };
   }
-  public static Dictionary<string, string> CreateParameters(string args)
+  public static Dictionary<string, string> CreateParameters(string args, Vector3 pos)
   {
     var split = args.Split(' ');
+    var zone = ZoneSystem.instance.GetZone(pos);
     return new Dictionary<string, string> {
       { "<par0>", split.Length > 0 ? split[0] : "" },
       { "<par1>", split.Length > 1 ? split[1] : "" },
@@ -71,6 +72,11 @@ public class Helper
       { "<par3>", split.Length > 3 ? split[3] : "" },
       { "<par4>", split.Length > 4 ? split[4] : "" },
       { "<par>", args },
+      { "<x>", Format(pos.x) },
+      { "<y>", Format(pos.y) },
+      { "<z>", Format(pos.z) },
+      { "<i>", zone.x.ToString() },
+      { "<j>", zone.y.ToString() },
       { "<time>", ZNet.instance.GetTime().Ticks.ToString() },
     };
   }

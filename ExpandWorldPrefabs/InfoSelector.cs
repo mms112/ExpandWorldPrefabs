@@ -29,7 +29,7 @@ public class InfoSelector
     if (data.Count == 0) return null;
     var pos = zdo.m_position;
     var biome = WorldGenerator.instance.GetBiome(pos);
-    var distance = Utils.DistanceXZ(pos, Vector3.zero);
+    var distance = Utils.LengthXZ(pos);
     var day = EnvMan.IsDay();
     var args = arg.Split(' ');
     var linq = data
@@ -152,22 +152,27 @@ public class InfoSelector
     Random.state = state;
     return env.m_name.ToLower();
   }
-  public static Info? SelectGlobal(ActionType type, string arg, Dictionary<string, string> parameters, bool remove)
+  public static Info? SelectGlobal(ActionType type, string arg, Dictionary<string, string> parameters, Vector3 pos, bool remove)
   {
     var infos = InfoManager.SelectGlobal(type);
-    return SelectGlobalInfo(infos.Info, arg, parameters, remove) ?? SelectGlobalInfo(infos.Fallback, arg, parameters, remove);
+    return SelectGlobalInfo(infos.Info, arg, parameters, pos, remove) ?? SelectGlobalInfo(infos.Fallback, arg, parameters, pos, remove);
   }
 
-  private static Info? SelectGlobalInfo(List<Info> data, string arg, Dictionary<string, string> parameters, bool remove)
+  private static Info? SelectGlobalInfo(List<Info> data, string arg, Dictionary<string, string> parameters, Vector3 pos, bool remove)
   {
     if (data.Count == 0) return null;
     var day = EnvMan.IsDay();
     var args = arg.Split(' ');
+    var distance = Utils.LengthXZ(pos);
     var linq = data
       .Where(d => CheckArgs(d, args))
       .Where(d => remove == d.Remove)
       .Where(d => d.Day || !day)
       .Where(d => d.Night || day)
+      .Where(d => distance >= d.MinDistance)
+      .Where(d => distance < d.MaxDistance)
+      .Where(d => pos.y >= d.MinY)
+      .Where(d => pos.y < d.MaxY)
       .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
       .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters));
 
