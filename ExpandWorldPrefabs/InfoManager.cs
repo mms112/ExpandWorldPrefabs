@@ -15,7 +15,8 @@ public enum ActionType
   State,
   Command,
   Say,
-  Poke
+  Poke,
+  GlobalKey
 }
 public class InfoManager
 {
@@ -27,6 +28,7 @@ public class InfoManager
   public static readonly PrefabInfo CommandDatas = new();
   public static readonly PrefabInfo SayDatas = new();
   public static readonly PrefabInfo PokeDatas = new();
+  public static readonly GlobalInfo GlobalKeyDatas = new();
 
   public static void Clear()
   {
@@ -38,9 +40,15 @@ public class InfoManager
     CommandDatas.Clear();
     SayDatas.Clear();
     PokeDatas.Clear();
+    GlobalKeyDatas.Clear();
   }
   public static void Add(Info info)
   {
+    if (info.Type == ActionType.GlobalKey)
+    {
+      GlobalKeyDatas.Add(info);
+      return;
+    }
     Select(info.Type).Add(info);
     if (info.Type == ActionType.Say)
       Select(ActionType.Command).Add(info);
@@ -55,6 +63,8 @@ public class InfoManager
       HandleDestroyed.Patch(EWP.Harmony);
     if (RepairDatas.Exists || DamageDatas.Exists || StateDatas.Exists || CommandDatas.Exists || SayDatas.Exists)
       HandleRPC.Patch(EWP.Harmony);
+    if (GlobalKeyDatas.Exists)
+      HandleGlobalKey.Patch(EWP.Harmony);
   }
 
 
@@ -67,7 +77,13 @@ public class InfoManager
     ActionType.Command => CommandDatas,
     ActionType.Say => SayDatas,
     ActionType.Poke => PokeDatas,
+    ActionType.Create => CreateDatas,
     _ => CreateDatas,
+  };
+  public static GlobalInfo SelectGlobal(ActionType type) => type switch
+  {
+    ActionType.GlobalKey => GlobalKeyDatas,
+    _ => GlobalKeyDatas,
   };
 
   private static Dictionary<string, int> PrefabCache = [];
@@ -99,15 +115,15 @@ public class InfoManager
 
 public class PrefabInfo
 {
-  public readonly Dictionary<int, List<Info>> Prefabs = [];
-  public readonly Dictionary<int, List<Info>> PrefabsFallback = [];
-  public bool Exists => Prefabs.Count > 0 || PrefabsFallback.Count > 0;
+  public readonly Dictionary<int, List<Info>> Info = [];
+  public readonly Dictionary<int, List<Info>> Fallback = [];
+  public bool Exists => Info.Count > 0 || Fallback.Count > 0;
 
 
   public void Clear()
   {
-    Prefabs.Clear();
-    PrefabsFallback.Clear();
+    Info.Clear();
+    Fallback.Clear();
   }
   public void Add(Info info)
   {
@@ -120,14 +136,14 @@ public class PrefabInfo
     {
       if (info.Fallback)
       {
-        if (!PrefabsFallback.TryGetValue(hash, out var list))
-          PrefabsFallback[hash] = list = [];
+        if (!Fallback.TryGetValue(hash, out var list))
+          Fallback[hash] = list = [];
         list.Add(info);
       }
       else
       {
-        if (!Prefabs.TryGetValue(hash, out var list))
-          Prefabs[hash] = list = [];
+        if (!Info.TryGetValue(hash, out var list))
+          Info[hash] = list = [];
         list.Add(info);
       }
     }
@@ -155,7 +171,29 @@ public class PrefabInfo
       }
     }
   }
-  public bool TryGetValue(int prefab, out List<Info> list) => Prefabs.TryGetValue(prefab, out list);
-  public bool TryGetFallbackValue(int prefab, out List<Info> list) => PrefabsFallback.TryGetValue(prefab, out list);
+  public bool TryGetValue(int prefab, out List<Info> list) => Info.TryGetValue(prefab, out list);
+  public bool TryGetFallbackValue(int prefab, out List<Info> list) => Fallback.TryGetValue(prefab, out list);
 
+}
+
+
+public class GlobalInfo
+{
+  public readonly List<Info> Info = [];
+  public readonly List<Info> Fallback = [];
+  public bool Exists => Info.Count > 0 || Fallback.Count > 0;
+
+
+  public void Clear()
+  {
+    Info.Clear();
+    Fallback.Clear();
+  }
+  public void Add(Info info)
+  {
+    if (info.Fallback)
+      Fallback.Add(info);
+    else
+      Info.Add(info);
+  }
 }

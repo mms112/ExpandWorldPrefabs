@@ -73,6 +73,8 @@ public class Loading
     var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), spawnDelay);
     var playerSearch = Parse.ToList(data.playerSearch).ToArray();
     var types = (data.types ?? [data.type]).Select(s => new InfoType(data.prefab, s)).ToArray();
+    if (data.prefab == "" && types.Any(t => t.Type != ActionType.GlobalKey))
+      Log.Warning($"Prefab missing for type {data.type}");
     HashSet<string> events = [.. Parse.ToList(data.events)];
     var commands = ParseCommands(data.commands ?? (data.command == null ? [] : [data.command]));
     HashSet<string> environments = [.. Parse.ToList(data.environments).Select(s => s.ToLower())];

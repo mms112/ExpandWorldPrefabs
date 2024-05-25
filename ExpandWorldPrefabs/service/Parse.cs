@@ -262,11 +262,11 @@ public static class Parse
     var split = Split(arg, true, ':');
     return new ZDOID(Long(split[0]), UInt(split[1]));
   }
-  public static HitData Hit(ZDO zdo, string arg)
+  public static HitData Hit(ZDO? zdo, string arg)
   {
     HitData hit = new()
     {
-      m_point = zdo.m_position
+      m_point = zdo?.m_position ?? Vector3.zero,
     };
     var split = Split(arg, true, ' ');
     foreach (var s in split)
@@ -302,7 +302,6 @@ public static class Parse
       if (key == "world") hit.m_itemWorldLevel = (byte)Int(value);
       if (key == "type") hit.m_hitType = Enum.TryParse(value, true, out HitData.HitType type) ? type : HitData.HitType.Undefined;
       if (key == "spot") hit.m_weakSpot = (short)Int(value);
-
     }
     return hit;
   }

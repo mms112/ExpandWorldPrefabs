@@ -7,9 +7,11 @@ namespace ExpandWorld.Prefab;
 
 public class InfoSelector
 {
-  public static Info? Select(ActionType type, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source) => Select(InfoManager.Select(type), zdo, arg, parameters, source);
-  private static Info? Select(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source) =>
-    SelectDefault(infos, zdo, arg, parameters, source) ?? SelectFallback(infos, zdo, arg, parameters, source);
+  public static Info? Select(ActionType type, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  {
+    var infos = InfoManager.Select(type);
+    return SelectDefault(infos, zdo, arg, parameters, source) ?? SelectFallback(infos, zdo, arg, parameters, source);
+  }
   private static Info? SelectDefault(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
   {
     var prefab = zdo.m_prefab;
@@ -149,5 +151,36 @@ public class InfoSelector
     var env = em.SelectWeightedEnvironment(availableEnvironments);
     Random.state = state;
     return env.m_name.ToLower();
+  }
+  public static Info? SelectGlobal(ActionType type, string arg, Dictionary<string, string> parameters, bool remove)
+  {
+    var infos = InfoManager.SelectGlobal(type);
+    return SelectGlobalInfo(infos.Info, arg, parameters, remove) ?? SelectGlobalInfo(infos.Fallback, arg, parameters, remove);
+  }
+
+  private static Info? SelectGlobalInfo(List<Info> data, string arg, Dictionary<string, string> parameters, bool remove)
+  {
+    if (data.Count == 0) return null;
+    var day = EnvMan.IsDay();
+    var args = arg.Split(' ');
+    var linq = data
+      .Where(d => CheckArgs(d, args))
+      .Where(d => remove == d.Remove)
+      .Where(d => d.Day || !day)
+      .Where(d => d.Night || day)
+      .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
+      .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters));
+
+    var valid = linq.ToArray();
+    if (valid.Length == 0) return null;
+    if (valid.Length == 1 && valid[0].Weight >= 1f) return valid[0];
+    var totalWeight = Mathf.Max(1f, valid.Sum(d => d.Weight));
+    var random = Random.Range(0f, totalWeight);
+    foreach (var item in valid)
+    {
+      random -= item.Weight;
+      if (random <= 0f) return item;
+    }
+    return null;
   }
 }

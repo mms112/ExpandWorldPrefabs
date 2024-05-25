@@ -1,3 +1,7 @@
+- v1.15
+  - Adds a new type "globalkey" to trigger on global key changes.
+  - Changes missing global keys to be evaluated as value 0.
+
 - v1.14
   - Fixes some states not working.
 

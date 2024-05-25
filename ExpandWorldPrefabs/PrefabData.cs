@@ -10,6 +10,7 @@ namespace ExpandWorld.Prefab;
 
 public class Data
 {
+  [DefaultValue("")]
   public string prefab = "";
   public string type = "";
   [DefaultValue(null)]

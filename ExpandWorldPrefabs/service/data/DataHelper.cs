@@ -121,6 +121,6 @@ public class DataHelper
   public static string GetGlobalKey(string key)
   {
     var lower = key.ToLowerInvariant();
-    return ZoneSystem.instance.m_globalKeysValues.FirstOrDefault(kvp => kvp.Key.ToLowerInvariant() == lower).Value ?? "";
+    return ZoneSystem.instance.m_globalKeysValues.FirstOrDefault(kvp => kvp.Key.ToLowerInvariant() == lower).Value ?? "0";
   }
 }

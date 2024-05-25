@@ -61,6 +61,19 @@ public class Helper
       { "<time>", ZNet.instance.GetTime().Ticks.ToString() },
     };
   }
+  public static Dictionary<string, string> CreateParameters(string args)
+  {
+    var split = args.Split(' ');
+    return new Dictionary<string, string> {
+      { "<par0>", split.Length > 0 ? split[0] : "" },
+      { "<par1>", split.Length > 1 ? split[1] : "" },
+      { "<par2>", split.Length > 2 ? split[2] : "" },
+      { "<par3>", split.Length > 3 ? split[3] : "" },
+      { "<par4>", split.Length > 4 ? split[4] : "" },
+      { "<par>", args },
+      { "<time>", ZNet.instance.GetTime().Ticks.ToString() },
+    };
+  }
 
   public static string GetZdoValue(ZDO zdo, string key, string value)
   {

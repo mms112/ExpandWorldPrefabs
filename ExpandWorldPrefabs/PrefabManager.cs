@@ -8,7 +8,22 @@ namespace ExpandWorld.Prefab;
 
 public class Manager
 {
-
+  public static void HandleGlobal(ActionType type, string args, bool remove)
+  {
+    if (!ZNet.instance.IsServer()) return;
+    var parameters = Helper.CreateParameters(args);
+    var info = InfoSelector.SelectGlobal(type, args, parameters, remove);
+    if (info == null) return;
+    List<PlayerInfo>? players = null;
+    if (info.Commands.Length > 0 || (info.ClientRpcs != null && info.ClientRpcs.Any(rpc => rpc.IsTarget)))
+    {
+      players = Commands.FindPlayers();
+      Commands.Run(info, parameters, players);
+    }
+    if (info.ClientRpcs != null)
+      GlobalClientRpc(info.ClientRpcs, parameters, players);
+    PokeGlobal(info, parameters);
+  }
   public static void Handle(ActionType type, string args, ZDO zdo, ZDO? source = null)
   {
     // Already destroyed before.
@@ -18,7 +33,7 @@ public class Manager
     var parameters = Helper.CreateParameters(name, args, zdo);
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
     if (info == null) return;
-    PlayerInfo[]? players = null;
+    List<PlayerInfo>? players = null;
     if (info.Commands.Length > 0
       || (info.ObjectRpcs != null && info.ObjectRpcs.Any(rpc => rpc.IsTarget))
       || (info.ClientRpcs != null && info.ClientRpcs.Any(rpc => rpc.IsTarget)))
@@ -142,14 +157,30 @@ public class Manager
   {
     if (info.LegacyPokes.Length > 0)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, zdo, parameters);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, zdo.m_position, parameters);
       var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, zdo);
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
     foreach (var poke in info.Pokes)
     {
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, zdo, parameters);
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, zdo.m_position, parameters);
       var pokeParameter = Helper.ReplaceParameters(poke.Parameter, parameters, zdo);
+      DelayedPoke.Add(poke.Delay, zdos, pokeParameter);
+
+    }
+  }
+  public static void PokeGlobal(Info info, Dictionary<string, string> parameters)
+  {
+    if (info.LegacyPokes.Length > 0)
+    {
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, Vector3.zero, parameters);
+      var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, null);
+      DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
+    }
+    foreach (var poke in info.Pokes)
+    {
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, Vector3.zero, parameters);
+      var pokeParameter = Helper.ReplaceParameters(poke.Parameter, parameters, null);
       DelayedPoke.Add(poke.Delay, zdos, pokeParameter);
 
     }
@@ -160,15 +191,20 @@ public class Manager
       Handle(ActionType.Poke, parameter, z);
   }
 
-  public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
+  public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, List<PlayerInfo>? players)
   {
     foreach (var i in info)
       i.Invoke(zdo, parameters, players);
   }
-  public static void ClientRpc(ClientRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
+  public static void ClientRpc(ClientRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, List<PlayerInfo>? players)
   {
     foreach (var i in info)
       i.Invoke(zdo, parameters, players);
+  }
+  public static void GlobalClientRpc(ClientRpcInfo[] info, Dictionary<string, string> parameters, List<PlayerInfo>? players)
+  {
+    foreach (var i in info)
+      i.InvokeGlobal(parameters, players);
   }
   public static void Rpc(long source, long target, ZDOID id, int hash, object[] parameters)
   {

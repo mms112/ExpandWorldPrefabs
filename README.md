@@ -71,6 +71,9 @@ Most fields are put on a single line. List values are separated by `,`.
     - `say`: When objects or players say something. Parameter is the text.
     - `command`: When admins say something. Parameter is the text.
     - `poke`: When `pokes` field is used.
+    - `globalkey`: When a global key is set or removed. Parameter is the key name.
+      - Use field `remove` to trigger on key removal.
+      - Note: There is no prefab for this type, so most fields won't work.
   - Objects spawned or removed by this mod won't trigger `create` or `destroy`.
 - weight (default: `1`): Chance to be selected if multiple entries match.
   - All weights are summed and the probability is `weight / sum`.

@@ -54,7 +54,7 @@ public abstract class RpcInfo
       Delay = Parse.Float(d, 0f);
     Parameters = lines.OrderBy(p => p.Key).Where(p => Parse.TryInt(p.Key, out var _)).Select(p => Parse.Kvp(p.Value)).ToArray();
   }
-  public void Invoke(ZDO zdo, Dictionary<string, string> parameters, PlayerInfo[]? players)
+  public void Invoke(ZDO zdo, Dictionary<string, string> parameters, List<PlayerInfo>? players)
   {
     var source = ZRoutedRpc.instance.m_id;
     if (SourceParameter != null)
@@ -75,10 +75,25 @@ public abstract class RpcInfo
         DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, pars);
     }
     else if (Target == RpcTarget.Search && players != null)
+    {
+      // Probably could inject some player specific parameters here.
       foreach (var player in players)
         DelayedRpc.Add(Delay, source, player.PeerId, GetId(zdo), Hash, pars);
+    }
   }
-  private object[] GetParameters(ZDO zdo, Dictionary<string, string> parameters)
+  public void InvokeGlobal(Dictionary<string, string> parameters, List<PlayerInfo>? players)
+  {
+    var source = ZRoutedRpc.instance.m_id;
+    var pars = GetParameters(parameters);
+    if (Target == RpcTarget.Search && players != null)
+    {
+      // Probably could inject some player specific parameters here.
+      foreach (var player in players)
+        DelayedRpc.Add(Delay, source, player.PeerId, ZDOID.None, Hash, pars);
+    }
+    else DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, ZDOID.None, Hash, pars);
+  }
+  private object[] GetParameters(ZDO? zdo, Dictionary<string, string> parameters)
   {
     var pars = Parameters.Select(p => Helper.ReplaceParameters(p.Value, parameters, zdo)).ToArray<object>();
     for (var i = 0; i < pars.Length; i++)
@@ -101,6 +116,7 @@ public abstract class RpcInfo
     }
     return pars;
   }
+  private object[] GetParameters(Dictionary<string, string> parameters) => GetParameters(null, parameters);
 }
 
 
