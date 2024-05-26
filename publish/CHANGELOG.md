@@ -1,6 +1,6 @@
 - v1.15
   - Adds a new type "globalkey" to trigger on global key changes.
-  - Adds a new type "event" to trigger on event start or end
+  - Adds a new type "event" to trigger on event start or end.
   - Changes missing global keys to be evaluated as value 0.
 
 - v1.14
