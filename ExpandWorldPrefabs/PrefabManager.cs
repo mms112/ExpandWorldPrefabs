@@ -150,6 +150,18 @@ public class Manager
     }
     if (obj.TryGetComponent<Piece>(out var piece))
       piece.DropResources();
+    if (obj.TryGetComponent<TreeBase>(out var tree))
+    {
+      var items = tree.m_dropWhenDestroyed.GetDropList();
+      foreach (var item in items)
+        UnityEngine.Object.Instantiate(item, obj.transform.position, Quaternion.identity);
+    }
+    if (obj.TryGetComponent<TreeLog>(out var log))
+    {
+      var items = log.m_dropWhenDestroyed.GetDropList();
+      foreach (var item in items)
+        UnityEngine.Object.Instantiate(item, obj.transform.position, Quaternion.identity);
+    }
     HandleCreated.Skip = false;
   }
 

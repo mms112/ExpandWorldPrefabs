@@ -109,6 +109,7 @@ public class DataLoading
     {
       foreach (var prefab in ZNetScene.instance.m_namedPrefabs.Values)
       {
+        if (!prefab) continue;
         prefab.GetComponentsInChildren(ZNetView.m_tempComponents);
         foreach (var component in ZNetView.m_tempComponents)
         {

@@ -1,3 +1,7 @@
+- v1.16
+  - Fixes value groups not working for data filters.
+  - Fixes parameters not working for data filters.
+
 - v1.15
   - Adds a new type "globalkey" to trigger on global key changes.
   - Adds a new type "event" to trigger on event start or end.

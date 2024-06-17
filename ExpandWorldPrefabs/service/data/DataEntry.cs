@@ -421,6 +421,7 @@ public class DataEntry
   private void AddParameter(string par, Dictionary<string, string> pars, ZDO? zdo)
   {
     var key = $"<{par}>";
+    // Value groups are technically resolved on load, but the parameter might include a value group.
     if (DataLoading.TryGetValueFromGroup(par, out var value))
     {
       pars[key] = value;

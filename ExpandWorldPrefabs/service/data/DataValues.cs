@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -21,9 +22,8 @@ public class DataValue
   public static IIntValue Int(ZPackage pkg) => new SimpleIntValue(pkg.ReadInt());
   public static IIntValue Int(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEmpty(values);
-    if (!hasParameters && split.Length == 1 && int.TryParse(split[0], out var result))
+    var split = SplitWithValues(values, requiredParameters);
+    if (split.Length == 1 && int.TryParse(split[0], out var result))
       return new SimpleIntValue(result);
     return new IntValue(split);
   }
@@ -31,9 +31,8 @@ public class DataValue
   public static IFloatValue Float(ZPackage pkg) => new SimpleFloatValue(pkg.ReadSingle());
   public static IFloatValue Float(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEmpty(values);
-    if (!hasParameters && split.Length == 1 && Parse.TryFloat(split[0], out var result))
+    var split = SplitWithValues(values, requiredParameters);
+    if (split.Length == 1 && Parse.TryFloat(split[0], out var result))
       return new SimpleFloatValue(result);
     return new FloatValue(split);
   }
@@ -41,9 +40,8 @@ public class DataValue
   public static ILongValue Long(ZPackage pkg) => new SimpleLongValue(pkg.ReadLong());
   public static ILongValue Long(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEmpty(values);
-    if (!hasParameters && split.Length == 1 && long.TryParse(split[0], out var result))
+    var split = SplitWithValues(values, requiredParameters);
+    if (split.Length == 1 && long.TryParse(split[0], out var result))
       return new SimpleLongValue(result);
     return new LongValue(split);
   }
@@ -51,18 +49,16 @@ public class DataValue
   public static IStringValue String(ZPackage pkg) => new SimpleStringValue(pkg.ReadString());
   public static IStringValue String(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEscape(values);
-    if (!hasParameters && split.Length == 1)
+    var split = SplitWithValues(values, requiredParameters);
+    if (split.Length == 1 && !HasParameters(split[0]))
       return new SimpleStringValue(split[0]);
     return new StringValue(split);
   }
   public static IBoolValue Bool(bool value) => new SimpleBoolValue(value);
   public static IBoolValue Bool(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEmpty(values);
-    if (!hasParameters && split.Length == 1 && bool.TryParse(split[0], out var result))
+    var split = SplitWithValues(values, requiredParameters);
+    if (split.Length == 1 && bool.TryParse(split[0], out var result))
       return new SimpleBoolValue(result);
     return new BoolValue(split);
   }
@@ -71,43 +67,86 @@ public class DataValue
   public static IHashValue Hash(string value) => new SimpleHashValue(value);
   public static IHashValue Hash(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEmpty(values);
-    if (!hasParameters && split.Length == 1)
+    var split = SplitWithValues(values, requiredParameters);
+    if (split.Length == 1 && !HasParameters(split[0]))
       return new SimpleHashValue(split[0]);
     return new HashValue(split);
   }
   public static IVector3Value Vector3(ZPackage pkg) => new SimpleVector3Value(pkg.ReadVector3());
   public static IVector3Value Vector3(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEscape(values);
-    var parsed = Parse.VectorXZYNull(values);
-    if (!hasParameters && parsed.HasValue)
+    var split = SplitWithValues(values, requiredParameters);
+    var parsed = Parse.VectorXZYNull(split);
+    if (parsed.HasValue)
       return new SimpleVector3Value(parsed.Value);
     return new Vector3Value(split);
   }
   public static IQuaternionValue Quaternion(ZPackage pkg) => new SimpleQuaternionValue(pkg.ReadQuaternion());
   public static IQuaternionValue Quaternion(string values, HashSet<string> requiredParameters)
   {
-    var hasParameters = CheckParameters(values, requiredParameters);
-    var split = Parse.SplitWithEscape(values);
-    var parsed = Parse.AngleYXZNull(values);
-    if (!hasParameters && parsed.HasValue)
+    var split = SplitWithValues(values, requiredParameters);
+    var parsed = Parse.AngleYXZNull(split);
+    if (parsed.HasValue)
       return new SimpleQuaternionValue(parsed.Value);
     return new QuaternionValue(split);
   }
 
-  private static bool CheckParameters(string value, HashSet<string> requiredParameters)
+  private static bool HasParameters(string value) => value.Contains("<") && value.Contains(">");
+
+  private static string[] SplitWithValues(string str, HashSet<string> requiredParameters)
   {
-    // Parameter format is <par>.
-    if (!value.Contains("<") || !value.Contains(">")) return false;
-    var split = value.Split('<', '>');
-    for (var i = 1; i < split.Length; i += 2)
-      requiredParameters.Add(split[i]);
-    return split.Length > 1;
+    List<string> result = [];
+    var split = Parse.SplitWithEmpty(str);
+    foreach (var value in split)
+    {
+      if (!value.Contains("<") || !value.Contains(">"))
+      {
+        result.Add(value);
+        continue;
+      }
+      var parSplit = value.Split('<', '>');
+      List<string> parameters = [];
+      List<int> hashes = [];
+      for (var i = 1; i < parSplit.Length; i += 2)
+      {
+        var hash = parSplit[i].ToLowerInvariant().GetStableHashCode();
+        // Value groups should work same as using the value directly.
+        // So it makes sense to resolve them on load.
+        // This way other code doesn't have to worry about resolving them and performance is better.
+        // Originally they were resolved later because World Edit Commands allows overriding them.
+        // But this is not needed for EW Prefabs.
+        if (DataLoading.ValueGroups.ContainsKey(hash))
+        {
+          parameters.Add($"<{parSplit[i]}>");
+          hashes.Add(hash);
+        }
+        else
+          // Code would be cleaner if required parameters were parsed separately.
+          // But the info is already here to take.
+          requiredParameters.Add(parSplit[i]);
+      }
+      if (parameters.Count == 0)
+        result.Add(value);
+      else
+        SubstitueValues(result, value, parameters, hashes, 0);
+
+    }
+    return [.. result];
   }
 
+  // Recursion needed because there can be multiple value groups.
+  private static void SubstitueValues(List<string> result, string format, List<string> parameters, List<int> hashes, int index)
+  {
+    var groups = DataLoading.ValueGroups[hashes[index]];
+    foreach (var group in groups)
+    {
+      var newFormat = format.Replace(parameters[index], group);
+      if (index == parameters.Count - 1)
+        result.Add(newFormat);
+      else
+        SubstitueValues(result, newFormat, parameters, hashes, index + 1);
+    }
+  }
 }
 
 
