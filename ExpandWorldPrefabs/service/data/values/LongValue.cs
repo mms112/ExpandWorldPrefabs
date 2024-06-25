@@ -1,14 +1,11 @@
-
-using System.Collections.Generic;
 using System.Globalization;
-using Service;
 using UnityEngine;
 
 namespace Data;
 
 public class LongValue(string[] values) : AnyValue(values), ILongValue
 {
-  public long? Get(Dictionary<string, string> pars)
+  public long? Get(Pars pars)
   {
     var value = GetValue(pars);
     if (value == null)
@@ -42,7 +39,7 @@ public class LongValue(string[] values) : AnyValue(values), ILongValue
       return roll;
     return Calculator.EvaluateLong(split[3].Replace("<value>", roll.ToString()));
   }
-  public bool? Match(Dictionary<string, string> pars, long value)
+  public bool? Match(Pars pars, long value)
   {
     // If all values are null, default to a match.
     var allNull = true;
@@ -127,12 +124,12 @@ public class LongValue(string[] values) : AnyValue(values), ILongValue
 public class SimpleLongValue(long value) : ILongValue
 {
   private readonly long Value = value;
-  public long? Get(Dictionary<string, string> pars) => Value;
-  public bool? Match(Dictionary<string, string> pars, long value) => Value == value;
+  public long? Get(Pars pars) => Value;
+  public bool? Match(Pars pars, long value) => Value == value;
 }
 
 public interface ILongValue
 {
-  long? Get(Dictionary<string, string> pars);
-  bool? Match(Dictionary<string, string> pars, long value);
+  long? Get(Pars pars);
+  bool? Match(Pars pars, long value);
 }

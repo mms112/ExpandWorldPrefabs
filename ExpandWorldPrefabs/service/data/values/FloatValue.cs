@@ -1,5 +1,3 @@
-
-using System.Collections.Generic;
 using System.Globalization;
 using ExpandWorld.Prefab;
 using UnityEngine;
@@ -8,7 +6,7 @@ namespace Data;
 
 public class FloatValue(string[] values) : AnyValue(values), IFloatValue
 {
-  public float? Get(Dictionary<string, string> pars)
+  public float? Get(Pars pars)
   {
     var value = GetValue(pars);
     if (value == null)
@@ -42,7 +40,7 @@ public class FloatValue(string[] values) : AnyValue(values), IFloatValue
       return roll;
     return Calculator.EvaluateFloat(split[3].Replace("<value>", roll?.ToString(CultureInfo.InvariantCulture)));
   }
-  public bool? Match(Dictionary<string, string> pars, float value)
+  public bool? Match(Pars pars, float value)
   {
     // If all values are null, default to a match.
     var allNull = true;
@@ -127,11 +125,11 @@ public class FloatValue(string[] values) : AnyValue(values), IFloatValue
 public class SimpleFloatValue(float value) : IFloatValue
 {
   private readonly float Value = value;
-  public float? Get(Dictionary<string, string> pars) => Value;
-  public bool? Match(Dictionary<string, string> pars, float value) => Value == value;
+  public float? Get(Pars pars) => Value;
+  public bool? Match(Pars pars, float value) => Value == value;
 }
 public interface IFloatValue
 {
-  float? Get(Dictionary<string, string> pars);
-  bool? Match(Dictionary<string, string> pars, float value);
+  float? Get(Pars pars);
+  bool? Match(Pars pars, float value);
 }

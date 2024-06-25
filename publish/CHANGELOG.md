@@ -1,5 +1,6 @@
 - v1.16
   - Fixes value groups not working for data filters.
+  - Fixes nested value groups not working.
   - Fixes parameters not working for data filters.
 
 - v1.15

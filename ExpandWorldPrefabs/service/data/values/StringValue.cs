@@ -1,5 +1,3 @@
-
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Data;
@@ -7,9 +5,9 @@ namespace Data;
 public class StringValue(string[] values) : AnyValue(values), IStringValue
 {
   private readonly bool IsPattern = values.Any(v => v.Contains("*"));
-  public string? Get(Dictionary<string, string> pars) => GetValue(pars);
+  public string? Get(Pars pars) => GetValue(pars);
 
-  public bool? Match(Dictionary<string, string> pars, string value)
+  public bool? Match(Pars pars, string value)
   {
     var values = GetAllValues(pars);
     if (values.Length == 0) return null;
@@ -20,8 +18,8 @@ public class SimpleStringValue(string value) : IStringValue
 {
   private readonly string Value = value;
   private readonly bool IsPattern = value.Contains("*");
-  public string? Get(Dictionary<string, string> pars) => Value;
-  public bool? Match(Dictionary<string, string> pars, string value) => IsPattern ? PatternMatch(value, Value) : Value == value;
+  public string? Get(Pars pars) => Value;
+  public bool? Match(Pars pars, string value) => IsPattern ? PatternMatch(value, Value) : Value == value;
   public static bool PatternMatch(string value, string pattern)
   {
     if (value == pattern) return true;
@@ -43,6 +41,6 @@ public class SimpleStringValue(string value) : IStringValue
 }
 public interface IStringValue
 {
-  string? Get(Dictionary<string, string> pars);
-  bool? Match(Dictionary<string, string> pars, string value);
+  string? Get(Pars pars);
+  bool? Match(Pars pars, string value);
 }

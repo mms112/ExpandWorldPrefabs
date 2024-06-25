@@ -206,10 +206,10 @@ public class Spawn
     if (split.Count > 8)
       Delay = Parse.Float(split[8]);
   }
-  public int GetPrefab(Dictionary<string, string> parameters)
+  public int GetPrefab(Pars pars)
   {
     if (Prefab != 0) return Prefab;
-    var prefabName = Helper.ReplaceParameters(WildPrefab, parameters, null);
+    var prefabName = Helper.ReplaceParameters(WildPrefab, pars, null);
     var prefab = prefabName.GetStableHashCode();
     return ZNetScene.instance.GetPrefab(prefab) ? prefab : 0;
   }

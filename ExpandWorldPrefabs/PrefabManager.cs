@@ -86,9 +86,10 @@ public class Manager
     if (spawn.Snap)
       pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
     data = DataHelper.Merge(data, DataHelper.Get(spawn.Data));
+    Pars pars = new(parameters, []);
     if (data != null)
-      parameters = data.InsertParameters(parameters, originalZdo);
-    DelayedSpawn.Add(spawn.Delay, pos, rot, spawn.GetPrefab(parameters), originalZdo.GetOwner(), data, parameters, triggerRules);
+      pars.ObjectParameters = data.GetParameters(originalZdo);
+    DelayedSpawn.Add(spawn.Delay, pos, rot, spawn.GetPrefab(pars), originalZdo.GetOwner(), data, parameters, triggerRules);
   }
   public static void CreateObject(ZDO source, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules) => CreateObject(source.m_prefab, source.m_position, source.GetRotation(), source.GetOwner(), data, parameters, triggerRules);
   public static void CreateObject(int prefab, Vector3 pos, Quaternion rot, long owner, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules)

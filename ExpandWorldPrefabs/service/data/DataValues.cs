@@ -1,12 +1,16 @@
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
 namespace Data;
+
+public struct Pars(Dictionary<string, string> parameters, Dictionary<string, string> objectParameters)
+{
+  public Dictionary<string, string> Parameters = parameters;
+  public Dictionary<string, string> ObjectParameters = objectParameters;
+}
 
 public class DataValue
 {
@@ -160,7 +164,7 @@ public class AnyValue(string[] values)
       return Values[0];
     return Values[Random.Range(0, Values.Length)];
   }
-  protected string? GetValue(Dictionary<string, string> pars)
+  protected string? GetValue(Pars pars)
   {
     var value = RollValue();
     if (value == null || value == "<none>")
@@ -172,21 +176,23 @@ public class AnyValue(string[] values)
     var value = RollValue();
     return value == null || value == "<none>" ? null : value;
   }
-  protected string[] GetAllValues(Dictionary<string, string> pars)
+  protected string[] GetAllValues(Pars pars)
   {
     return Values.Select(v => ReplaceParameters(v, pars)).Where(v => v != null && v != "<none").ToArray();
   }
 
-  protected string ReplaceParameters(string value, Dictionary<string, string> pars)
+  protected string ReplaceParameters(string value, Pars pars)
   {
-    foreach (var kvp in pars)
+    foreach (var kvp in pars.ObjectParameters)
+      value = value.Replace(kvp.Key, kvp.Value);
+    foreach (var kvp in pars.Parameters)
       value = value.Replace(kvp.Key, kvp.Value);
     return value;
   }
 }
 public class ItemValue(ItemData data, HashSet<string> requiredParameters)
 {
-  public static string LoadItems(Dictionary<string, string> pars, List<ItemValue> items, Vector2i? size, int amount)
+  public static string LoadItems(Pars pars, List<ItemValue> items, Vector2i? size, int amount)
   {
     ZPackage pkg = new();
     pkg.Write(106);
@@ -196,7 +202,7 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
       item.Write(pars, pkg);
     return pkg.GetBase64();
   }
-  public static List<ItemValue> Generate(Dictionary<string, string> pars, List<ItemValue> data, Vector2i size, int amount)
+  public static List<ItemValue> Generate(Pars pars, List<ItemValue> data, Vector2i size, int amount)
   {
     var fixedPos = data.Where(item => item.Position != "").ToList();
     var randomPos = data.Where(item => item.Position == "").ToList();
@@ -212,7 +218,7 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
       GenerateAmount(pars, inventory, size, randomPos, amount);
     return [.. inventory.Values];
   }
-  private static void GenerateEach(Dictionary<string, string> pars, Dictionary<Vector2i, ItemValue> inventory, Vector2i size, List<ItemValue> items)
+  private static void GenerateEach(Pars pars, Dictionary<Vector2i, ItemValue> inventory, Vector2i size, List<ItemValue> items)
   {
     foreach (var item in items)
     {
@@ -223,7 +229,7 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
       inventory[slot.Value] = item;
     }
   }
-  private static void GenerateAmount(Dictionary<string, string> pars, Dictionary<Vector2i, ItemValue> inventory, Vector2i size, List<ItemValue> items, int amount)
+  private static void GenerateAmount(Pars pars, Dictionary<Vector2i, ItemValue> inventory, Vector2i size, List<ItemValue> items, int amount)
   {
     var maxWeight = items.Sum(item => item.Chance);
     for (var i = 0; i < amount && items.Count > 0; ++i)
@@ -279,14 +285,14 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
   public IBoolValue PickedUp = DataValue.Bool(data.pickedUp, requiredParameters);
   // Must know before writing is the prefab good, so it has to be rolled first.
   private string RolledPrefab = "";
-  public bool RollPrefab(Dictionary<string, string> pars)
+  public bool RollPrefab(Pars pars)
   {
     RolledPrefab = Prefab.Get(pars) ?? "";
     return RolledPrefab != "";
   }
   public bool RollChance() => Chance >= 1f || Random.value <= Chance;
-  public bool Roll(Dictionary<string, string> pars) => RollChance() && RollPrefab(pars);
-  public void Write(Dictionary<string, string> pars, ZPackage pkg)
+  public bool Roll(Pars pars) => RollChance() && RollPrefab(pars);
+  public void Write(Pars pars, ZPackage pkg)
   {
     pkg.Write(RolledPrefab);
     pkg.Write(Stack.Get(pars) ?? 1);

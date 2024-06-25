@@ -363,9 +363,9 @@ public class DataEntry
       ConnectionHash = pkg.ReadInt();
     }
   }
-  public bool Match(Dictionary<string, string> pars, ZDO zdo)
+  public bool Match(Dictionary<string, string> parameters, ZDO zdo)
   {
-    AddParameters(pars, zdo);
+    Pars pars = new(parameters, GetParameters(zdo));
     if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, zdo.GetString(pair.Key)) == false)) return false;
     if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, zdo.GetFloat(pair.Key)) == false)) return false;
     if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == false)) return false;
@@ -377,9 +377,9 @@ public class DataEntry
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == false)) return false;
     return true;
   }
-  public bool Unmatch(Dictionary<string, string> pars, ZDO zdo)
+  public bool Unmatch(Dictionary<string, string> parameters, ZDO zdo)
   {
-    AddParameters(pars, zdo);
+    Pars pars = new(parameters, GetParameters(zdo));
     if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, zdo.GetString(pair.Key)) == true)) return false;
     if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, zdo.GetFloat(pair.Key)) == true)) return false;
     if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == true)) return false;
@@ -391,8 +391,9 @@ public class DataEntry
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == true)) return false;
     return true;
   }
-  private void AddParameters(Dictionary<string, string> pars, ZDO? zdo)
+  public Dictionary<string, string> GetParameters(ZDO zdo)
   {
+    Dictionary<string, string> pars = [];
     // Custom parameters might include parameters.
     foreach (var value in pars.Values.ToArray())
     {
@@ -406,6 +407,7 @@ public class DataEntry
       // If people miss parameters that's their fault.
       AddParameter(par, pars, zdo);
     }
+    return pars;
   }
   private void AddNestedParameters(string value, Dictionary<string, string> pars, ZDO? zdo)
   {
@@ -422,7 +424,7 @@ public class DataEntry
   {
     var key = $"<{par}>";
     // Value groups are technically resolved on load, but the parameter might include a value group.
-    if (DataLoading.TryGetValueFromGroup(par, out var value))
+    if (DataHelper.TryGetValueFromGroup(par, out var value))
     {
       pars[key] = value;
       // Value groups might include parameters.
@@ -498,13 +500,10 @@ public class DataEntry
     }
     return (T)(object)value;
   }
-  public Dictionary<string, string> InsertParameters(Dictionary<string, string> pars, ZDO zdo)
+
+  public void Write(Dictionary<string, string> parameters, ZDO zdo)
   {
-    AddParameters(pars, zdo);
-    return pars;
-  }
-  public void Write(Dictionary<string, string> pars, ZDO zdo)
-  {
+    Pars pars = new(parameters, GetParameters(zdo));
     RollItems(pars);
     var id = zdo.m_uid;
     if (Floats?.Count > 0)
@@ -599,15 +598,14 @@ public class DataEntry
     HandleConnection(zdo);
     HandleHashConnection(zdo);
   }
-  public string GetBase64(Dictionary<string, string> pars)
+  public string GetBase64(Pars pars)
   {
     var pkg = new ZPackage();
     Write(pars, pkg);
     return pkg.GetBase64();
   }
-  public void Write(Dictionary<string, string> pars, ZPackage pkg)
+  public void Write(Pars pars, ZPackage pkg)
   {
-    AddParameters(pars, null);
     RollItems(pars);
     var num = 0;
     if (Floats != null)
@@ -717,7 +715,7 @@ public class DataEntry
     }
   }
 
-  private void RollItems(Dictionary<string, string> pars)
+  private void RollItems(Pars pars)
   {
     if (Items?.Count > 0)
     {

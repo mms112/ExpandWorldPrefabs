@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using BepInEx;
 using Service;
 namespace Data;
@@ -36,18 +37,7 @@ public class DataLoading
     return Data[hash];
   }
   public static DataEntry? Get(int hash) => Data.ContainsKey(hash) ? Data[hash] : null;
-  public static bool TryGetValueFromGroup(string group, out string value)
-  {
-    var hash = group.ToLowerInvariant().GetStableHashCode();
-    if (!ValueGroups.ContainsKey(hash))
-    {
-      value = group;
-      return false;
-    }
-    var roll = UnityEngine.Random.Range(0, ValueGroups[hash].Count);
-    value = ValueGroups[hash][roll];
-    return true;
-  }
+
   public static void LoadEntries()
   {
     var prev = Data;
@@ -58,13 +48,24 @@ public class DataLoading
       .Concat(Directory.GetFiles(Yaml.BaseDirectory, Pattern))
       .Select(Path.GetFullPath).Distinct().ToArray();
     foreach (var file in files)
-      LoadEntry(file, prev);
-    Log.Info($"Loaded {Data.Count} data entries.");
+      LoadValues(file, prev);
     if (ValueGroups.Count > 0)
       Log.Info($"Loaded {ValueGroups.Count} value groups.");
+
     LoadDefaultValueGroups();
+    foreach (var kvp in ValueGroups)
+      ResolveValues(kvp.Value);
+    foreach (var kvp in DefaultValueGroups)
+    {
+      if (!ValueGroups.ContainsKey(kvp.Key))
+        ValueGroups[kvp.Key] = kvp.Value;
+    }
+    // Entries need fully resolved value groups, so two passes are needed.
+    foreach (var file in files)
+      LoadEntry(file, prev);
+    Log.Info($"Loaded {Data.Count} data entries.");
   }
-  private static void LoadEntry(string file, Dictionary<int, DataEntry> oldData)
+  private static void LoadValues(string file, Dictionary<int, DataEntry> oldData)
   {
     var yaml = Yaml.LoadList<DataData>(file);
     foreach (var data in yaml)
@@ -89,6 +90,13 @@ public class DataLoading
         foreach (var value in data.values)
           ValueGroups[hash].Add(value);
       }
+    }
+  }
+  private static void LoadEntry(string file, Dictionary<int, DataEntry> oldData)
+  {
+    var yaml = Yaml.LoadList<DataData>(file);
+    foreach (var data in yaml)
+    {
       if (data.name != null)
       {
         var hash = data.name.GetStableHashCode();
@@ -123,10 +131,29 @@ public class DataLoading
       DefaultValueGroups[CreatureHash] = DefaultValueGroups[HumanoidHash];
       DefaultValueGroups[StructureHash] = DefaultValueGroups[WearNTearHash];
     }
-    foreach (var kvp in DefaultValueGroups)
+  }
+  private static void ResolveValues(List<string> values)
+  {
+    for (var i = 0; i < values.Count; ++i)
     {
-      if (!ValueGroups.ContainsKey(kvp.Key))
-        ValueGroups[kvp.Key] = kvp.Value;
+      var value = values[i];
+      if (!value.StartsWith("<", StringComparison.OrdinalIgnoreCase) || !value.EndsWith(">", StringComparison.OrdinalIgnoreCase))
+        continue;
+      var sub = value.Substring(1, value.Length - 2);
+      if (ValueGroups.TryGetValue(sub.ToLowerInvariant().GetStableHashCode(), out var group))
+      {
+        values.RemoveAt(i);
+        values.InsertRange(i, group);
+        // Recheck inserted values because value groups can be nested.
+        i -= 1;
+      }
+      else if (DefaultValueGroups.TryGetValue(sub.ToLowerInvariant().GetStableHashCode(), out var group2))
+      {
+        values.RemoveAt(i);
+        values.InsertRange(i, group2);
+        // No need to recheck because default value groups are not nested.
+        i += group2.Count - 1;
+      }
     }
   }
 

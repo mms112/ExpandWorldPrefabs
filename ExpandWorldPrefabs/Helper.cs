@@ -10,7 +10,8 @@ namespace ExpandWorld.Prefab;
 
 public class Helper
 {
-  public static string ReplaceParameters(string str, Dictionary<string, string> parameters, ZDO? zdo)
+
+  public static string ReplaceParameters(string str, Dictionary<string, string> pars, ZDO? zdo)
   {
     for (int i = str.Length; i >= 0; i--)
     {
@@ -20,10 +21,45 @@ public class Helper
       if (start == -1) break;
       i = start;
       var key = str.Substring(start, end - start + 1);
-      if (parameters.ContainsKey(key))
+      if (pars.ContainsKey(key))
       {
         str = str.Remove(start, end - start + 1);
-        str = str.Insert(start, parameters[key]);
+        str = str.Insert(start, pars[key]);
+        continue;
+      }
+      if (zdo == null) continue;
+      var kvp = Parse.Kvp(key, '_');
+      if (kvp.Value != "")
+      {
+        var zdoKey = kvp.Key.Substring(1);
+        var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
+        str = str.Remove(start, end - start + 1);
+        var value = GetZdoValue(zdo, zdoKey, zdoValue);
+        str = str.Insert(start, value);
+      }
+    }
+    return str;
+  }
+  public static string ReplaceParameters(string str, Pars pars, ZDO? zdo)
+  {
+    for (int i = str.Length; i >= 0; i--)
+    {
+      var end = str.LastIndexOf(">", i);
+      if (end == -1) break;
+      var start = str.LastIndexOf("<", end);
+      if (start == -1) break;
+      i = start;
+      var key = str.Substring(start, end - start + 1);
+      if (pars.ObjectParameters.ContainsKey(key))
+      {
+        str = str.Remove(start, end - start + 1);
+        str = str.Insert(start, pars.ObjectParameters[key]);
+        continue;
+      }
+      if (pars.Parameters.ContainsKey(key))
+      {
+        str = str.Remove(start, end - start + 1);
+        str = str.Insert(start, pars.Parameters[key]);
         continue;
       }
       if (zdo == null) continue;
@@ -46,12 +82,12 @@ public class Helper
     return new Dictionary<string, string> {
       { "<zdo>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
-      { "<par0>", split.Length > 0 ? split[0] : "" },
-      { "<par1>", split.Length > 1 ? split[1] : "" },
-      { "<par2>", split.Length > 2 ? split[2] : "" },
-      { "<par3>", split.Length > 3 ? split[3] : "" },
-      { "<par4>", split.Length > 4 ? split[4] : "" },
-      { "<par>", args },
+      { "<par0>", split.Length > 0 ? DataHelper.ResolveValue(split[0]) : "" },
+      { "<par1>", split.Length > 1 ? DataHelper.ResolveValue(split[1]) : "" },
+      { "<par2>", split.Length > 2 ? DataHelper.ResolveValue(split[2]) : "" },
+      { "<par3>", split.Length > 3 ? DataHelper.ResolveValue(split[3]) : "" },
+      { "<par4>", split.Length > 4 ? DataHelper.ResolveValue(split[4]) : "" },
+      { "<par>", DataHelper.ResolveValue(args) },
       { "<x>", Format(zdo.m_position.x) },
       { "<y>", Format(zdo.m_position.y) },
       { "<z>", Format(zdo.m_position.z) },

@@ -108,17 +108,13 @@ public class InfoSelector
     }
     if (checkFilters || checkBannedFilters)
     {
-      // Copy is needed because ZDO parameters are added.
-      // Possibly could make match support two dictionaries.
-      Dictionary<string, string> pars = new(parameters);
-      Dictionary<string, string> sourcePars = new(parameters);
       if (checkFilters)
       {
-        linq = linq.Where(d => d.Filter == null || d.Filter.Match(pars, zdo) || (source != null && d.Filter.Match(sourcePars, source))).ToArray();
+        linq = linq.Where(d => d.Filter == null || d.Filter.Match(parameters, zdo) || (source != null && d.Filter.Match(parameters, source))).ToArray();
       }
       if (checkBannedFilters)
       {
-        linq = linq.Where(d => d.BannedFilter == null || d.BannedFilter.Unmatch(pars, zdo) || (source != null && d.BannedFilter.Unmatch(sourcePars, source))).ToArray();
+        linq = linq.Where(d => d.BannedFilter == null || d.BannedFilter.Unmatch(parameters, zdo) || (source != null && d.BannedFilter.Unmatch(parameters, source))).ToArray();
       }
     }
     var valid = linq.ToArray();
