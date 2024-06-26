@@ -31,7 +31,11 @@ Following parameters are available to be used in the yaml file:
 - `<x>`, `<y>` and `<z>`: Object center point.
 - `<i>` and `<j>`: Object zone indices.
 - `<a>`: Object rotation.
-- `<time>`: Current time stamp.
+- `<day>`: Days since the world start (int type).
+- `<time>`: Seconds since the world start (float type).
+  - Each day is 1800 seconds.
+- `<ticks>`: Ticks since the world start (long type).
+  - Each second is 10000000 ticks.
 - `<key_*>`: Global key value.
 - `<int_*>`: Integer value from the ZDO.
 - `<float_*>`: Decimal value from the ZDO.

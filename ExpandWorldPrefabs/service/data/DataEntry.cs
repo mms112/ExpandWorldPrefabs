@@ -461,18 +461,27 @@ public class DataEntry
     }
     else
     {
+      var time = ZNet.instance.GetTimeSeconds();
+      var day = EnvMan.instance.GetDay(time);
+      var ticks = (long)(time * 10000000.0);
       if (key == "<time>")
-        pars[key] = ZNet.instance.GetTime().Ticks.ToString();
+        pars[key] = Format(time);
+      else if (key == "<day>")
+        pars[key] = day.ToString();
+      else if (key == "<ticks>")
+        pars[key] = ticks.ToString();
       else if (key == "<x>" && zdo != null)
-        pars[key] = zdo.m_position.x.ToString(CultureInfo.InvariantCulture);
+        pars[key] = Format(zdo.m_position.x);
       else if (key == "<y>" && zdo != null)
-        pars[key] = zdo.m_position.y.ToString(CultureInfo.InvariantCulture);
+        pars[key] = Format(zdo.m_position.y);
       else if (key == "<z>" && zdo != null)
-        pars[key] = zdo.m_position.z.ToString(CultureInfo.InvariantCulture);
+        pars[key] = Format(zdo.m_position.z);
       else if (key == "<rot>" && zdo != null)
         pars[key] = PrintAngleYXZ(zdo.GetRotation());
     }
   }
+  private static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
+  private static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   public static string PrintVectorXZY(Vector3 vector)
   {
     return vector.x.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.z.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.y.ToString("0.##", CultureInfo.InvariantCulture);

@@ -79,6 +79,9 @@ public class Helper
   {
     var split = args.Split(' ');
     var zone = ZoneSystem.instance.GetZone(zdo.m_position);
+    var time = ZNet.instance.GetTimeSeconds();
+    var day = EnvMan.instance.GetDay(time);
+    var ticks = (long)(time * 10000000.0);
     return new Dictionary<string, string> {
       { "<zdo>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
@@ -94,13 +97,18 @@ public class Helper
       { "<i>", zone.x.ToString() },
       { "<j>", zone.y.ToString() },
       { "<a>", Format(zdo.m_rotation.y) },
-      { "<time>", ZNet.instance.GetTime().Ticks.ToString() },
+      { "<time>", Format(time) },
+      { "<day>", day.ToString() },
+      { "<ticks>", ticks.ToString() },
     };
   }
   public static Dictionary<string, string> CreateParameters(string args, Vector3 pos)
   {
     var split = args.Split(' ');
     var zone = ZoneSystem.instance.GetZone(pos);
+    var time = ZNet.instance.GetTimeSeconds();
+    var day = EnvMan.instance.GetDay(time);
+    var ticks = (long)(time * 10000000.0);
     return new Dictionary<string, string> {
       { "<par0>", split.Length > 0 ? split[0] : "" },
       { "<par1>", split.Length > 1 ? split[1] : "" },
@@ -113,7 +121,9 @@ public class Helper
       { "<z>", Format(pos.z) },
       { "<i>", zone.x.ToString() },
       { "<j>", zone.y.ToString() },
-      { "<time>", ZNet.instance.GetTime().Ticks.ToString() },
+      { "<time>", Format(time) },
+      { "<day>", day.ToString() },
+      { "<ticks>", ticks.ToString() },
     };
   }
 
@@ -144,6 +154,7 @@ public class Helper
     return "";
   }
   private static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
+  private static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   public static bool CheckWild(string wild, string str)
   {
     if (wild == "*")

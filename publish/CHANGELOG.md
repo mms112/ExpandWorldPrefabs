@@ -1,4 +1,7 @@
 - v1.16
+  - Adds new parameter "day" to get the current day of the world.
+  - Adds new parameter "ticks" to get ticks since the world start.
+  - Changes the parameter "<time>" to be seconds instead of ticks.
   - Fixes value groups not working for data filters.
   - Fixes nested value groups not working.
   - Fixes parameters not working for data filters.
