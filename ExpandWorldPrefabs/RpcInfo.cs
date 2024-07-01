@@ -25,6 +25,7 @@ public abstract class RpcInfo
   private readonly KeyValuePair<string, string>[] Parameters;
   private readonly float Delay;
   public bool IsTarget => Target == RpcTarget.Search;
+  private readonly bool Packaged;
 
   public RpcInfo(Dictionary<string, string> lines)
   {
@@ -34,6 +35,9 @@ public abstract class RpcInfo
 
     if (lines.TryGetValue("source", out var source))
       SourceParameter = source;
+
+    if (lines.TryGetValue("packaged", out var packaged))
+      Packaged = Parse.Boolean(packaged);
 
     if (lines.TryGetValue("target", out var target))
     {
@@ -59,17 +63,17 @@ public abstract class RpcInfo
     var source = ZRoutedRpc.instance.m_id;
     if (SourceParameter != null)
     {
-      var id = Parse.ZDOID(Helper.ReplaceParameters(SourceParameter, parameters, zdo));
+      var id = Parse.ZdoId(Helper.ReplaceParameters(SourceParameter, parameters, zdo));
       source = ZDOMan.instance.GetZDO(id)?.GetOwner() ?? 0;
     }
-    var pars = GetParameters(zdo, parameters);
+    var pars = Packaged ? GetPackagedParameters(zdo, parameters) : GetParameters(zdo, parameters);
     if (Target == RpcTarget.Owner)
       DelayedRpc.Add(Delay, source, zdo.GetOwner(), GetId(zdo), Hash, pars);
     else if (Target == RpcTarget.All)
       DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, GetId(zdo), Hash, pars);
     else if (Target == RpcTarget.ZDO)
     {
-      var id = Parse.ZDOID(Helper.ReplaceParameters(TargetParameter ?? "", parameters, zdo));
+      var id = Parse.ZdoId(Helper.ReplaceParameters(TargetParameter ?? "", parameters, zdo));
       var peerId = ZDOMan.instance.GetZDO(id)?.GetOwner();
       if (peerId.HasValue)
         DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, pars);
@@ -84,7 +88,7 @@ public abstract class RpcInfo
   public void InvokeGlobal(Dictionary<string, string> parameters, List<PlayerInfo>? players)
   {
     var source = ZRoutedRpc.instance.m_id;
-    var pars = GetParameters(parameters);
+    var pars = Packaged ? PackagedGetParameters(parameters) : GetParameters(parameters);
     if (Target == RpcTarget.Search && players != null)
     {
       // Probably could inject some player specific parameters here.
@@ -109,14 +113,43 @@ public abstract class RpcInfo
       if (type == "quat") pars[i] = Calculator.EvaluateQuaternion(arg);
       if (type == "hash") pars[i] = arg.GetStableHashCode();
       if (type == "hit") pars[i] = Parse.Hit(zdo, arg);
-      if (type == "zdo") pars[i] = Parse.ZDOID(arg);
+      if (type == "zdo") pars[i] = Parse.ZdoId(arg);
       if (type == "enum_message") pars[i] = Parse.EnumMessage(arg);
       if (type == "enum_reason") pars[i] = Parse.EnumReason(arg);
       if (type == "enum_trap") pars[i] = Parse.EnumTrap(arg);
+      if (type == "enum_damagetext") pars[i] = Parse.EnumDamageText(arg);
+      if (type == "enum_terrainpaint") pars[i] = Parse.EnumTerrainPaint(arg);
     }
     return pars;
   }
+  private object[] GetPackagedParameters(ZDO? zdo, Dictionary<string, string> parameters)
+  {
+    ZPackage pkg = new();
+    var pars = Parameters.Select(p => Helper.ReplaceParameters(p.Value, parameters, zdo)).ToArray<object>();
+    for (var i = 0; i < pars.Length; i++)
+    {
+      var type = Parameters[i].Key;
+      var arg = (string)pars[i];
+      if (type == "int") pkg.Write(Calculator.EvaluateInt(arg) ?? 0);
+      if (type == "long") pkg.Write(Calculator.EvaluateLong(arg) ?? 0);
+      if (type == "float") pkg.Write(Calculator.EvaluateFloat(arg) ?? 0f);
+      if (type == "bool") pkg.Write(Parse.Boolean(arg));
+      if (type == "string") pkg.Write(arg);
+      if (type == "vec") pkg.Write(Calculator.EvaluateVector3(arg));
+      if (type == "quat") pkg.Write(Calculator.EvaluateQuaternion(arg));
+      if (type == "hash") pkg.Write(arg.GetStableHashCode());
+      if (type == "zdo") pkg.Write(Parse.ZdoId(arg));
+      if (type == "enum_message") pkg.Write(Parse.EnumMessage(arg));
+      if (type == "enum_reason") pkg.Write(Parse.EnumReason(arg));
+      if (type == "enum_trap") pkg.Write(Parse.EnumTrap(arg));
+      if (type == "enum_damagetext") pkg.Write(Parse.EnumDamageText(arg));
+      if (type == "enum_terrainpaint") pkg.Write(Parse.EnumTerrainPaint(arg));
+    }
+    return [pkg];
+  }
+
   private object[] GetParameters(Dictionary<string, string> parameters) => GetParameters(null, parameters);
+  private object[] PackagedGetParameters(Dictionary<string, string> parameters) => GetPackagedParameters(null, parameters);
 }
 
 

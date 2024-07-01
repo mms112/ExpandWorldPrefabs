@@ -257,9 +257,10 @@ public static class Parse
   public static bool Boolean(string[] args, int index) => args.Length > index && Boolean(args[index]);
   public static bool Boolean(string arg) => arg.ToLowerInvariant() == "true";
   public static bool BooleanTrue(string arg) => arg.ToLowerInvariant() == "false";
-  public static ZDOID ZDOID(string arg)
+  public static ZDOID ZdoId(string arg)
   {
     var split = Split(arg, true, ':');
+    if (split.Length < 2) return ZDOID.None;
     return new ZDOID(Long(split[0]), UInt(split[1]));
   }
   public static HitData Hit(ZDO? zdo, string arg)
@@ -296,7 +297,7 @@ public static class Parse
       if (key == "pvp") hit.m_ignorePVP = Boolean(value);
       if (key == "pos") hit.m_point = VectorXZY(value);
       if (key == "status") hit.m_statusEffectHash = value.GetStableHashCode();
-      if (key == "attacker") hit.m_attacker = ZDOID(value);
+      if (key == "attacker") hit.m_attacker = ZdoId(value);
       if (key == "skill") hit.m_skillLevel = Float(value);
       if (key == "level") hit.m_itemLevel = (short)Int(value);
       if (key == "world") hit.m_itemWorldLevel = (byte)Int(value);
@@ -316,5 +317,13 @@ public static class Parse
   public static int EnumTrap(string arg)
   {
     return Enum.TryParse(arg, true, out Trap.TrapState state) ? (int)state : Int(arg, 0);
+  }
+  public static int EnumDamageText(string arg)
+  {
+    return Enum.TryParse(arg, true, out DamageText.TextType state) ? (int)state : Int(arg, 0);
+  }
+  public static int EnumTerrainPaint(string arg)
+  {
+    return Enum.TryParse(arg, true, out TerrainModifier.PaintType state) ? (int)state : Int(arg, 0);
   }
 }

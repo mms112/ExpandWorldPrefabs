@@ -14,6 +14,15 @@ public struct Pars(Dictionary<string, string> parameters, Dictionary<string, str
 
 public class DataValue
 {
+
+  public static IZdoIdValue ZdoId(string values, HashSet<string> requiredParameters)
+  {
+    var split = SplitWithValues(values, requiredParameters);
+    var zdo = Parse.ZdoId(split[0]);
+    if (split.Length == 1 && zdo != ZDOID.None)
+      return new SimpleZdoIdValue(zdo);
+    return new ZdoIdValue(split);
+  }
   // Different function name because string would be ambiguous.
   public static IIntValue Simple(int value) => new SimpleIntValue(value);
   public static IStringValue Simple(string value) => new SimpleStringValue(value);

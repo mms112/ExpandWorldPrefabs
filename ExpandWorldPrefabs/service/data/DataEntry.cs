@@ -41,8 +41,8 @@ public class DataEntry
   public IIntValue? ItemAmount;
   public ZDOExtraData.ConnectionType ConnectionType = ZDOExtraData.ConnectionType.None;
   public int ConnectionHash = 0;
-  public ZDOID OriginalId = ZDOID.None;
-  public ZDOID TargetConnectionId = ZDOID.None;
+  public IZdoIdValue? OriginalId;
+  public IZdoIdValue? TargetConnectionId;
 
   public HashSet<string> RequiredParameters = [];
   public void Load(ZDO zdo)
@@ -60,10 +60,10 @@ public class DataEntry
       ConnectionType = conn.m_type;
       ConnectionHash = conn.m_hash;
     }
-    OriginalId = id;
+    OriginalId = new SimpleZdoIdValue(id);
     if (ZDOExtraData.s_connections.TryGetValue(id, out var zdoConn) && zdoConn.m_target != ZDOID.None)
     {
-      TargetConnectionId = zdoConn.m_target;
+      TargetConnectionId = new SimpleZdoIdValue(zdoConn.m_target);
       ConnectionType = zdoConn.m_type;
     }
   }
@@ -158,8 +158,8 @@ public class DataEntry
     ItemAmount = null;
     ConnectionType = ZDOExtraData.ConnectionType.None;
     ConnectionHash = 0;
-    OriginalId = ZDOID.None;
-    TargetConnectionId = ZDOID.None;
+    OriginalId = null;
+    TargetConnectionId = null;
     RequiredParameters.Clear();
     Load(data);
     return this;
@@ -298,8 +298,18 @@ public class DataEntry
         var types = split.Take(split.Length - 1).ToList();
         var hash = split[split.Length - 1];
         ConnectionType = ToByteEnum<ZDOExtraData.ConnectionType>(types);
-        ConnectionHash = Parse.Int(hash);
-        if (ConnectionHash == 0) ConnectionHash = hash.GetStableHashCode();
+        // Hacky way, this should be entirely rethought but not much use for the connection system so far.
+        if (hash.Contains(":") || hash.Contains("<"))
+        {
+          TargetConnectionId = DataValue.ZdoId(hash, RequiredParameters);
+          // Must be set to run the connection code.
+          OriginalId = TargetConnectionId;
+        }
+        else
+        {
+          ConnectionHash = Parse.Int(hash);
+          if (ConnectionHash == 0) ConnectionHash = hash.GetStableHashCode();
+        }
       }
     }
   }
@@ -604,7 +614,7 @@ public class DataEntry
       foreach (var pair in ByteArrays)
         ZDOExtraData.s_byteArrays[id].SetValue(pair.Key, pair.Value);
     }
-    HandleConnection(zdo);
+    HandleConnection(zdo, pars);
     HandleHashConnection(zdo);
   }
   public string GetBase64(Pars pars)
@@ -734,17 +744,19 @@ public class DataEntry
     }
   }
 
-  private void HandleConnection(ZDO ownZdo)
+  private void HandleConnection(ZDO ownZdo, Pars pars)
   {
-    if (OriginalId == ZDOID.None) return;
+    if (OriginalId == null) return;
     var ownId = ownZdo.m_uid;
-    if (TargetConnectionId != ZDOID.None)
+    if (TargetConnectionId != null)
     {
+      var targetZdoId = TargetConnectionId.Get(pars);
+      if (targetZdoId == null) return;
       // If target is known, the setup is easy.
-      var otherZdo = ZDOMan.instance.GetZDO(TargetConnectionId);
+      var otherZdo = ZDOMan.instance.GetZDO(targetZdoId.Value);
       if (otherZdo == null) return;
 
-      ownZdo.SetConnection(ConnectionType, TargetConnectionId);
+      ownZdo.SetConnection(ConnectionType, targetZdoId.Value);
       // Portal is two way.
       if (ConnectionType == ZDOExtraData.ConnectionType.Portal)
         otherZdo.SetConnection(ZDOExtraData.ConnectionType.Portal, ownId);
@@ -752,8 +764,9 @@ public class DataEntry
     }
     else
     {
+      var originalZdoId = OriginalId.Get(pars)!.Value;
       // Otherwise all zdos must be scanned.
-      var other = ZDOExtraData.s_connections.FirstOrDefault(kvp => kvp.Value.m_target == OriginalId);
+      var other = ZDOExtraData.s_connections.FirstOrDefault(kvp => kvp.Value.m_target == originalZdoId);
       if (other.Value == null) return;
       var otherZdo = ZDOMan.instance.GetZDO(other.Key);
       if (otherZdo == null) return;

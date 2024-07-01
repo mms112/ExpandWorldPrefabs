@@ -82,6 +82,9 @@ public class Helper
     var time = ZNet.instance.GetTimeSeconds();
     var day = EnvMan.instance.GetDay(time);
     var ticks = (long)(time * 10000000.0);
+    var x = Format(zdo.m_position.x);
+    var y = Format(zdo.m_position.y);
+    var z = Format(zdo.m_position.z);
     return new Dictionary<string, string> {
       { "<zdo>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
@@ -91,9 +94,10 @@ public class Helper
       { "<par3>", split.Length > 3 ? DataHelper.ResolveValue(split[3]) : "" },
       { "<par4>", split.Length > 4 ? DataHelper.ResolveValue(split[4]) : "" },
       { "<par>", DataHelper.ResolveValue(args) },
-      { "<x>", Format(zdo.m_position.x) },
-      { "<y>", Format(zdo.m_position.y) },
-      { "<z>", Format(zdo.m_position.z) },
+      { "<x>", x },
+      { "<y>", y },
+      { "<z>", z },
+      { "<pos>", $"{x},{z},{y}" },
       { "<i>", zone.x.ToString() },
       { "<j>", zone.y.ToString() },
       { "<a>", Format(zdo.m_rotation.y) },
@@ -109,6 +113,9 @@ public class Helper
     var time = ZNet.instance.GetTimeSeconds();
     var day = EnvMan.instance.GetDay(time);
     var ticks = (long)(time * 10000000.0);
+    var x = Format(pos.x);
+    var y = Format(pos.y);
+    var z = Format(pos.z);
     return new Dictionary<string, string> {
       { "<par0>", split.Length > 0 ? split[0] : "" },
       { "<par1>", split.Length > 1 ? split[1] : "" },
@@ -116,9 +123,10 @@ public class Helper
       { "<par3>", split.Length > 3 ? split[3] : "" },
       { "<par4>", split.Length > 4 ? split[4] : "" },
       { "<par>", args },
-      { "<x>", Format(pos.x) },
-      { "<y>", Format(pos.y) },
-      { "<z>", Format(pos.z) },
+      { "<x>", x },
+      { "<y>", y },
+      { "<z>", z },
+      { "<pos>", $"{x},{z},{y}" },
       { "<i>", zone.x.ToString() },
       { "<j>", zone.y.ToString() },
       { "<time>", Format(time) },

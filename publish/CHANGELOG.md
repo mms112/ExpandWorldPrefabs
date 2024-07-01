@@ -1,10 +1,14 @@
 - v1.16
-  - Adds new parameter "day" to get the current day of the world.
-  - Adds new parameter "ticks" to get ticks since the world start.
+  - Adds a new parameter "day" to get the current day of the world.
+  - Adds a new parameter "ticks" to get ticks since the world start.
+  - Adds a new parameter "pos" to get the object position as x,z,y.
   - Changes the parameter "<time>" to be seconds instead of ticks.
+  - Adds a new field `packaged` to RPC calls to send parameters as a single package (some RPCs require this).
+  - Adds support for the data field `connection` to use ZDO id instead of connection hash.
   - Fixes value groups not working for data filters.
   - Fixes nested value groups not working.
   - Fixes parameters not working for data filters.
+  - Updates the RPC.md file.
 
 - v1.15
   - Adds a new type "globalkey" to trigger on global key changes.

@@ -29,6 +29,7 @@ Following parameters are available to be used in the yaml file:
 - `<par>`: Triggered parameter.
 - `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
 - `<x>`, `<y>` and `<z>`: Object center point.
+- `<pos>`: Object center point as x,z,y.
 - `<i>` and `<j>`: Object zone indices.
 - `<a>`: Object rotation.
 - `<day>`: Days since the world start (int type).
@@ -221,6 +222,8 @@ RPC format:
 - delay: Delay in seconds for the RPC call.
 - source: ZDO id. The RPC call is faked to be from owner of this ZDO.
   - Parameters are supported. For example `<zdo>` can be useful.
+- packaged: If true, the parameters are sent as a package. Default is false.
+  - This must be set to true for some RPC calls.
 - 1: First parameter.
 - 2: Second parameter.
 - 3: Third parameter.

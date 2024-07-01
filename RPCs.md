@@ -151,21 +151,21 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Sets noise level of the creature (which attracts enemies).
   objectRpc:
-  - name: AddNoise
+  - name: RPC_AddNoise
     1: float, "noise level"
 ```
 
 ```yaml
 # Deals damage to the creature.
   objectRpc:
-  - name: Damage
+  - name: RPC_Damage
     1: hit, "hit data"
 ```
 
 ```yaml
 # Freezes animations.
   objectRpc:
-  - name: FreezeFrame
+  - name: RPC_FreezeFrame
     target: all
     1: float, "duration of the freeze frame"
 ```
@@ -173,7 +173,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Heals the creature.
   objectRpc:
-  - name: Heal
+  - name: RPC_Heal
     1: float, "amount of health"
     2: bool, "whether to show text"
 ```
@@ -181,21 +181,21 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Staggers the creature.
   objectRpc:
-  - name: Stagger
+  - name: RPC_Stagger
     1: vec, "direction of the stagger"
 ```
 
 ```yaml
 # Resets clothing.
   objectRpc:
-  - name: ResetCloth
+  - name: RPC_ResetCloth
     target: all
 ```
 
 ```yaml
 # Sets the tame state.
   objectRpc:
-  - name: SetTamed
+  - name: RPC_SetTamed
     1: bool, "is tamed"
 ```
 
@@ -263,20 +263,20 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Adds a single fuel.
   objectRpc:
-  - name: AddFuel
+  - name: RPC_AddFuel
 ```
 
 ```yaml
 # Adds a single item.
   objectRpc:
-  - name: AddItem
+  - name: RPC_AddItem
     1: string, "name of the item"
 ```
 
 ```yaml
 # Sets visual item of a slot.
   objectRpc:
-  - name: SetSlotVisual
+  - name: RPC_SetSlotVisual
     target: all
     1: int, "index of the slot"
     2: name, "name of the item"
@@ -285,7 +285,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Removes cooked items and spawns them at specific position.
   objectRpc:
-  - name: RemoveDoneItem
+  - name: RPC_RemoveDoneItem
     1: vec, "spawn position"
 ```
 
@@ -294,14 +294,14 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Creates visual fragments (if m_autoCreateFragments is true).
   objectRpc:
-  - name: CreateFragments
+  - name: RPC_CreateFragments
     target: all
 ```
 
 ```yaml
 # Deals damage to the creature.
   objectRpc:
-  - name: Damage
+  - name: RPC_Damage
     1: hit, "hit data"
 ```
 
@@ -312,6 +312,61 @@ By default, the RPC is sent to the owner of the object.
   objectRpc:
   - name: UseDoor
     1: bool, "forward or backward"
+```
+
+### Fermenter
+
+```yaml
+# Adds a single item.
+  objectRpc:
+  - name: RPC_AddItem
+    1: string, "name of the item"
+```
+
+```yaml
+# Drop the fermented item.
+  objectRpc:
+  - name: RPC_Tap
+```
+
+### Fireplace
+
+```yaml
+# Adds a single fuel.
+  objectRpc:
+  - name: RPC_AddFuel
+```
+
+```yaml
+# Adds amount of fuel.
+  objectRpc:
+  - name: RPC_AddFuelAmount
+  - 1: float, "amount of fuel"
+```
+
+```yaml
+# Sets amount of fuel.
+  objectRpc:
+  - name: RPC_SetFuelAmount
+  - 1: float, "amount of fuel"
+```
+
+### Fish
+
+```yaml
+# Part 2 of the pick up logic.
+# Picks up the fish to the player inventory (doesn't do anything as the server).
+  objectRpc:
+  - name: Pickup
+    target: <zdo>
+```
+
+```yaml
+# Part 1 of the pick up logic.
+# Client sends this to the ZDO owner, that then sends back PickUp to cause the original client to pick up the fish.
+  objectRpc:
+  - name: RequestPickup
+    source: <zdo>
 ```
 
 ### FishingFloat
@@ -333,47 +388,6 @@ By default, the RPC is sent to the owner of the object.
     target: all
     1: int, "effect index"
     2: vec, "position"
-```
-
-### Fermenter
-
-```yaml
-# Adds a single item.
-  objectRpc:
-  - name: AddItem
-    1: string, "name of the item"
-```
-
-```yaml
-# Drop the fermented item.
-  objectRpc:
-  - name: Tap
-```
-
-### Fireplace
-
-```yaml
-# Adds a single fuel.
-  objectRpc:
-  - name: AddFuel
-```
-
-### Fish
-
-```yaml
-# Part 2 of the pick up logic.
-# Picks up the fish to the player inventory (doesn't do anything as the server).
-  objectRpc:
-  - name: Pickup
-    target: <zdo>
-```
-
-```yaml
-# Part 1 of the pick up logic.
-# Client sends this to the ZDO owner, that then sends back PickUp to cause the original client to pick up the fish.
-  objectRpc:
-  - name: RequestPickup
-    source: <zdo>
 ```
 
 ### Incinerator
@@ -451,7 +465,8 @@ By default, the RPC is sent to the owner of the object.
 # Sets data.
   objectRpc:
   - name: MapData
-    1: zpkg, "unusable"
+    packaged: true
+    1: bytes, "unusable"
 ```
 
 ### MineRock
@@ -477,7 +492,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Deals damage to a part of the rock.
   objectRpc:
-  - name: Hit
+  - name: RPC_Hit
     1: hit, "hit data"
     2: int, "part index"
 ```
@@ -485,7 +500,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Sets health of a part.
   objectRpc:
-  - name: SetAreaHealth
+  - name: RPC_SetAreaHealth
     target: all
     1: int, "part index"
     2: float, "health"
@@ -547,13 +562,13 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Spawns the picked item.
   objectRpc:
-  - name: Pick
+  - name: RPC_Pick
 ```
 
 ```yaml
 # Sets the picked state.
   objectRpc:
-  - name: SetPicked
+  - name: RPC_SetPicked
     target: all
     1: bool, "is picked"
 ```
@@ -718,6 +733,26 @@ By default, the RPC is sent to the owner of the object.
     4: float, "skill level"
 ```
 
+### ShieldGenerator
+
+```yaml
+# Adds a single fuel.
+  objectRpc:
+  - name: RPC_AddFuel
+```
+
+```yaml
+# Triggers the attack.
+  objectRpc:
+  - name: RPC_Attack
+```
+
+```yaml
+# Sets the last hit time.
+  objectRpc:
+  - name: RPC_HitNow
+```
+
 ### Ship
 
 ```yaml
@@ -779,20 +814,20 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Adds a single fuel.
   objectRpc:
-  - name: AddFuel
+  - name: RPC_AddFuel
 ```
 
 ```yaml
 # Adds a single item.
   objectRpc:
-  - name: AddOre
+  - name: RPC_AddOre
     1: string, "name of the item"
 ```
 
 ```yaml
 # Drops the smelted items
   objectRpc:
-  - name: EmptyProcessed
+  - name: RPC_EmptyProcessed
 ```
 
 ### Talker
@@ -850,9 +885,16 @@ By default, the RPC is sent to the owner of the object.
 ### TeleportWorld
 
 ```yaml
+# Clears the connection from the target object.
+  objectRpc:
+  - name: RPC_SetConnected
+    1: zdo, "target object"
+```
+
+```yaml
 # Sets portal tag.
   objectRpc:
-  - name: SetTag
+  - name: RPC_SetTag
     1: string, "tag"
     2: string, "name of the author for console parental controls"
 ```
@@ -863,7 +905,23 @@ By default, the RPC is sent to the owner of the object.
 # Performs a terrain operation.
   objectRpc:
   - name: ApplyOperation
-    1: zpkg, "unusabke"
+    packged: true
+    1: vec, "position"
+    2: float, "level offset"
+    3: bool, "is level"
+    4: float, "level radius"
+    5: bool, "is square"
+    6: bool, "is raise"
+    7: float, "raise radius"
+    8: float, "raise power"
+    9: float, "raise delta"
+    10: bool, "is smooth"
+    11: float, "smooth radius"
+    12: float, "smooth power"
+    13: bool, "is paint clear"
+    14: bool, "is paint height check"
+    15: enum_terrainpaint, Dirt/Cultivate/Paved/Reset/ClearVegetation # - int, 0/1/2/3/4
+    16: float, "paint radius"
 ```
 
 ### Trap
@@ -888,14 +946,14 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Deals damage to the tree.
   objectRpc:
-  - name: Damage
+  - name: RPC_Damage
     1: hit, "hit data"
 ```
 
 ```yaml
 # Grows the tree showing the growth effect.
   objectRpc:
-  - name: Grow
+  - name: RPC_Grow
     target: all
 ```
 
@@ -911,7 +969,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Deals damage to the tree.
   objectRpc:
-  - name: Damage
+  - name: RPC_Damage
     1: hit, "hit data"
 ```
 
@@ -945,23 +1003,29 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Shows denied message.
   objectRpc:
-  - name: RequestDenied
+  - name: RPC_RequestDenied
     target: <zdo>
 ```
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
   objectRpc:
-  - name: RequestOwn
+  - name: RPC_RequestOwn
     source: <zdo>
 ```
 
 ### WearNTear
 
 ```yaml
+# Clears support state.
+  objectRpc:
+  - name: RPC_ClearCachedSupport
+```
+
+```yaml
 # Deals damage to the object.
   objectRpc:
-  - name: WNTDamage
+  - name: RPC_Damage
     1: hit, "hit data"
 ```
 
@@ -976,19 +1040,19 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Removes the object.
   objectRpc:
-  - name: WNTRemove
+  - name: RPC_Remove
 ```
 
 ```yaml
 # Repairs the object.
   objectRpc:
-  - name: WNTRepair
+  - name: RPC_Repair
 ```
 
 ```yaml
 # Shows visual fragments (if m_autoCreateFragments is true).
   objectRpc:
-  - name: WNTCreateFragments
+  - name: RPC_CreateFragments
     target: all
 ```
 
@@ -1021,14 +1085,21 @@ This list all RPC calls that are not related to any object.
 # Shows a damage text.
   clientRpc:
   - name: DamageText
-    1: zpkg, "unusable"
+    packaged: true
+    1: enum_damagetext, Normal/Resistant/Weak/Immune/Heal/TooHard/Blocked  # - int, 0/1/2/3/4/5/6
+    2: vec, "position"
+    3: float, "damage"
+    4: bool, "self damage"
 ```
 
 ```yaml
 # Destroys an object.
   clientRpc:
   - name: DestroyZDO
-    1: zpkg, "unusable"
+    packaged: true
+    1: int, "amount of ids"
+    2: zdo, "zdo id"
+    ...
 ```
 
 ```yaml
@@ -1042,7 +1113,11 @@ This list all RPC calls that are not related to any object.
 # Sends location icons. Only implemented for the client.
   clientRpc:
   - name: LocationIcons
-    1: zpkg, "unusable"
+    packaged: true
+    1: int, "amount of icons"
+    2: vec, "position"
+    3: string, "name of the icon"
+    ...
 ```
 
 ```yaml
@@ -1138,6 +1213,14 @@ This list all RPC calls that are not related to any object.
     4: int, "pin type"
     5: bool, "open map"
     6: bool "discover all"
+```
+
+```yaml
+# Sets portal connection.
+  clientRpc:
+  - name: RPC_SetConnection
+    1: zdo, "source zdo"
+    2: zdo, "target zdo"
 ```
 
 ```yaml
