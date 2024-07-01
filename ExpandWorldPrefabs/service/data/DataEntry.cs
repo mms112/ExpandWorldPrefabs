@@ -43,6 +43,8 @@ public class DataEntry
   public int ConnectionHash = 0;
   public IZdoIdValue? OriginalId;
   public IZdoIdValue? TargetConnectionId;
+  public IVector3Value? Position;
+  public IVector3Value? Rotation;
 
   public HashSet<string> RequiredParameters = [];
   public void Load(ZDO zdo)
@@ -138,6 +140,10 @@ public class DataEntry
     ConnectionHash = data.ConnectionHash;
     OriginalId = data.OriginalId;
     TargetConnectionId = data.TargetConnectionId;
+    if (data.Position != null)
+      Position = data.Position;
+    if (data.Rotation != null)
+      Rotation = data.Rotation;
     foreach (var par in data.RequiredParameters)
       RequiredParameters.Add(par);
   }
@@ -160,6 +166,8 @@ public class DataEntry
     ConnectionHash = 0;
     OriginalId = null;
     TargetConnectionId = null;
+    Position = null;
+    Rotation = null;
     RequiredParameters.Clear();
     Load(data);
     return this;
@@ -290,6 +298,10 @@ public class DataEntry
       foreach (var component in componentsToAdd)
         Ints[$"HasFields{component}".GetStableHashCode()] = DataValue.Simple(1);
     }
+    if (!string.IsNullOrWhiteSpace(data.position))
+      Position = DataValue.Vector3(data.position!, RequiredParameters);
+    if (!string.IsNullOrWhiteSpace(data.rotation))
+      Rotation = DataValue.Vector3(data.rotation!, RequiredParameters);
     if (!string.IsNullOrWhiteSpace(data.connection))
     {
       var split = Parse.SplitWithEmpty(data.connection!);
@@ -616,6 +628,21 @@ public class DataEntry
     }
     HandleConnection(zdo, pars);
     HandleHashConnection(zdo);
+    if (Position != null)
+    {
+      var pos = Position.Get(pars);
+      if (pos.HasValue)
+      {
+        zdo.m_position = pos.Value;
+        zdo.SetSector(ZoneSystem.instance.GetZone(pos.Value));
+      }
+    }
+    if (Rotation != null)
+    {
+      var rot = Rotation.Get(pars);
+      if (rot.HasValue)
+        zdo.m_rotation = rot.Value;
+    }
   }
   public string GetBase64(Pars pars)
   {
