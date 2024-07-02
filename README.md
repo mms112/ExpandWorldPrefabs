@@ -32,6 +32,7 @@ Following parameters are available to be used in the yaml file:
 - `<pos>`: Object center point as x,z,y.
 - `<i>` and `<j>`: Object zone indices.
 - `<a>`: Object rotation.
+- `<rot>`: Object rotation as y,x,z.
 - `<day>`: Days since the world start (int type).
 - `<time>`: Seconds since the world start (float type).
   - Each day is 1800 seconds.

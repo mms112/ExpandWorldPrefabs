@@ -114,20 +114,10 @@ public class Yaml
     File.Copy(path, Path.Combine(BackupDirectory, name), true);
   }
 
-  public static void CleanUp(ConfigFile config)
+  public static void Init()
   {
-    if (!System.IO.Directory.Exists(BaseDirectory))
-      System.IO.Directory.CreateDirectory(BaseDirectory);
-    try
-    {
-      if (!System.IO.Directory.Exists(BaseDirectory)) return;
-      if (File.Exists(config.ConfigFilePath)) return;
-      System.IO.Directory.Delete(BaseDirectory, true);
-    }
-    catch
-    {
-      Log.Warning("Failed to remove old yaml files.");
-    }
+    if (!Directory.Exists(BaseDirectory))
+      Directory.CreateDirectory(BaseDirectory);
   }
 
   public static IDeserializer Deserializer() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance)

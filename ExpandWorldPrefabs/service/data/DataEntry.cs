@@ -44,7 +44,7 @@ public class DataEntry
   public IZdoIdValue? OriginalId;
   public IZdoIdValue? TargetConnectionId;
   public IVector3Value? Position;
-  public IVector3Value? Rotation;
+  public IQuaternionValue? Rotation;
 
   public HashSet<string> RequiredParameters = [];
   public void Load(ZDO zdo)
@@ -301,7 +301,7 @@ public class DataEntry
     if (!string.IsNullOrWhiteSpace(data.position))
       Position = DataValue.Vector3(data.position!, RequiredParameters);
     if (!string.IsNullOrWhiteSpace(data.rotation))
-      Rotation = DataValue.Vector3(data.rotation!, RequiredParameters);
+      Rotation = DataValue.Quaternion(data.rotation!, RequiredParameters);
     if (!string.IsNullOrWhiteSpace(data.connection))
     {
       var split = Parse.SplitWithEmpty(data.connection!);
@@ -397,6 +397,12 @@ public class DataEntry
     if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == false)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == false)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == false)) return false;
+    if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
+    {
+      var conn = zdo.GetConnectionZDOID(ConnectionType);
+      var target = TargetConnectionId.Get(pars);
+      if (target != null && conn != target) return false;
+    }
     return true;
   }
   public bool Unmatch(Dictionary<string, string> parameters, ZDO zdo)
@@ -411,6 +417,12 @@ public class DataEntry
     if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == true)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == true)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == true)) return false;
+    if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
+    {
+      var conn = zdo.GetConnectionZDOID(ConnectionType);
+      var target = TargetConnectionId.Get(pars);
+      if (target != null && conn == target) return false;
+    }
     return true;
   }
   public Dictionary<string, string> GetParameters(ZDO zdo)
@@ -641,7 +653,7 @@ public class DataEntry
     {
       var rot = Rotation.Get(pars);
       if (rot.HasValue)
-        zdo.m_rotation = rot.Value;
+        zdo.m_rotation = rot.Value.eulerAngles;
     }
   }
   public string GetBase64(Pars pars)

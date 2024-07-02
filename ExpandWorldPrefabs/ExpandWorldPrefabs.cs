@@ -22,6 +22,7 @@ public class EWP : BaseUnityPlugin
     Harmony = new(GUID);
     Harmony.PatchAll();
     Log.Init(Logger);
+    Yaml.Init();
     try
     {
       DataLoading.SetupWatcher();

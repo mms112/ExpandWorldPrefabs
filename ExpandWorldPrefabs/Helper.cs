@@ -85,6 +85,9 @@ public class Helper
     var x = Format(zdo.m_position.x);
     var y = Format(zdo.m_position.y);
     var z = Format(zdo.m_position.z);
+    var rx = Format(zdo.m_rotation.x);
+    var ry = Format(zdo.m_rotation.y);
+    var rz = Format(zdo.m_rotation.z);
     return new Dictionary<string, string> {
       { "<zdo>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
@@ -100,7 +103,8 @@ public class Helper
       { "<pos>", $"{x},{z},{y}" },
       { "<i>", zone.x.ToString() },
       { "<j>", zone.y.ToString() },
-      { "<a>", Format(zdo.m_rotation.y) },
+      { "<a>", ry },
+      { "<rot>", $"{ry},{rx},{rz}" },
       { "<time>", Format(time) },
       { "<day>", day.ToString() },
       { "<ticks>", ticks.ToString() },
