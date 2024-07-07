@@ -1,3 +1,6 @@
+- v1.17
+  - Fixes creature spawn points losing track of the spawned creature when data swapping.
+
 - v1.16
   - Adds a new parameter "day" to get the current day of the world.
   - Adds a new parameter "ticks" to get ticks since the world start.

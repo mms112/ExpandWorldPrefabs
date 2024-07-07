@@ -68,7 +68,11 @@ public class Manager
     foreach (var p in info.Swaps)
       CreateObject(p, zdo, data, parameters, info.TriggerRules);
     if (regenerateOriginal)
-      CreateObject(zdo, data, parameters, false);
+    {
+      var newZdo = CreateObject(zdo, data, parameters, false);
+      if (newZdo != null)
+        PrefabConnector.AddSwap(zdo.m_uid, newZdo.m_uid);
+    }
   }
   public static void RemoveZDO(ZDO zdo, bool triggerRules)
   {
@@ -91,15 +95,15 @@ public class Manager
       pars.ObjectParameters = data.GetParameters(originalZdo);
     DelayedSpawn.Add(spawn.Delay, pos, rot, spawn.GetPrefab(pars), originalZdo.GetOwner(), data, parameters, triggerRules);
   }
-  public static void CreateObject(ZDO source, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules) => CreateObject(source.m_prefab, source.m_position, source.GetRotation(), source.GetOwner(), data, parameters, triggerRules);
-  public static void CreateObject(int prefab, Vector3 pos, Quaternion rot, long owner, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules)
+  public static ZDO? CreateObject(ZDO source, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules) => CreateObject(source.m_prefab, source.m_position, source.GetRotation(), source.GetOwner(), data, parameters, triggerRules);
+  public static ZDO? CreateObject(int prefab, Vector3 pos, Quaternion rot, long owner, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules)
   {
-    if (prefab == 0) return;
+    if (prefab == 0) return null;
     var obj = ZNetScene.instance.GetPrefab(prefab);
     if (!obj || !obj.TryGetComponent<ZNetView>(out var view))
     {
       Log.Error($"Can't spawn missing prefab: {prefab}");
-      return;
+      return null;
     }
     // Prefab hash is used to check whether to trigger rules.
     var zdo = ZDOMan.instance.CreateNewZDO(pos, triggerRules ? prefab : 0);
@@ -121,6 +125,7 @@ public class Manager
     }
     zdo.SetOwnerInternal(owner);
     data?.Write(parameters ?? [], zdo);
+    return zdo;
   }
 
   public static void SpawnDrops(ZDO zdo)
