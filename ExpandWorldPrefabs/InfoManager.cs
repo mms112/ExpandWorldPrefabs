@@ -17,7 +17,8 @@ public enum ActionType
   Say,
   Poke,
   GlobalKey,
-  Event
+  Event,
+  Change
 }
 public class InfoManager
 {
@@ -31,6 +32,7 @@ public class InfoManager
   public static readonly PrefabInfo PokeDatas = new();
   public static readonly GlobalInfo GlobalKeyDatas = new();
   public static readonly GlobalInfo EventDatas = new();
+  public static readonly PrefabInfo ChangeDatas = new();
 
   public static void Clear()
   {
@@ -44,6 +46,7 @@ public class InfoManager
     PokeDatas.Clear();
     GlobalKeyDatas.Clear();
     EventDatas.Clear();
+    ChangeDatas.Clear();
   }
   public static void Add(Info info)
   {
@@ -75,6 +78,8 @@ public class InfoManager
       HandleGlobalKey.Patch(EWP.Harmony);
     if (EventDatas.Exists)
       HandleEvent.Patch(EWP.Harmony);
+    if (ChangeDatas.Exists)
+      HandleChanged.Patch(EWP.Harmony);
   }
 
 
@@ -88,6 +93,7 @@ public class InfoManager
     ActionType.Say => SayDatas,
     ActionType.Poke => PokeDatas,
     ActionType.Create => CreateDatas,
+    ActionType.Change => ChangeDatas,
     _ => Error(type),
   };
   private static PrefabInfo Error(ActionType type)

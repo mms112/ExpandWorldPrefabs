@@ -44,6 +44,7 @@ public class EWP : BaseUnityPlugin
   {
     if (ZNet.instance == null) return;
     HandleCreated.Execute();
+    HandleChanged.Execute();
     DelayedSpawn.Execute(Time.deltaTime);
     DelayedRemove.Execute(Time.deltaTime);
     DelayedPoke.Execute(Time.deltaTime);
