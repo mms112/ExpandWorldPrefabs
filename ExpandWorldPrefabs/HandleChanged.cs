@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using Service;
 
 namespace ExpandWorld.Prefab;
 
@@ -28,6 +29,7 @@ public class HandleChanged
   }
   private static void Handle(ZDO __instance)
   {
+    if (ZRoutedRpc.s_instance == null) return;
     ChangedZDOs.Add(__instance);
   }
 }

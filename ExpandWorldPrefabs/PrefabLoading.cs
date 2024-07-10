@@ -90,6 +90,8 @@ public class Loading
     var pokes = ParsePokes(data.poke ?? []);
     var objectRpcs = ParseObjectRpcs(data);
     var clientRpcs = ParseClientRpcs(data);
+    var minPaint = data.minPaint != "" ? Parse.Color(data.minPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
+    var maxPaint = data.maxPaint != "" ? Parse.Color(data.maxPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
     return types.Select(t =>
     {
       return new Info()
@@ -104,6 +106,7 @@ public class Loading
         Spawns = [.. spawns],
         Swaps = [.. swaps],
         Data = t.Type != ActionType.Destroy ? data.data : "",
+        InjectData = data.injectData,
         Commands = commands,
         PlayerSearch = playerSearch.Length > 0 && Enum.TryParse(playerSearch[0], true, out PlayerSearch mode) ? mode : PlayerSearch.None,
         PlayerSearchDistance = Parse.Float(playerSearch, 1, 0f),
@@ -141,6 +144,8 @@ public class Loading
         TriggerRules = data.triggerRules,
         ObjectRpcs = objectRpcs,
         ClientRpcs = clientRpcs,
+        MinPaint = minPaint,
+        MaxPaint = maxPaint,
       };
     }).ToArray();
   }

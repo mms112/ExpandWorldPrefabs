@@ -326,4 +326,23 @@ public static class Parse
   {
     return Enum.TryParse(arg, true, out TerrainModifier.PaintType state) ? (int)state : Int(arg, 0);
   }
+  private static Dictionary<string, Color> Paints = new() {
+    {"grass", UnityEngine.Color.black},
+    {"patches", new(0f, 0.75f, 0f)},
+    {"grass_dark", new(0.6f, 0.5f, 0f)},
+    {"dirt", UnityEngine.Color.red},
+    {"cultivated", UnityEngine.Color.green},
+    {"paved", UnityEngine.Color.blue},
+    {"paved_moss", new(0f, 0f, 0.5f)},
+    {"paved_dirt", new(1f, 0f, 0.5f)},
+    {"paved_dark", new(0f, 1f, 0.5f)},
+  };
+  public static Color? Color(string arg)
+  {
+    var lower = arg.ToLowerInvariant();
+    if (Paints.TryGetValue(lower, out var color)) return color;
+    var split = Split(arg, true, ' ');
+    if (split.Length < 3) return null;
+    return new(Float(split[0]), Float(split[1]), Float(split[2]), split.Length > 3 ? Float(split[3]) : 1f);
+  }
 }

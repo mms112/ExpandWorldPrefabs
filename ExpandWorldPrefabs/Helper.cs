@@ -88,6 +88,8 @@ public class Helper
     var rx = Format(zdo.m_rotation.x);
     var ry = Format(zdo.m_rotation.y);
     var rz = Format(zdo.m_rotation.z);
+    var owner = zdo.GetOwner();
+    var peer = owner != 0 ? ZNet.instance.GetPeer(owner) : null;
     return new Dictionary<string, string> {
       { "<zdo>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
@@ -108,6 +110,9 @@ public class Helper
       { "<time>", Format(time) },
       { "<day>", day.ToString() },
       { "<ticks>", ticks.ToString() },
+      { "<pid>", peer?.m_rpc.GetSocket().GetHostName() ?? "" },
+      { "<pname>", peer?.m_playerName ?? "" },
+      { "<pchar>", peer?.m_characterID.ToString() ?? "" },
     };
   }
   public static Dictionary<string, string> CreateParameters(string args, Vector3 pos)

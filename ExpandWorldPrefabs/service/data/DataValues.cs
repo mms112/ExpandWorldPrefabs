@@ -201,6 +201,22 @@ public class AnyValue(string[] values)
 }
 public class ItemValue(ItemData data, HashSet<string> requiredParameters)
 {
+  /*
+  public static bool Match(List<ItemValue> data, Vector2i? size, ZDO zdo)
+  {
+    var str = zdo.GetString(ZDOVars.s_items, "");
+    if (string.IsNullOrEmpty(@str)) return false;
+    ZPackage pkg = new(@str);
+    Inventory inv = new("", null, size.HasValue ? size.Value.x : 4, size.HasValue ? size.Value.y : 2);
+    inv.Load(pkg);
+    var fixedPos = data.Where(item => item.Position != "").ToList();
+    foreach (var item in fixedPos)
+    {
+      if (!item.Match(inv, zdo)) return false;
+    }
+    return true;
+  }
+  */
   public static string LoadItems(Pars pars, List<ItemValue> items, Vector2i? size, int amount)
   {
     ZPackage pkg = new();
@@ -321,4 +337,36 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
     pkg.Write(WorldLevel.Get(pars) ?? 1);
     pkg.Write(PickedUp.GetBool(pars) ?? false);
   }
+  /*
+    public bool Match(Pars pars, Inventory inv)
+    {
+      if (Position != "")
+      {
+        var item = inv.GetItemAt(RolledPosition.x, RolledPosition.y);
+        if (item == null) return false;
+        var ret = MatchItem(pars, item);
+        inv.RemoveItem(item);
+        return ret;
+      }
+      return false;
+    }
+    private bool MatchItem(Pars pars, ItemDrop.ItemData item)
+    {
+      if (item.m_shared.m_name != RolledPrefab) return false;
+      if (Stack.Match(pars, item.m_stack) == false) return false;
+      if (Durability.Match(pars, item.m_durability) == false) return false;
+      if (Equipped.Match(pars, item.m_equipped) == false) return false;
+      if (Quality.Match(pars, item.m_quality) == false) return false;
+      if (Variant.Match(pars, item.m_variant) == false) return false;
+      if (CrafterID.Match(pars, item.m_crafterID) == false) return false;
+      if (CrafterName.Match(pars, item.m_crafterName) == false) return false;
+      if (WorldLevel.Match(pars, item.m_worldLevel) == false) return false;
+      if (PickedUp.Match(pars, item.m_pickedUp) == false) return false;
+      foreach (var kvp in CustomData)
+      {
+        if (item.m_customData.TryGetValue(kvp.Key, out var value) == false) return false;
+      }
+      return true;
+    }
+    */
 }

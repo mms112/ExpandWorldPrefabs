@@ -11,6 +11,10 @@ public class Commands
   public static void Run(Info info, ZDO? zdo, Dictionary<string, string> parameters, List<PlayerInfo> players)
   {
     if (info.Commands.Length == 0) return;
+    var pars = parameters;
+    // PlayerSearch replaces the <pchar>, <pid>, and <pname> parameters.
+    if (info.PlayerSearch != PlayerSearch.None)
+      pars = parameters.Where(p => p.Key != "<pchar>" && p.Key != "<pid>" && p.Value != "<pname>").ToDictionary(p => p.Key, p => p.Value);
     var commands = info.Commands.Select(s => Helper.ReplaceParameters(s, parameters, zdo)).ToArray();
     if (info.PlayerSearch == PlayerSearch.None)
       CommandManager.Run(commands, players.Count == 0 ? null : players[0]);

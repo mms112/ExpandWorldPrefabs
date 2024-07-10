@@ -113,6 +113,16 @@ public class Data
   public Dictionary<string, string>[]? objectRpc = null;
   [DefaultValue(null)]
   public Dictionary<string, string>[]? clientRpc = null;
+
+  [DefaultValue("")]
+  public string minPaint = "";
+  [DefaultValue("")]
+  public string maxPaint = "";
+  [DefaultValue("")]
+  public string paint = "";
+
+  [DefaultValue(false)]
+  public bool injectData = false;
 }
 
 
@@ -129,6 +139,7 @@ public class Info
   public float RemoveDelay = 0f;
   public bool Drops = false;
   public string Data = "";
+  public bool InjectData = false;
   public string[] Commands = [];
   public bool Day = true;
   public bool Night = true;
@@ -162,6 +173,8 @@ public class Info
   public bool TriggerRules = false;
   public ObjectRpcInfo[]? ObjectRpcs;
   public ClientRpcInfo[]? ClientRpcs;
+  public Color? MinPaint;
+  public Color? MaxPaint;
 }
 public class Spawn
 {

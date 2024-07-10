@@ -1,4 +1,7 @@
 - v1.17
+  - Adds new filters `paint`, `minPaint` and `maxPaint`.
+  - Adds a new field `injectData` to change data without replacing the entire object.
+  - Changes parameters "pid", "pchar" and "pname" to work as normal parameters.
   - Fixes creature spawn points losing track of the spawned creature when data swapping.
 
 - v1.16

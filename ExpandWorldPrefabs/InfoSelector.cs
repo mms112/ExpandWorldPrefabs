@@ -52,6 +52,7 @@ public class InfoSelector
     var checkLocations = linq.Any(d => d.Locations.Count > 0);
     var checkFilters = linq.Any(d => d.Filter != null);
     var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
+    var checkPaint = linq.Any(d => d.MinPaint != null || d.MaxPaint != null);
     if (checkEnvironments)
     {
       var environment = GetEnvironment(biome);
@@ -116,6 +117,13 @@ public class InfoSelector
       {
         linq = linq.Where(d => d.BannedFilter == null || d.BannedFilter.Unmatch(parameters, zdo) || (source != null && d.BannedFilter.Unmatch(parameters, source))).ToArray();
       }
+    }
+    if (checkPaint)
+    {
+      var paint = Paint.GetPaint(pos, biome);
+      linq = linq.Where(d =>
+        (d.MinPaint == null || (d.MinPaint.Value.b <= paint.b && d.MinPaint.Value.g <= paint.g && d.MinPaint.Value.r <= paint.r)) &&
+        (d.MaxPaint == null || (d.MaxPaint.Value.b >= paint.b && d.MaxPaint.Value.g >= paint.g && d.MaxPaint.Value.r >= paint.r))).ToArray();
     }
     var valid = linq.ToArray();
     if (valid.Length == 0) return null;
