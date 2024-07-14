@@ -41,8 +41,6 @@ public class Data
   public string? command = null;
   [DefaultValue(null)]
   public string[]? commands = null;
-  [DefaultValue("")]
-  public string playerSearch = "";
   [DefaultValue(true)]
   public bool day = true;
   [DefaultValue(true)]
@@ -167,9 +165,6 @@ public class Info
   public float LocationDistance = 0f;
   public DataEntry? Filter;
   public DataEntry? BannedFilter;
-  public PlayerSearch PlayerSearch = PlayerSearch.None;
-  public float PlayerSearchDistance = 0f;
-  public float PlayerSearchHeight = 0f;
   public bool TriggerRules = false;
   public ObjectRpcInfo[]? ObjectRpcs;
   public ClientRpcInfo[]? ClientRpcs;
@@ -228,12 +223,6 @@ public class Spawn
   }
 }
 
-public enum PlayerSearch
-{
-  None,
-  All,
-  Closest
-}
 public class Poke(PokeData data)
 {
   public Object Filter = new(data.prefab, data.minDistance, data.maxDistance, data.data);

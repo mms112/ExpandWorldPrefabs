@@ -10,6 +10,7 @@ On vanilla, global keys can enable extra night time spawn.
 
 ```yaml
 - prefab: Goblin
+  type: create
   biomes: Meadows
   swap: remove
 ```
@@ -22,6 +23,7 @@ Another option is to replace with another monster.
 
 ```yaml
 - prefab: Goblin
+  type: create
   biomes: Meadows
   data: weak_fuling
 ```
@@ -30,9 +32,8 @@ Another option is to replace with another monster.
 
 ```yaml
 - name: weak_fuling
+  type: create
   ints:
-  - HasFields, 1
-  - HasFieldsHumanoid, 1
   - huntplayer, 0
   strings:
   - Humanoid.m_name, Fuling Patrol
@@ -48,6 +49,7 @@ This can be used to keep lower level areas challenging and give more loot.
 
 ```yaml
 - prefab: Greydwarf
+  type: create
   data: two_star
   globalKeys: defeated_bonemass
 ```
@@ -68,6 +70,7 @@ This global key can then be used in other entries (for example farming, spawns o
 
 ```yaml
 - prefab: Wolf
+  type: create
   biomes: Mountains
   minAltitude: 100
   weight: 0.01
@@ -83,8 +86,6 @@ This global key can then be used in other entries (for example farming, spawns o
 ```yaml
 - name: special_wolf
   ints:
-  - HasFields, 1
-  - HasFieldsHumanoid, 1
 # 3 stars for a lot more loot (not shown on UI).
   - level, 4
   - Humanoid.m_boss, 1
@@ -104,6 +105,7 @@ This probably needs some lore or instructions to make sense.
 
 ```yaml
 - prefab: windmill
+  type: create
   biomes: Mountain
   minAltitude: 100
 # Can only be triggered after killing Moder.

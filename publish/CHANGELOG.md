@@ -3,6 +3,8 @@
   - Adds a new field `injectData` to change data without replacing the entire object.
   - Changes parameters "pid", "pchar" and "pname" to work as normal parameters.
   - Fixes creature spawn points losing track of the spawned creature when data swapping.
+  - Removes the field `playerSearch` as obsolete. Use player pokes instead.
+  - Removes the RPC target "search" as obsolete. Use player pokes instead.
 
 - v1.16
   - Adds a new parameter "day" to get the current day of the world.

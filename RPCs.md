@@ -53,7 +53,7 @@ By default, the RPC is sent to the owner of the object.
 
 - Most calls check for ZDO ownership. Using `all` would just increase the network traffic without any effect.
 - Calls with `all` can be used just with `owner` too, but this might not show all visual effects to the clients.
-- Calls with `all` can be replaced with `search` to use player search feature only send to nearby clients.
+- Calls with `all` can be replaced with a player poke that uses `owner` to only target the nearby clients.
 - Calls with `<zdo>` require custom handling to get proper ZDO id. The RPC is sent to owner of this ZDO.
 
 ### ArmorStand

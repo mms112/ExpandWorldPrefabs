@@ -71,7 +71,6 @@ public class Loading
     var spawnDelay = Math.Max(data.delay, data.spawnDelay);
     var swaps = ParseSpawns(data.swaps ?? (data.swap == null ? [] : [data.swap]), spawnDelay);
     var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), spawnDelay);
-    var playerSearch = Parse.ToList(data.playerSearch).ToArray();
     var types = (data.types ?? [data.type]).Select(s => new InfoType(data.prefab, s)).ToArray();
     if (data.prefab == "" && types.Any(t => t.Type != ActionType.GlobalKey && t.Type != ActionType.Event))
       Log.Warning($"Prefab missing for type {data.type}");
@@ -108,9 +107,6 @@ public class Loading
         Data = t.Type != ActionType.Destroy ? data.data : "",
         InjectData = data.injectData,
         Commands = commands,
-        PlayerSearch = playerSearch.Length > 0 && Enum.TryParse(playerSearch[0], true, out PlayerSearch mode) ? mode : PlayerSearch.None,
-        PlayerSearchDistance = Parse.Float(playerSearch, 1, 0f),
-        PlayerSearchHeight = Parse.Float(playerSearch, 2, 0f),
         Weight = data.weight,
         Day = data.day,
         Night = data.night,

@@ -8,6 +8,7 @@ Unfortunately not visible because bosses have different UI.
 
 ```yaml
 - prefab: Eikthyr, gd_king,Bonemass, Dragon, GoblinKing, SeekerQueen
+  type: create
   data: two_star
 ```
 
@@ -25,6 +26,7 @@ Unfortunately not visible because bosses have different UI.
 
 ```yaml
 - prefab: Bonemass
+  type: create
   data: ultra_bonemass
   weight: 0.1
 ```
@@ -33,9 +35,6 @@ Unfortunately not visible because bosses have different UI.
 
 ```yaml
 - name: ultra_bonemass
-  ints:
-  - HasFields, 1
-  - HasFieldsHumanoid, 1
 # Could use level here too.
   strings:
   - Humanoid.m_name, Ultra Bonemass
@@ -56,11 +55,13 @@ Unfortunately not visible because bosses have different UI.
 
 ```yaml
 - prefab: Blob
+  type: create
   weight: 0.5
   swap: BlobElite
   objects:
   - Bonemass, objectDistance: 50
 - prefab: Skeleton
+  type: create
   weight: 0.5
   swap: Draugr
   objects:

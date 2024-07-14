@@ -25,7 +25,7 @@ This mod uses the [data system](https://github.com/JereKuusela/valheim-world_edi
 Following parameters are available to be used in the yaml file:
 
 - `<prefab>`: Original prefab id.
-- `<zdo>`: ZDO id.
+- `<zdo>`: Object id.
 - `<par>`: Triggered parameter.
 - `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
 - `<x>`, `<y>` and `<z>`: Object center point.
@@ -39,22 +39,20 @@ Following parameters are available to be used in the yaml file:
 - `<ticks>`: Ticks since the world start (long type).
   - Each second is 10000000 ticks.
 - `<key_*>`: Global key value.
-- `<int_*>`: Integer value from the ZDO.
-- `<float_*>`: Decimal value from the ZDO.
-- `<long_*>`: Big integer value from the ZDO.
-- `<string_*>`: Text value from the ZDO.
-- `<bool_*>`: Integer value from the ZDO converted to true or false.
-- `<hash_*>`: Integer value from the ZDO converted to prefab name.
-- `<vec_*>`: Vector3 value from the ZDO converted to x,z,y.
-- `<quat_*>`: Quaternion value from the ZDO converted to y,x,z.
-- `<byte_*>`: Byte value from the ZDO converted to base64 text.
-- `<zdo_*>`: ZDO id value from the ZDO.
-
-Following parameters are available for commands and playerSearch:
-
-- `<pid>`: Player id.
-- `<pname>`: Player name.
-- `<px>`, `<py>` and `<pz>`: Player position.
+- `<int_*>`: Integer value from the object data.
+- `<float_*>`: Decimal value from the object data.
+- `<long_*>`: Big integer value from the object data.
+- `<string_*>`: Text value from the object data.
+- `<bool_*>`: Integer value from the object converted to true or false.
+- `<hash_*>`: Integer value from the object converted to prefab name.
+- `<vec_*>`: Vector3 value from the object converted to x,z,y.
+- `<quat_*>`: Quaternion value from the object converted to y,x,z.
+- `<byte_*>`: Byte value from the object converted to base64 text.
+- `<zdo_*>`: Object id value from the object.
+- `<pid>`: Steam/Playfab of the client that controls the object.
+  - Note: The client always controls its player object.
+- `<pname>`: Player name of the client that controls the object.
+- `<pchar>`: Character id of the client that controls the object.
 
 ### expand_prefabs.yaml
 
@@ -93,9 +91,14 @@ Most fields are put on a single line. List values are separated by `,`.
 
 - remove (default: `false`): If true, the original object is removed.
 - removeDelay: Delay in seconds for remove.
-- data: Injects data to the original object.
-  - Name of the data entry (from `data.yaml`) or data code.
-  - Injection is done by respawning the original object with new data.
+- data: Changes data to the original object.
+  - Name of the data entry (from `data.yaml`) or data code that is added to the object.
+  - This is done by respawning the original object with the new data.
+- injectData (default: `false`): If true, the object is not respawned when adding data.
+  - Note: This doesn't work in most cases because clients don't load the new data.
+  - Some possible cases are:
+    - When adding data that is only used by this mod. In this case, clients wouldn't use the data anyway.
+    - When changing data that changes during the normal game play. For example creature health.
 - spawnDelay: Delay in seconds for spawns and swaps.
 - spawn: Spawns another object.
   - Format (each part is optional):
@@ -114,12 +117,6 @@ Most fields are put on a single line. List values are separated by `,`.
 - command: Console command to run.
   - Parameters are supported.
   - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
-- playerSearch: Searches for nearby players for `command`.
-  - The command runs for each player. If no players are found, the command doesn't run.
-  - Format is `mode, distance, heightDifference`:
-    - Mode is `all` or `closest`.
-    - Distance is the search distsance.
-    - Height difference is optionnal, if given the player must be within that distance vertically.
 - triggerRules (default: `false`): If true, spawns or remove from this entry can trigger other entries.
 
 ## Filters
@@ -217,7 +214,6 @@ RPC format:
 - target: Target of the RPC call. Default is `owner`.
   - `owner`: The RPC is sent to the owner of the object.
   - `all`: The is sent to all clients.
-  - `search`: The is sent to the clients found with playerSearch.
   - ZDO id: The RPC is sent to the owner of this ZDO.
     - Parameters are supported. For example `<zdo>` can be useful.
 - delay: Delay in seconds for the RPC call.

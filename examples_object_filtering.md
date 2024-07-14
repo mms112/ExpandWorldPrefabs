@@ -30,9 +30,6 @@ Data
 
 ```yaml
 - name: mushroom_boar
-  ints:
-  - HasFields, 1
-  - HasFieldsHumanoid, 1
   strings:
   - Humanoid.m_name, Mushroom Boar
 ```

@@ -14,14 +14,10 @@ public class Manager
     var parameters = Helper.CreateParameters(args, pos);
     var info = InfoSelector.SelectGlobal(type, args, parameters, pos, remove);
     if (info == null) return;
-    List<PlayerInfo>? players = null;
-    if (info.Commands.Length > 0 || (info.ClientRpcs != null && info.ClientRpcs.Any(rpc => rpc.IsTarget)))
-    {
-      players = Commands.FindPlayers();
-      Commands.Run(info, parameters, players);
-    }
+    if (info.Commands.Length > 0)
+      Commands.Run(info, parameters);
     if (info.ClientRpcs != null)
-      GlobalClientRpc(info.ClientRpcs, parameters, players);
+      GlobalClientRpc(info.ClientRpcs, parameters);
     PokeGlobal(info, parameters, pos);
   }
   public static void Handle(ActionType type, string args, ZDO zdo, ZDO? source = null)
@@ -33,18 +29,14 @@ public class Manager
     var parameters = Helper.CreateParameters(name, args, zdo);
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
     if (info == null) return;
-    List<PlayerInfo>? players = null;
-    if (info.Commands.Length > 0
-      || (info.ObjectRpcs != null && info.ObjectRpcs.Any(rpc => rpc.IsTarget))
-      || (info.ClientRpcs != null && info.ClientRpcs.Any(rpc => rpc.IsTarget)))
-    {
-      players = Commands.FindPlayers(zdo, source, info);
-      Commands.Run(info, zdo, parameters, players);
-    }
+
+    if (info.Commands.Length > 0)
+      Commands.Run(info, zdo, parameters);
+
     if (info.ObjectRpcs != null)
-      ObjectRpc(info.ObjectRpcs, zdo, parameters, players);
+      ObjectRpc(info.ObjectRpcs, zdo, parameters);
     if (info.ClientRpcs != null)
-      ClientRpc(info.ClientRpcs, zdo, parameters, players);
+      ClientRpc(info.ClientRpcs, zdo, parameters);
     HandleSpawns(info, zdo, parameters);
     Poke(info, zdo, parameters);
     if (info.Drops)
@@ -219,20 +211,20 @@ public class Manager
       Handle(ActionType.Poke, parameter, z);
   }
 
-  public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, List<PlayerInfo>? players)
+  public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
   {
     foreach (var i in info)
-      i.Invoke(zdo, parameters, players);
+      i.Invoke(zdo, parameters);
   }
-  public static void ClientRpc(ClientRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters, List<PlayerInfo>? players)
+  public static void ClientRpc(ClientRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
   {
     foreach (var i in info)
-      i.Invoke(zdo, parameters, players);
+      i.Invoke(zdo, parameters);
   }
-  public static void GlobalClientRpc(ClientRpcInfo[] info, Dictionary<string, string> parameters, List<PlayerInfo>? players)
+  public static void GlobalClientRpc(ClientRpcInfo[] info, Dictionary<string, string> parameters)
   {
     foreach (var i in info)
-      i.InvokeGlobal(parameters, players);
+      i.InvokeGlobal(parameters);
   }
   public static void Rpc(long source, long target, ZDOID id, int hash, object[] parameters)
   {
