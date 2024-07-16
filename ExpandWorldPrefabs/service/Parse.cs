@@ -83,6 +83,20 @@ public static class Parse
   {
     return float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
   }
+  public static bool TryBoolean(string arg, out bool result)
+  {
+    result = false;
+    if (arg.ToLowerInvariant() == "true")
+    {
+      result = true;
+      return true;
+    }
+    if (arg.ToLowerInvariant() == "false")
+    {
+      return true;
+    }
+    return false;
+  }
 
   public static Quaternion AngleYXZ(string arg) => AngleYXZ(Split(arg), 0, Vector3.zero);
   public static Quaternion AngleYXZ(string[] args, int index) => AngleYXZ(args, index, Vector3.zero);

@@ -1,3 +1,6 @@
+- v1.18
+  - Adds spawn specific triggerRules to the field `spawn`.
+
 - v1.17
   - Adds new filters `paint`, `minPaint` and `maxPaint`.
   - Adds a new field `injectData` to change data without replacing the entire object.

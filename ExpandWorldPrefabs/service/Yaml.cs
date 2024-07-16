@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
+using ExpandWorld.Prefab;
 using UnityEngine;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
@@ -120,17 +121,8 @@ public class Yaml
       Directory.CreateDirectory(BaseDirectory);
   }
 
-  public static IDeserializer Deserializer() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance)
-  .WithTypeConverter(new FloatConverter()).Build();
-  public static IDeserializer DeserializerUnSafe() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance)
-  .WithTypeConverter(new FloatConverter()).IgnoreUnmatchedProperties().Build();
-  public static ISerializer Serializer() => new SerializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).DisableAliases()
-    .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults).WithTypeConverter(new FloatConverter())
-      .WithAttributeOverride<Color>(c => c.gamma, new YamlIgnoreAttribute())
-      .WithAttributeOverride<Color>(c => c.grayscale, new YamlIgnoreAttribute())
-      .WithAttributeOverride<Color>(c => c.linear, new YamlIgnoreAttribute())
-      .WithAttributeOverride<Color>(c => c.maxColorComponent, new YamlIgnoreAttribute())
-      .Build();
+  public static IDeserializer Deserializer() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+  public static IDeserializer DeserializerUnSafe() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).IgnoreUnmatchedProperties().Build();
 
   public static List<T> Deserialize<T>(string raw, string fileName)
   {
@@ -157,23 +149,3 @@ public class Yaml
     return Deserialize<T>(File.ReadAllText(file), file);
   }
 }
-#nullable disable
-public class FloatConverter : IYamlTypeConverter
-{
-  public bool Accepts(Type type) => type == typeof(float);
-
-  public object ReadYaml(IParser parser, Type type)
-  {
-    var scalar = (YamlDotNet.Core.Events.Scalar)parser.Current;
-    var number = float.Parse(scalar.Value, NumberStyles.Float, CultureInfo.InvariantCulture);
-    parser.MoveNext();
-    return number;
-  }
-
-  public void WriteYaml(IEmitter emitter, object value, Type type)
-  {
-    var number = (float)value;
-    emitter.Emit(new YamlDotNet.Core.Events.Scalar(number.ToString(NumberFormatInfo.InvariantInfo)));
-  }
-}
-#nullable enable

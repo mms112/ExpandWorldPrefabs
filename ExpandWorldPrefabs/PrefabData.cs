@@ -180,9 +180,11 @@ public class Spawn
   public readonly Quaternion Rot = Quaternion.identity;
   public readonly string Data = "";
   public readonly float Delay = 0;
-  public Spawn(string line, float delay)
+  public readonly bool TriggerRules = false;
+  public Spawn(string line, float delay, bool triggerRules)
   {
     Delay = delay;
+    TriggerRules = triggerRules;
     var split = Parse.ToList(line);
     if (split[0].Contains("<") && split[0].Contains(">"))
       WildPrefab = split[0];
@@ -191,28 +193,39 @@ public class Spawn
       Prefab = split[0].GetStableHashCode();
       Prefab = ZNetScene.instance.GetPrefab(Prefab) ? Prefab : 0;
     }
-    if (split.Count == 2)
+    var posParsed = false;
+    for (var i = 1; i < split.Count; i++)
     {
-      Data = split[1];
-    }
-    if (split.Count > 3)
-    {
-      if (Parse.TryFloat(split[1], out var x))
-        Pos = new Vector3(x, Parse.Float(split[3]), Parse.Float(split[2]));
-      if (split[3] == "snap")
-        Snap = true;
-    }
-    if (split.Count > 6)
-    {
-      if (Parse.TryFloat(split[4], out var x))
-        Rot = Quaternion.Euler(Parse.Float(split[5]), x, Parse.Float(split[6]));
+      var value = split[i];
+      if (Parse.TryBoolean(value, out var boolean))
+        TriggerRules = boolean;
+      else if (Parse.TryFloat(value, out var number1))
+      {
+        if (i + 2 < split.Count)
+          Delay = number1;
+        else if (Parse.TryFloat(split[i + 1], out var number2))
+        {
+          var number3 = Parse.Float(split[i + 2]);
+          if (posParsed)
+          {
+            Rot = Quaternion.Euler(number2, number1, number3);
+          }
+          else
+          {
+            Pos = new Vector3(number1, number3, number2);
+            if (split[i + 2] == "snap")
+              Snap = true;
+            posParsed = true;
+          }
+          i += 2;
+        }
+        else
+          Delay = number1;
+      }
       else
-        Data = split[4];
+        Data = value;
     }
-    if (split.Count > 7)
-      Data = split[7];
-    if (split.Count > 8)
-      Delay = Parse.Float(split[8]);
+
   }
   public int GetPrefab(Pars pars)
   {

@@ -69,8 +69,9 @@ public class Loading
   {
     var waterLevel = ZoneSystem.instance.m_waterLevel;
     var spawnDelay = Math.Max(data.delay, data.spawnDelay);
-    var swaps = ParseSpawns(data.swaps ?? (data.swap == null ? [] : [data.swap]), spawnDelay);
-    var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), spawnDelay);
+    var triggerRules = data.triggerRules;
+    var swaps = ParseSpawns(data.swaps ?? (data.swap == null ? [] : [data.swap]), spawnDelay, triggerRules);
+    var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), spawnDelay, triggerRules);
     var types = (data.types ?? [data.type]).Select(s => new InfoType(data.prefab, s)).ToArray();
     if (data.prefab == "" && types.Any(t => t.Type != ActionType.GlobalKey && t.Type != ActionType.Event))
       Log.Warning($"Prefab missing for type {data.type}");
@@ -137,7 +138,7 @@ public class Loading
         BannedObjectsLimit = bannedObjectsLimit,
         Filter = filters,
         BannedFilter = bannedFilters,
-        TriggerRules = data.triggerRules,
+        TriggerRules = triggerRules,
         ObjectRpcs = objectRpcs,
         ClientRpcs = clientRpcs,
         MinPaint = minPaint,
@@ -160,7 +161,7 @@ public class Loading
     return s;
   }).ToArray();
 
-  private static Spawn[] ParseSpawns(string[] spawns, float delay) => spawns.Select(s => new Spawn(s, delay)).ToArray();
+  private static Spawn[] ParseSpawns(string[] spawns, float delay, bool triggerRules) => spawns.Select(s => new Spawn(s, delay, triggerRules)).ToArray();
 
   private static DataEntry? ParseFilters(string[] filters)
   {

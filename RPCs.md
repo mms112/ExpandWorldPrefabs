@@ -308,7 +308,7 @@ By default, the RPC is sent to the owner of the object.
 ### Door
 
 ```yaml
-# Destroys item at specific slot.
+# Opens or closes a door.
   objectRpc:
   - name: UseDoor
     1: bool, "forward or backward"
@@ -397,7 +397,7 @@ By default, the RPC is sent to the owner of the object.
   objectRpc:
   - name: RPC_AnimateLever
     target: all
-`
+```
 
 ```yaml
 # Sets the lever back.

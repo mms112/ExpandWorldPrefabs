@@ -101,12 +101,14 @@ Most fields are put on a single line. List values are separated by `,`.
     - When changing data that changes during the normal game play. For example creature health.
 - spawnDelay: Delay in seconds for spawns and swaps.
 - spawn: Spawns another object.
-  - Format (each part is optional):
-    - `id, posX,posZ,posY, rotY,rotX,rotZ, data, delay`
-    - `id, posX,posZ,posY, rotY,rotX,rotZ, data`
-    - `id, posX,posZ,posY, data`
-    - `id, data`
-  - Id supports parameters.
+  - Format is `id, posX,posZ,posY, rotY,rotX,rotZ, data, delay, triggerRules`.
+  - Most parts are optional. For example following formats are valid:
+    - `id, posX,posZ,posY, rotY,rotX,rotZ, delay`
+    - `id, posX,posZ,posY, data, triggerRules`
+    - `id, data, delay`
+    - `id, triggerRules`
+  - Id is required and supports parameters.
+  - Position must be set before rotation.
   - PosY can be `snap` to snap to the ground.
 - swap: Swaps the original object with another object.
   - Format and keywords are same as for `spawn`.
