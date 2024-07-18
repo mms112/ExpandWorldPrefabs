@@ -63,12 +63,12 @@ public class Manager
 
     var customData = DataHelper.Get(info.Data);
     foreach (var p in info.Spawns)
-      CreateObject(p, zdo, customData, parameters, info.TriggerRules);
+      CreateObject(p, zdo, customData, parameters, p.TriggerRules);
 
     if (info.Swaps.Length == 0 && !regenerateOriginal) return;
     var data = DataHelper.Merge(new DataEntry(zdo), customData);
     foreach (var p in info.Swaps)
-      CreateObject(p, zdo, data, parameters, info.TriggerRules);
+      CreateObject(p, zdo, data, parameters, p.TriggerRules);
     if (regenerateOriginal)
     {
       var newZdo = CreateObject(zdo, data, parameters, false);

@@ -201,7 +201,7 @@ public class Spawn
         TriggerRules = boolean;
       else if (Parse.TryFloat(value, out var number1))
       {
-        if (i + 2 < split.Count)
+        if (split.Count <= i + 2)
           Delay = number1;
         else if (Parse.TryFloat(split[i + 1], out var number2))
         {
