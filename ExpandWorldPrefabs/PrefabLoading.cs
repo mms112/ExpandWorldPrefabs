@@ -120,8 +120,8 @@ public class Loading
         Biomes = Yaml.ToBiomes(data.biomes),
         Environments = environments,
         BannedEnvironments = bannedEnvironments,
-        GlobalKeys = Parse.ToList(data.globalKeys),
-        BannedGlobalKeys = Parse.ToList(data.bannedGlobalKeys),
+        GlobalKeys = Parse.ToList(data.globalKeys).Select(s => s.ToLowerInvariant()).ToList(),
+        BannedGlobalKeys = Parse.ToList(data.bannedGlobalKeys).Select(s => s.ToLowerInvariant()).ToList(),
         Events = events,
         // Distance can be set without events for any event.
         // However if event is set, there must be a distance (the default value).

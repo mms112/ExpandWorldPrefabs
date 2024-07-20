@@ -122,6 +122,8 @@ Most fields are put on a single line. List values are separated by `,`.
 - triggerRules (default: `false`): If true, spawns or remove from this entry can trigger other entries.
 - addItems: Data entry that is used to add items to the container object.
   - Data type "items" is used for this.
+  - If the item exists, its stack amount is increased up to the max.
+  - Remaining stack amount is added as new items.
 - removeItems: Data entry that is used to removes items from the container object.
   - Data type "items" is used for this.
   - If the item doesn't exist then nothing happens.
@@ -141,8 +143,10 @@ Most fields are put on a single line. List values are separated by `,`.
 - bannedEnvironments: List of  invalid environments.
 - globalKeys: List of global keys that must be set.
   - Parameters are supported.
-- bannedGlobalKeys: List of  global keys that must not be set.
+  - The values are converted to lower case because the game always uses lower case.
+- bannedGlobalKeys: List of global keys that must not be set.
   - Parameters are supported.
+  - The values are converted to lower case because the game always uses lower case.
 - locations: List of location ids. At least one must be nearby.
 - locationDistance (default: `0` meters): Search distance for nearby locations.
   - If 0, uses the location exterior radius.
