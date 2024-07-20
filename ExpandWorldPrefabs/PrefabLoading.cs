@@ -94,6 +94,7 @@ public class Loading
     var maxPaint = data.maxPaint != "" ? Parse.Color(data.maxPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
     return types.Select(t =>
     {
+      var d = t.Type != ActionType.Destroy ? data.data : "";
       return new Info()
       {
         Prefabs = data.prefab,
@@ -101,11 +102,12 @@ public class Loading
         Fallback = data.fallback,
         Args = t.Parameters,
         Remove = t.Type != ActionType.Destroy && (data.remove || swaps.Length > 0),
+        Regenerate = (d != "" || data.addItems != "" || data.removeItems != "") && !data.injectData,
         RemoveDelay = data.removeDelay,
         Drops = t.Type != ActionType.Destroy && data.drops,
         Spawns = [.. spawns],
         Swaps = [.. swaps],
-        Data = t.Type != ActionType.Destroy ? data.data : "",
+        Data = d,
         InjectData = data.injectData,
         Commands = commands,
         Weight = data.weight,
@@ -143,6 +145,8 @@ public class Loading
         ClientRpcs = clientRpcs,
         MinPaint = minPaint,
         MaxPaint = maxPaint,
+        AddItems = data.addItems,
+        RemoveItems = data.removeItems
       };
     }).ToArray();
   }

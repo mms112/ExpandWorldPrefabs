@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -201,22 +202,34 @@ public class AnyValue(string[] values)
 }
 public class ItemValue(ItemData data, HashSet<string> requiredParameters)
 {
-  /*
-  public static bool Match(List<ItemValue> data, Vector2i? size, ZDO zdo)
+
+  public static bool Match(Pars pars, List<ItemValue> data, Vector2i? size, ZDO zdo, IIntValue? amount)
   {
-    var str = zdo.GetString(ZDOVars.s_items, "");
-    if (string.IsNullOrEmpty(@str)) return false;
-    ZPackage pkg = new(@str);
+    var str = zdo.GetString(ZDOVars.s_items);
     Inventory inv = new("", null, size.HasValue ? size.Value.x : 4, size.HasValue ? size.Value.y : 2);
-    inv.Load(pkg);
-    var fixedPos = data.Where(item => item.Position != "").ToList();
-    foreach (var item in fixedPos)
+    if (str != "")
     {
-      if (!item.Match(inv, zdo)) return false;
+      ZPackage pkg = new(str);
+      inv.Load(pkg);
     }
-    return true;
+    var matches = data.Where(item => item.Match(pars, inv)).Count();
+    // If no amount is set, then must match exactly.
+    if (amount == null)
+      return matches == data.Count && inv.m_inventory.Count == 0;
+    return amount.Match(pars, matches) == true;
   }
-  */
+  public static bool Match(Pars pars, Vector2i? size, ZDO zdo, IIntValue amount)
+  {
+    var str = zdo.GetString(ZDOVars.s_items);
+    Inventory inv = new("", null, size.HasValue ? size.Value.x : 4, size.HasValue ? size.Value.y : 2);
+    if (str != "")
+    {
+      ZPackage pkg = new(str);
+      inv.Load(pkg);
+    }
+    return amount.Match(pars, inv.m_inventory.Count) == true;
+  }
+
   public static string LoadItems(Pars pars, List<ItemValue> items, Vector2i? size, int amount)
   {
     ZPackage pkg = new();
@@ -296,18 +309,18 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
   // Prefab is saved as string, so hash can't be used.
   public IStringValue Prefab = DataValue.String(data.prefab, requiredParameters);
   public float Chance = data.chance;
-  public IIntValue Stack = DataValue.Int(data.stack, requiredParameters);
-  public IFloatValue Durability = DataValue.Float(data.durability, requiredParameters);
+  public IIntValue? Stack = data.stack == null ? null : DataValue.Int(data.stack, requiredParameters);
+  public IFloatValue? Durability = data.durability == null ? null : DataValue.Float(data.durability, requiredParameters);
   public string Position = data.pos;
   private Vector2i RolledPosition = Parse.Vector2Int(data.pos);
-  public IBoolValue Equipped = DataValue.Bool(data.equipped, requiredParameters);
-  public IIntValue Quality = DataValue.Int(data.quality, requiredParameters);
-  public IIntValue Variant = DataValue.Int(data.variant, requiredParameters);
-  public ILongValue CrafterID = DataValue.Long(data.crafterID, requiredParameters);
-  public IStringValue CrafterName = DataValue.String(data.crafterName, requiredParameters);
+  public IBoolValue? Equipped = data.equipped == null ? null : DataValue.Bool(data.equipped, requiredParameters);
+  public IIntValue? Quality = data.quality == null ? null : DataValue.Int(data.quality, requiredParameters);
+  public IIntValue? Variant = data.variant == null ? null : DataValue.Int(data.variant, requiredParameters);
+  public ILongValue? CrafterID = data.crafterID == null ? null : DataValue.Long(data.crafterID, requiredParameters);
+  public IStringValue? CrafterName = data.crafterName == null ? null : DataValue.String(data.crafterName, requiredParameters);
   public Dictionary<string, IStringValue> CustomData = data.customData?.ToDictionary(kvp => kvp.Key, kvp => DataValue.String(kvp.Value, requiredParameters)) ?? [];
-  public IIntValue WorldLevel = DataValue.Int(data.worldLevel, requiredParameters);
-  public IBoolValue PickedUp = DataValue.Bool(data.pickedUp, requiredParameters);
+  public IIntValue? WorldLevel = data.worldLevel == null ? null : DataValue.Int(data.worldLevel, requiredParameters);
+  public IBoolValue? PickedUp = data.pickedUp == null ? null : DataValue.Bool(data.pickedUp, requiredParameters);
   // Must know before writing is the prefab good, so it has to be rolled first.
   private string RolledPrefab = "";
   public bool RollPrefab(Pars pars)
@@ -320,53 +333,136 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
   public void Write(Pars pars, ZPackage pkg)
   {
     pkg.Write(RolledPrefab);
-    pkg.Write(Stack.Get(pars) ?? 1);
-    pkg.Write(Durability.Get(pars) ?? 100f);
+    pkg.Write(Stack?.Get(pars) ?? 1);
+    pkg.Write(Durability?.Get(pars) ?? 100f);
     pkg.Write(RolledPosition);
-    pkg.Write(Equipped.GetBool(pars) ?? false);
-    pkg.Write(Quality.Get(pars) ?? 1);
-    pkg.Write(Variant.Get(pars) ?? 1);
-    pkg.Write(CrafterID.Get(pars) ?? 0);
-    pkg.Write(CrafterName.Get(pars) ?? "");
+    pkg.Write(Equipped?.GetBool(pars) ?? false);
+    pkg.Write(Quality?.Get(pars) ?? 1);
+    pkg.Write(Variant?.Get(pars) ?? 1);
+    pkg.Write(CrafterID?.Get(pars) ?? 0);
+    pkg.Write(CrafterName?.Get(pars) ?? "");
     pkg.Write(CustomData?.Count ?? 0);
     foreach (var kvp in CustomData ?? [])
     {
       pkg.Write(kvp.Key);
       pkg.Write(kvp.Value.Get(pars));
     }
-    pkg.Write(WorldLevel.Get(pars) ?? 1);
-    pkg.Write(PickedUp.GetBool(pars) ?? false);
+    pkg.Write(WorldLevel?.Get(pars) ?? 0);
+    pkg.Write(PickedUp?.GetBool(pars) ?? false);
   }
-  /*
-    public bool Match(Pars pars, Inventory inv)
+
+  public void AddTo(Pars pars, Inventory inv)
+  {
+    var stack = Stack?.Get(pars) ?? 1;
+    stack = StackTo(pars, stack, inv);
+    InsertTo(pars, stack, inv);
+  }
+  private int StackTo(Pars pars, int stack, Inventory inv)
+  {
+    foreach (var item in inv.m_inventory)
     {
-      if (Position != "")
-      {
-        var item = inv.GetItemAt(RolledPosition.x, RolledPosition.y);
-        if (item == null) return false;
-        var ret = MatchItem(pars, item);
-        inv.RemoveItem(item);
-        return ret;
-      }
-      return false;
+      if (!MatchItem(pars, item)) continue;
+      var amount = Mathf.Min(item.m_shared.m_maxStackSize - item.m_stack, stack);
+      item.m_stack += amount;
+      stack -= amount;
+      if (stack <= 0) break;
     }
-    private bool MatchItem(Pars pars, ItemDrop.ItemData item)
+    return stack;
+  }
+  private int InsertTo(Pars pars, int stack, Inventory inv)
+  {
+    while (stack > 0)
     {
-      if (item.m_shared.m_name != RolledPrefab) return false;
-      if (Stack.Match(pars, item.m_stack) == false) return false;
-      if (Durability.Match(pars, item.m_durability) == false) return false;
-      if (Equipped.Match(pars, item.m_equipped) == false) return false;
-      if (Quality.Match(pars, item.m_quality) == false) return false;
-      if (Variant.Match(pars, item.m_variant) == false) return false;
-      if (CrafterID.Match(pars, item.m_crafterID) == false) return false;
-      if (CrafterName.Match(pars, item.m_crafterName) == false) return false;
-      if (WorldLevel.Match(pars, item.m_worldLevel) == false) return false;
-      if (PickedUp.Match(pars, item.m_pickedUp) == false) return false;
-      foreach (var kvp in CustomData)
+      var prefab = Prefab.Get(pars);
+      var item = ObjectDB.instance.GetItemPrefab(prefab);
+      if (item == null) return stack;
+      var itemData = item.GetComponent<ItemDrop>().m_itemData.Clone();
+      itemData.m_dropPrefab = item;
+      itemData.m_quality = Quality?.Get(pars) ?? 1;
+      itemData.m_variant = Variant?.Get(pars) ?? 0;
+      itemData.m_crafterID = CrafterID?.Get(pars) ?? 0L;
+      itemData.m_crafterName = CrafterName?.Get(pars) ?? "";
+      itemData.m_worldLevel = WorldLevel?.Get(pars) ?? 0;
+      itemData.m_durability = Durability?.Get(pars) ?? itemData.m_shared.m_maxDurability;
+      itemData.m_equipped = Equipped?.GetBool(pars) ?? false;
+      itemData.m_pickedUp = PickedUp?.GetBool(pars) ?? false;
+      itemData.m_customData = CustomData.ToDictionary(x => x.Key, x => x.Value.Get(pars) ?? "");
+
+      var amount = Mathf.Min(itemData.m_shared.m_maxStackSize, stack);
+      stack -= amount;
+      itemData.m_stack = amount;
+
+      if (Position == "")
       {
-        if (item.m_customData.TryGetValue(kvp.Key, out var value) == false) return false;
+        var slot = inv.FindEmptySlot(true);
+        if (slot.x < 0) return stack;
+        itemData.m_gridPos = slot;
+        inv.m_inventory.Add(itemData);
       }
-      return true;
+      else
+      {
+        itemData.m_gridPos = RolledPosition;
+        inv.m_inventory.RemoveAll(x => x.m_gridPos == RolledPosition);
+        inv.m_inventory.Add(itemData);
+      }
     }
-    */
+    return stack;
+  }
+  public void RemoveFrom(Pars pars, Inventory inv)
+  {
+    var stack = Stack?.Get(pars) ?? 1;
+    for (var i = inv.m_inventory.Count - 1; i >= 0; --i)
+    {
+      var item = inv.m_inventory[i];
+      if (!MatchItem(pars, item)) continue;
+      var amount = Mathf.Min(item.m_stack, stack);
+      item.m_stack -= amount;
+      stack -= amount;
+      if (stack <= 0) break;
+    }
+    inv.m_inventory.RemoveAll(x => x.m_stack <= 0);
+  }
+
+  public bool Match(Pars pars, Inventory inv)
+  {
+    var item = FindMatch(pars, inv);
+    if (item == null) return false;
+    inv.RemoveItem(item);
+    return true;
+  }
+  private ItemDrop.ItemData? FindMatch(Pars pars, Inventory inv)
+  {
+    if (Position != "")
+    {
+      var item = inv.GetItemAt(RolledPosition.x, RolledPosition.y);
+      if (item == null) return null;
+      if (Stack?.Match(pars, item.m_stack) == false) return null;
+      if (MatchItem(pars, item)) return item;
+    }
+    foreach (var item in inv.m_inventory)
+    {
+      if (Stack?.Match(pars, item.m_stack) == false) continue;
+      if (MatchItem(pars, item)) return item;
+
+    }
+    return null;
+  }
+  private bool MatchItem(Pars pars, ItemDrop.ItemData item)
+  {
+    if (Prefab.Match(pars, item.m_dropPrefab?.name ?? item.m_shared.m_name) == false) return false;
+    if (Durability?.Match(pars, item.m_durability) == false) return false;
+    if (Equipped?.Match(pars, item.m_equipped) == false) return false;
+    if (Quality?.Match(pars, item.m_quality) == false) return false;
+    if (Variant?.Match(pars, item.m_variant) == false) return false;
+    if (CrafterID?.Match(pars, item.m_crafterID) == false) return false;
+    if (CrafterName?.Match(pars, item.m_crafterName) == false) return false;
+    if (WorldLevel?.Match(pars, item.m_worldLevel) == false) return false;
+    if (PickedUp?.Match(pars, item.m_pickedUp) == false) return false;
+    foreach (var kvp in CustomData)
+    {
+      if (!item.m_customData.TryGetValue(kvp.Key, out var value)) return false;
+      if (kvp.Value.Match(pars, value) == false) return false;
+    }
+    return true;
+  }
 }

@@ -42,14 +42,18 @@ public class Manager
     if (info.Drops)
       SpawnDrops(zdo);
     // Original object was regenerated to apply data.
-    if (info.Remove || (info.Data != "" && !info.InjectData))
+    if (info.Remove || info.Regenerate)
       DelayedRemove.Add(info.RemoveDelay, zdo, info.Remove && info.TriggerRules);
     else if (info.InjectData)
     {
       var data = DataHelper.Get(info.Data);
-      if (data != null)
+      var removeItems = DataHelper.Get(info.RemoveItems);
+      var addItems = DataHelper.Get(info.AddItems);
+      data?.Write(parameters, zdo);
+      removeItems?.RemoveItems(parameters, zdo);
+      addItems?.AddItems(parameters, zdo);
+      if (data != null || removeItems != null || addItems != null)
       {
-        data.Write(parameters, zdo);
         zdo.DataRevision += 100;
         ZDOMan.instance.ForceSendZDO(zdo.m_uid);
       }
@@ -58,7 +62,7 @@ public class Manager
   private static void HandleSpawns(Info info, ZDO zdo, Dictionary<string, string> parameters)
   {
     // Original object must be regenerated to apply data.
-    var regenerateOriginal = !info.Remove && info.Data != "" && !info.InjectData;
+    var regenerateOriginal = !info.Remove && info.Regenerate;
     if (info.Spawns.Length == 0 && info.Swaps.Length == 0 && !regenerateOriginal) return;
 
     var customData = DataHelper.Get(info.Data);
@@ -71,9 +75,15 @@ public class Manager
       CreateObject(p, zdo, data, parameters, p.TriggerRules);
     if (regenerateOriginal)
     {
+      var removeItems = DataHelper.Get(info.RemoveItems);
+      var addItems = DataHelper.Get(info.AddItems);
       var newZdo = CreateObject(zdo, data, parameters, false);
       if (newZdo != null)
+      {
+        removeItems?.RemoveItems(parameters, newZdo);
+        addItems?.AddItems(parameters, newZdo);
         PrefabConnector.AddSwap(zdo.m_uid, newZdo.m_uid);
+      }
     }
   }
   public static void RemoveZDO(ZDO zdo, bool triggerRules)

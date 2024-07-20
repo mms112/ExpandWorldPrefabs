@@ -397,6 +397,8 @@ public class DataEntry
     if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == false)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == false)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == false)) return false;
+    if (Items != null) return ItemValue.Match(pars, Items, ContainerSize, zdo, ItemAmount);
+    else if (ItemAmount != null) return ItemValue.Match(pars, ContainerSize, zdo, ItemAmount);
     if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
     {
       var conn = zdo.GetConnectionZDOID(ConnectionType);
@@ -417,6 +419,8 @@ public class DataEntry
     if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == true)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == true)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == true)) return false;
+    if (Items != null) return !ItemValue.Match(pars, Items, ContainerSize, zdo, ItemAmount);
+    else if (ItemAmount != null) return !ItemValue.Match(pars, ContainerSize, zdo, ItemAmount);
     if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
     {
       var conn = zdo.GetConnectionZDOID(ConnectionType);
@@ -656,6 +660,7 @@ public class DataEntry
         zdo.m_rotation = rot.Value.eulerAngles;
     }
   }
+
   public string GetBase64(Pars pars)
   {
     var pkg = new ZPackage();
@@ -781,6 +786,53 @@ public class DataEntry
       Strings ??= [];
       Strings[ZDOVars.s_items] = DataValue.Simple(encoded);
     }
+  }
+  public string GetItems(Pars pars)
+  {
+    if (Items == null) throw new ArgumentNullException(nameof(Items));
+    return ItemValue.LoadItems(pars, Items, ContainerSize, ItemAmount?.Get(pars) ?? 0);
+  }
+  public void AddItems(Dictionary<string, string> parameters, ZDO zdo)
+  {
+    if (Items == null || Items.Count == 0) return;
+    Pars pars = new(parameters, GetParameters(zdo));
+    var currentItems = zdo.GetString(ZDOVars.s_items);
+    if (currentItems == "")
+    {
+      // Since no items exist, can just set.
+      zdo.Set(ZDOVars.s_items, GetItems(pars));
+    }
+    else
+    {
+      Inventory inv = new("", null, ContainerSize?.x ?? 4, ContainerSize?.y ?? 2);
+      inv.Load(new ZPackage(currentItems));
+      var items = GenerateItems(pars);
+      foreach (var item in items)
+        item.AddTo(pars, inv);
+      ZPackage pkg = new();
+      inv.Save(pkg);
+      zdo.Set(ZDOVars.s_items, pkg.GetBase64());
+    }
+  }
+  public void RemoveItems(Dictionary<string, string> parameters, ZDO zdo)
+  {
+    if (Items == null || Items.Count == 0) return;
+    var currentItems = zdo.GetString(ZDOVars.s_items);
+    if (currentItems == "") return;
+    Pars pars = new(parameters, GetParameters(zdo));
+    Inventory inv = new("", null, ContainerSize?.x ?? 4, ContainerSize?.y ?? 2);
+    inv.Load(new ZPackage(currentItems));
+    var items = GenerateItems(pars);
+    foreach (var item in items)
+      item.RemoveFrom(pars, inv);
+    ZPackage pkg = new();
+    inv.Save(pkg);
+    zdo.Set(ZDOVars.s_items, pkg.GetBase64());
+  }
+  public List<ItemValue> GenerateItems(Pars pars)
+  {
+    if (Items == null) throw new ArgumentNullException(nameof(Items));
+    return ItemValue.Generate(pars, Items, ContainerSize ?? new(0, 0), ItemAmount?.Get(pars) ?? 0);
   }
 
   private void HandleConnection(ZDO ownZdo, Pars pars)

@@ -121,6 +121,10 @@ public class Data
 
   [DefaultValue(false)]
   public bool injectData = false;
+  [DefaultValue("")]
+  public string addItems = "";
+  [DefaultValue("")]
+  public string removeItems = "";
 }
 
 
@@ -134,6 +138,7 @@ public class Info
   public Spawn[] Swaps = [];
   public Spawn[] Spawns = [];
   public bool Remove = false;
+  public bool Regenerate = false;
   public float RemoveDelay = 0f;
   public bool Drops = false;
   public string Data = "";
@@ -170,6 +175,8 @@ public class Info
   public ClientRpcInfo[]? ClientRpcs;
   public Color? MinPaint;
   public Color? MaxPaint;
+  public string AddItems = "";
+  public string RemoveItems = "";
 }
 public class Spawn
 {

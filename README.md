@@ -120,6 +120,11 @@ Most fields are put on a single line. List values are separated by `,`.
   - Parameters are supported.
   - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
 - triggerRules (default: `false`): If true, spawns or remove from this entry can trigger other entries.
+- addItems: Data entry that is used to add items to the container object.
+  - Data type "items" is used for this.
+- removeItems: Data entry that is used to removes items from the container object.
+  - Data type "items" is used for this.
+  - If the item doesn't exist then nothing happens.
 
 ## Filters
 
@@ -156,6 +161,11 @@ Most fields are put on a single line. List values are separated by `,`.
     - `filter: string, TamedName, *(S)*` would apply to pets with name containing "(S)".
   - For type `repair`, the filter is also checked for the player who did the repair.
     - Filter is valid if either the player or the object matches.
+  - Data type "items" can be used to filter containers.
+    - If item amount is not set, then the items must match exactly.
+    - If item amount is set, then at least that many items must match.
+    - Items are checked in the same order as they are defined in the "items" list.
+    - If item amount is set but items are not, then only the item count is checked.
 - bannedFilter: Data filter that must not be true.
 
 ### Object filters
