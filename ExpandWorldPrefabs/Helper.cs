@@ -54,59 +54,41 @@ public class Helper
       var start = str.LastIndexOf("<", end);
       if (start == -1) continue;
       var length = end - start + 1;
-      var resolved = ReplaceParameter(str.Substring(start, length), pars, zdo);
-      str = str.Remove(start, length);
-      str = str.Insert(start, resolved);
-      // Resolved could contain parameters, so need to recheck the same position.
-      i = start - 1;
+      if (TryReplaceParameter(str.Substring(start, length), pars, zdo, out var resolved))
+      {
+        str = str.Remove(start, length);
+        str = str.Insert(start, resolved);
+        // Resolved could contain parameters, so need to recheck the same position.
+        i = start - 1;
+      }
+      else
+      {
+        i = end;
+      }
     }
     return str;
   }
-  private static string ReplaceParameter(string key, Dictionary<string, string> pars, ZDO? zdo)
+  private static bool TryReplaceParameter(string key, Dictionary<string, string> pars, ZDO? zdo, out string resolved)
   {
+    resolved = key;
     if (pars.ContainsKey(key))
-      return pars[key];
+    {
+      resolved = pars[key];
+      return true;
+    }
 
-    if (zdo == null) return key;
+    if (zdo == null) return false;
     var kvp = Parse.Kvp(key, '_');
     if (kvp.Value != "")
     {
       var zdoKey = kvp.Key.Substring(1);
       var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
-      return GetZdoValue(zdo, zdoKey, zdoValue);
+      resolved = GetZdoValue(zdo, zdoKey, zdoValue);
+      return true;
     }
-    return key;
+    return false;
   }
 
-  public static string ReplaceParameters2(string str, Dictionary<string, string> pars, ZDO? zdo)
-  {
-    for (int i = str.Length; i >= 0; i--)
-    {
-      var end = str.LastIndexOf(">", i);
-      if (end == -1) break;
-      var start = str.LastIndexOf("<", end);
-      if (start == -1) break;
-      i = start;
-      var key = str.Substring(start, end - start + 1);
-      if (pars.ContainsKey(key))
-      {
-        str = str.Remove(start, end - start + 1);
-        str = str.Insert(start, pars[key]);
-        continue;
-      }
-      if (zdo == null) continue;
-      var kvp = Parse.Kvp(key, '_');
-      if (kvp.Value != "")
-      {
-        var zdoKey = kvp.Key.Substring(1);
-        var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
-        str = str.Remove(start, end - start + 1);
-        var value = GetZdoValue(zdo, zdoKey, zdoValue);
-        str = str.Insert(start, value);
-      }
-    }
-    return str;
-  }
 
   public static Dictionary<string, string> CreateParameters(string prefab, string args, ZDO zdo)
   {
