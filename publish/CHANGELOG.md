@@ -3,6 +3,8 @@
   - Adds new fields `addItems` and `removeItems` to more easily add or remove items from containers.
   - Adds support for filtering with the data type items.
   - Fixes global key filters not being converted to lower case.
+  - Fixes nested parameters not working.
+  - Fixes zdo based parameters not working when spawning objects.
 
 - v1.17
   - Adds new filters `paint`, `minPaint` and `maxPaint`.

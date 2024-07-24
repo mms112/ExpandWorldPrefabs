@@ -49,7 +49,12 @@ public class Manager
       var data = DataHelper.Get(info.Data);
       var removeItems = DataHelper.Get(info.RemoveItems);
       var addItems = DataHelper.Get(info.AddItems);
-      data?.Write(parameters, zdo);
+      if (data != null)
+      {
+        ZdoEntry entry = new(zdo);
+        entry.Load(data, parameters);
+        entry.Write(zdo);
+      }
       removeItems?.RemoveItems(parameters, zdo);
       addItems?.AddItems(parameters, zdo);
       if (data != null || removeItems != null || addItems != null)
@@ -77,7 +82,10 @@ public class Manager
     {
       var removeItems = DataHelper.Get(info.RemoveItems);
       var addItems = DataHelper.Get(info.AddItems);
-      var newZdo = CreateObject(zdo, data, parameters, false);
+      ZdoEntry entry = new(zdo);
+      if (data != null)
+        entry.Load(data, parameters);
+      var newZdo = CreateObject(entry, false);
       if (newZdo != null)
       {
         removeItems?.RemoveItems(parameters, newZdo);
@@ -96,48 +104,43 @@ public class Manager
   public static void CreateObject(Spawn spawn, ZDO originalZdo, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules)
   {
     var pos = originalZdo.m_position;
-    var rot = originalZdo.GetRotation();
-    pos += rot * spawn.Pos;
-    rot *= spawn.Rot;
+    var rotQuat = originalZdo.GetRotation();
+    pos += rotQuat * spawn.Pos;
+    rotQuat *= spawn.Rot;
+    var rot = rotQuat.eulerAngles;
     if (spawn.Snap)
       pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
     data = DataHelper.Merge(data, DataHelper.Get(spawn.Data));
-    Pars pars = new(parameters, []);
+    var prefab = spawn.GetPrefab(parameters, originalZdo);
+    ZdoEntry zdoEntry = new(prefab, pos, rot, originalZdo);
     if (data != null)
-      pars.ObjectParameters = data.GetParameters(originalZdo);
-    DelayedSpawn.Add(spawn.Delay, pos, rot, spawn.GetPrefab(pars), originalZdo.GetOwner(), data, parameters, triggerRules);
+      zdoEntry.Load(data, parameters);
+    DelayedSpawn.Add(spawn.Delay, zdoEntry, triggerRules);
   }
-  public static ZDO? CreateObject(ZDO source, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules) => CreateObject(source.m_prefab, source.m_position, source.GetRotation(), source.GetOwner(), data, parameters, triggerRules);
-  public static ZDO? CreateObject(int prefab, Vector3 pos, Quaternion rot, long owner, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules)
+
+  public static ZDO? CreateObject(ZdoEntry entry, bool triggerRules)
   {
-    if (prefab == 0) return null;
-    var obj = ZNetScene.instance.GetPrefab(prefab);
-    if (!obj || !obj.TryGetComponent<ZNetView>(out var view))
-    {
-      Log.Error($"Can't spawn missing prefab: {prefab}");
-      return null;
-    }
-    // Prefab hash is used to check whether to trigger rules.
-    var zdo = ZDOMan.instance.CreateNewZDO(pos, triggerRules ? prefab : 0);
-    zdo.Persistent = view.m_persistent;
-    zdo.Type = view.m_type;
-    zdo.Distant = view.m_distant;
-    zdo.m_prefab = prefab;
-    zdo.m_rotation = rot.eulerAngles;
+    var zdo = entry.Create(triggerRules);
+    if (zdo == null) return null;
+    FixOwner(zdo);
+    return zdo;
+  }
+
+  private static void FixOwner(ZDO zdo)
+  {
     // Some client should always be the owner so that creatures are initialized correctly (for example max health from stars).
     // Things work slightly better when the server doesn't have ownership (for example max health from stars).
 
+    // During ghost init, objects are meant to be unloaded so setting owner could cause issues.
+    if (ZNetView.m_ghostInit) return;
+    // When single player, the owner is always the client.
+    // When self-hosted, things might not work but can be fixed later if needed.
+    if (!ZNet.instance.IsDedicated()) return;
     // For client spawns, the original owner can be just used.
-    if (!ZNetView.m_ghostInit && ZNet.instance.IsDedicated() && owner == ZDOMan.instance.m_sessionID && !ZNetView.m_ghostInit)
-    {
-      // But if the server spawns, the owner must be handled manually.
-      // Unless ghost init, because those are meant to be unloaded.
-      var closestClient = ZDOMan.instance.m_peers.OrderBy(p => Utils.DistanceXZ(p.m_peer.m_refPos, pos)).FirstOrDefault(p => p.m_peer.m_uid != owner);
-      owner = closestClient?.m_peer.m_uid ?? 0;
-    }
-    zdo.SetOwnerInternal(owner);
-    data?.Write(parameters ?? [], zdo);
-    return zdo;
+    if (zdo.GetOwner() != ZDOMan.instance.m_sessionID) return;
+
+    var closestClient = ZDOMan.instance.m_peers.OrderBy(p => Utils.DistanceXZ(p.m_peer.m_refPos, zdo.m_position)).FirstOrDefault(p => p.m_peer.m_uid != zdo.GetOwner());
+    zdo.SetOwnerInternal(closestClient?.m_peer.m_uid ?? 0);
   }
 
   public static void SpawnDrops(ZDO zdo)

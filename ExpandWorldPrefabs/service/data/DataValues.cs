@@ -7,10 +7,10 @@ using UnityEngine;
 
 namespace Data;
 
-public struct Pars(Dictionary<string, string> parameters, Dictionary<string, string> objectParameters)
+public struct Pars(Dictionary<string, string> parameters, ZDO source)
 {
   public Dictionary<string, string> Parameters = parameters;
-  public Dictionary<string, string> ObjectParameters = objectParameters;
+  public ZDO source = source;
 }
 
 public class DataValue
@@ -191,14 +191,7 @@ public class AnyValue(string[] values)
     return Values.Select(v => ReplaceParameters(v, pars)).Where(v => v != null && v != "<none").ToArray();
   }
 
-  protected string ReplaceParameters(string value, Pars pars)
-  {
-    foreach (var kvp in pars.ObjectParameters)
-      value = value.Replace(kvp.Key, kvp.Value);
-    foreach (var kvp in pars.Parameters)
-      value = value.Replace(kvp.Key, kvp.Value);
-    return value;
-  }
+  protected string ReplaceParameters(string value, Pars pars) => Helper.ReplaceParameters(value, pars.Parameters, pars.source);
 }
 public class ItemValue(ItemData data, HashSet<string> requiredParameters)
 {

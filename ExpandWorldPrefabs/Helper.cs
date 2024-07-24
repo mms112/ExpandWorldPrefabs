@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using System.Text;
 using Data;
 using Service;
 using UnityEngine;
@@ -10,8 +10,75 @@ namespace ExpandWorld.Prefab;
 
 public class Helper
 {
-
   public static string ReplaceParameters(string str, Dictionary<string, string> pars, ZDO? zdo)
+  {
+    StringBuilder parts = new();
+    int nesting = 0;
+    var start = 0;
+    for (int i = 0; i < str.Length; i++)
+    {
+      if (str[i] == '<')
+      {
+        if (nesting == 0)
+        {
+          parts.Append(str.Substring(start, i - start));
+          start = i;
+        }
+        nesting++;
+
+      }
+      if (str[i] == '>')
+      {
+        if (nesting == 1)
+        {
+          var key = str.Substring(start, i - start + 1);
+          parts.Append(ResolveParameters(key, pars, zdo));
+          start = i + 1;
+        }
+        if (nesting > 0)
+          nesting--;
+      }
+    }
+    if (start < str.Length)
+      parts.Append(str.Substring(start));
+
+    return parts.ToString();
+  }
+  public static string ResolveParameters(string str, Dictionary<string, string> pars, ZDO? zdo)
+  {
+    for (int i = 0; i < str.Length; i++)
+    {
+      var end = str.IndexOf(">", i);
+      if (end == -1) break;
+      i = end;
+      var start = str.LastIndexOf("<", end);
+      if (start == -1) continue;
+      var length = end - start + 1;
+      var resolved = ReplaceParameter(str.Substring(start, length), pars, zdo);
+      str = str.Remove(start, length);
+      str = str.Insert(start, resolved);
+      // Resolved could contain parameters, so need to recheck the same position.
+      i = start - 1;
+    }
+    return str;
+  }
+  private static string ReplaceParameter(string key, Dictionary<string, string> pars, ZDO? zdo)
+  {
+    if (pars.ContainsKey(key))
+      return pars[key];
+
+    if (zdo == null) return key;
+    var kvp = Parse.Kvp(key, '_');
+    if (kvp.Value != "")
+    {
+      var zdoKey = kvp.Key.Substring(1);
+      var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
+      return GetZdoValue(zdo, zdoKey, zdoValue);
+    }
+    return key;
+  }
+
+  public static string ReplaceParameters2(string str, Dictionary<string, string> pars, ZDO? zdo)
   {
     for (int i = str.Length; i >= 0; i--)
     {
@@ -40,41 +107,7 @@ public class Helper
     }
     return str;
   }
-  public static string ReplaceParameters(string str, Pars pars, ZDO? zdo)
-  {
-    for (int i = str.Length; i >= 0; i--)
-    {
-      var end = str.LastIndexOf(">", i);
-      if (end == -1) break;
-      var start = str.LastIndexOf("<", end);
-      if (start == -1) break;
-      i = start;
-      var key = str.Substring(start, end - start + 1);
-      if (pars.ObjectParameters.ContainsKey(key))
-      {
-        str = str.Remove(start, end - start + 1);
-        str = str.Insert(start, pars.ObjectParameters[key]);
-        continue;
-      }
-      if (pars.Parameters.ContainsKey(key))
-      {
-        str = str.Remove(start, end - start + 1);
-        str = str.Insert(start, pars.Parameters[key]);
-        continue;
-      }
-      if (zdo == null) continue;
-      var kvp = Parse.Kvp(key, '_');
-      if (kvp.Value != "")
-      {
-        var zdoKey = kvp.Key.Substring(1);
-        var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
-        str = str.Remove(start, end - start + 1);
-        var value = GetZdoValue(zdo, zdoKey, zdoValue);
-        str = str.Insert(start, value);
-      }
-    }
-    return str;
-  }
+
   public static Dictionary<string, string> CreateParameters(string prefab, string args, ZDO zdo)
   {
     var split = args.Split(' ');
@@ -88,8 +121,24 @@ public class Helper
     var rx = Format(zdo.m_rotation.x);
     var ry = Format(zdo.m_rotation.y);
     var rz = Format(zdo.m_rotation.z);
+
+    var pid = "";
+    var pname = "";
+    var pchar = "";
     var owner = zdo.GetOwner();
     var peer = owner != 0 ? ZNet.instance.GetPeer(owner) : null;
+    if (peer != null)
+    {
+      pid = peer.m_rpc.GetSocket().GetHostName();
+      pname = peer.m_playerName;
+      pchar = peer.m_characterID.ToString();
+    }
+    else if (Player.m_localPlayer)
+    {
+      pid = "Server";
+      pname = Player.m_localPlayer.GetPlayerName();
+      pchar = Player.m_localPlayer.GetPlayerID().ToString();
+    }
     return new Dictionary<string, string> {
       { "<zdo>", zdo.m_uid.ToString() },
       { "<prefab>", prefab },
@@ -110,11 +159,12 @@ public class Helper
       { "<time>", Format(time) },
       { "<day>", day.ToString() },
       { "<ticks>", ticks.ToString() },
-      { "<pid>", peer?.m_rpc.GetSocket().GetHostName() ?? "" },
-      { "<pname>", peer?.m_playerName ?? "" },
-      { "<pchar>", peer?.m_characterID.ToString() ?? "" },
+      { "<pid>", pid },
+      { "<pname>", pname },
+      { "<pchar>", pchar },
     };
   }
+
   public static Dictionary<string, string> CreateParameters(string args, Vector3 pos)
   {
     var split = args.Split(' ');

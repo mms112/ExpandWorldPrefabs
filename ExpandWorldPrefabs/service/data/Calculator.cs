@@ -169,7 +169,7 @@ public class Calculator
     }
     try
     {
-      return long.Parse(expression.Trim(), NumberFormatInfo.InvariantInfo);
+      return long.Parse(expression.Trim());
     }
     catch
     {

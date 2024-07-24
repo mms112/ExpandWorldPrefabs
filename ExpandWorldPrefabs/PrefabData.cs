@@ -234,10 +234,10 @@ public class Spawn
     }
 
   }
-  public int GetPrefab(Pars pars)
+  public int GetPrefab(Dictionary<string, string> pars, ZDO zdo)
   {
     if (Prefab != 0) return Prefab;
-    var prefabName = Helper.ReplaceParameters(WildPrefab, pars, null);
+    var prefabName = Helper.ReplaceParameters(WildPrefab, pars, zdo);
     var prefab = prefabName.GetStableHashCode();
     return ZNetScene.instance.GetPrefab(prefab) ? prefab : 0;
   }
