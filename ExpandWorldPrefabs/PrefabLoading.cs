@@ -92,6 +92,8 @@ public class Loading
     var clientRpcs = ParseClientRpcs(data);
     var minPaint = data.minPaint != "" ? Parse.Color(data.minPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
     var maxPaint = data.maxPaint != "" ? Parse.Color(data.maxPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
+    var addItems = HandleItems(data.addItems);
+    var removeItems = HandleItems(data.removeItems);
     return types.Select(t =>
     {
       var d = t.Type != ActionType.Destroy ? data.data : "";
@@ -145,8 +147,8 @@ public class Loading
         ClientRpcs = clientRpcs,
         MinPaint = minPaint,
         MaxPaint = maxPaint,
-        AddItems = data.addItems,
-        RemoveItems = data.removeItems
+        AddItems = addItems,
+        RemoveItems = removeItems
       };
     }).ToArray();
   }
@@ -243,6 +245,19 @@ public class Loading
     if (!Directory.Exists(Yaml.BaseDirectory))
       Directory.CreateDirectory(Yaml.BaseDirectory);
     Yaml.SetupWatcher(Pattern, FromFile);
+  }
+  private static DataEntry? HandleItems(string items)
+  {
+    var split = Parse.Kvp(items);
+    if (split.Value == "") return DataHelper.Get(items);
+    DataEntry data = new();
+    data.Items = [];
+    ItemData itemData = new();
+    itemData.prefab = split.Key;
+    itemData.stack = split.Value;
+    ItemValue item = new(itemData, []);
+    data.Items.Add(item);
+    return data;
   }
 }
 

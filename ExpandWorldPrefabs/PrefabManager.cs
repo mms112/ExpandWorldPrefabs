@@ -47,8 +47,8 @@ public class Manager
     else if (info.InjectData)
     {
       var data = DataHelper.Get(info.Data);
-      var removeItems = DataHelper.Get(info.RemoveItems);
-      var addItems = DataHelper.Get(info.AddItems);
+      var removeItems = info.RemoveItems;
+      var addItems = info.AddItems;
       if (data != null)
       {
         ZdoEntry entry = new(zdo);
@@ -80,8 +80,8 @@ public class Manager
       CreateObject(p, zdo, data, parameters, p.TriggerRules);
     if (regenerateOriginal)
     {
-      var removeItems = DataHelper.Get(info.RemoveItems);
-      var addItems = DataHelper.Get(info.AddItems);
+      var removeItems = info.RemoveItems;
+      var addItems = info.AddItems;
       ZdoEntry entry = new(zdo);
       if (data != null)
         entry.Load(data, parameters);

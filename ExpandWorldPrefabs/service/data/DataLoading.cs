@@ -48,7 +48,7 @@ public class DataLoading
       .Concat(Directory.GetFiles(Yaml.BaseDirectory, Pattern))
       .Select(Path.GetFullPath).Distinct().ToArray();
     foreach (var file in files)
-      LoadValues(file, prev);
+      LoadValues(file);
     if (ValueGroups.Count > 0)
       Log.Info($"Loaded {ValueGroups.Count} value groups.");
 
@@ -65,7 +65,7 @@ public class DataLoading
       LoadEntry(file, prev);
     Log.Info($"Loaded {Data.Count} data entries.");
   }
-  private static void LoadValues(string file, Dictionary<int, DataEntry> oldData)
+  private static void LoadValues(string file)
   {
     var yaml = Yaml.LoadList<DataData>(file);
     foreach (var data in yaml)

@@ -129,6 +129,11 @@ public class Helper
       { "<par2>", split.Length > 2 ? DataHelper.ResolveValue(split[2]) : "" },
       { "<par3>", split.Length > 3 ? DataHelper.ResolveValue(split[3]) : "" },
       { "<par4>", split.Length > 4 ? DataHelper.ResolveValue(split[4]) : "" },
+      { "<par5>", split.Length > 5 ? DataHelper.ResolveValue(split[5]) : "" },
+      { "<par6>", split.Length > 6 ? DataHelper.ResolveValue(split[6]) : "" },
+      { "<par7>", split.Length > 7 ? DataHelper.ResolveValue(split[7]) : "" },
+      { "<par8>", split.Length > 8 ? DataHelper.ResolveValue(split[8]) : "" },
+      { "<par9>", split.Length > 9 ? DataHelper.ResolveValue(split[9]) : "" },
       { "<par>", DataHelper.ResolveValue(args) },
       { "<x>", x },
       { "<y>", y },
@@ -163,6 +168,11 @@ public class Helper
       { "<par2>", split.Length > 2 ? split[2] : "" },
       { "<par3>", split.Length > 3 ? split[3] : "" },
       { "<par4>", split.Length > 4 ? split[4] : "" },
+      { "<par5>", split.Length > 5 ? split[5] : "" },
+      { "<par6>", split.Length > 6 ? split[6] : "" },
+      { "<par7>", split.Length > 7 ? split[7] : "" },
+      { "<par8>", split.Length > 8 ? split[8] : "" },
+      { "<par9>", split.Length > 9 ? split[9] : "" },
       { "<par>", args },
       { "<x>", x },
       { "<y>", y },
@@ -200,7 +210,22 @@ public class Helper
       return Convert.ToBase64String(zdo.GetByteArray(value));
     else if (key == "zdo")
       return zdo.GetZDOID(value).ToString();
+    else if (key == "item")
+      return GetAmountOfItems(zdo, value).ToString();
     return "";
+  }
+  private static int GetAmountOfItems(ZDO zdo, string prefab)
+  {
+    var currentItems = zdo.GetString(ZDOVars.s_items);
+    if (currentItems == "") return 0;
+    Inventory inv = new("", null, 4, 2);
+    inv.Load(new ZPackage(currentItems));
+    int count = 0;
+    foreach (var item in inv.m_inventory)
+    {
+      if ((item.m_dropPrefab?.name ?? item.m_shared.m_name) == prefab) count += item.m_stack;
+    }
+    return count;
   }
   private static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   private static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);

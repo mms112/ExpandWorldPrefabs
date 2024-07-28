@@ -27,7 +27,7 @@ Following parameters are available to be used in the yaml file:
 - `<prefab>`: Original prefab id.
 - `<zdo>`: Object id.
 - `<par>`: Triggered parameter.
-- `<par0>`, ..., `<par4>`: Part of the parameter (split by spaces).
+- `<par0>`, ..., `<par9>`: Part of the parameter (split by spaces).
 - `<x>`, `<y>` and `<z>`: Object center point.
 - `<pos>`: Object center point as x,z,y.
 - `<i>` and `<j>`: Object zone indices.
@@ -49,6 +49,7 @@ Following parameters are available to be used in the yaml file:
 - `<quat_*>`: Quaternion value from the object converted to y,x,z.
 - `<byte_*>`: Byte value from the object converted to base64 text.
 - `<zdo_*>`: Object id value from the object.
+- `<item_*>`: Amount of specific item in the container.
 - `<pid>`: Steam/Playfab of the client that controls the object.
   - Note: The client always controls its player object.
 - `<pname>`: Player name of the client that controls the object.
@@ -124,9 +125,11 @@ Most fields are put on a single line. List values are separated by `,`.
   - Data type "items" is used for this.
   - If the item exists, its stack amount is increased up to the max.
   - Remaining stack amount is added as new items.
+  - For adding a single item, shorthand `itemid, amount` can be used.
 - removeItems: Data entry that is used to removes items from the container object.
   - Data type "items" is used for this.
   - If the item doesn't exist then nothing happens.
+  - For removing a single item, shorthand `itemid, amount` can be used.
 
 ## Filters
 

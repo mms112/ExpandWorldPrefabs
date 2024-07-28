@@ -175,8 +175,8 @@ public class Info
   public ClientRpcInfo[]? ClientRpcs;
   public Color? MinPaint;
   public Color? MaxPaint;
-  public string AddItems = "";
-  public string RemoveItems = "";
+  public DataEntry? AddItems;
+  public DataEntry? RemoveItems;
 }
 public class Spawn
 {

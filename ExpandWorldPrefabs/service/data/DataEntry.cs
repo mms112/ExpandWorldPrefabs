@@ -38,6 +38,7 @@ public class DataEntry
   public Dictionary<int, byte[]>? ByteArrays;
   public List<ItemValue>? Items;
   public Vector2i? ContainerSize;
+  private Vector2i GetContainerSize() => ContainerSize ?? new(4, 2);
   public IIntValue? ItemAmount;
   public ZDOExtraData.ConnectionType ConnectionType = ZDOExtraData.ConnectionType.None;
   public int ConnectionHash = 0;
@@ -464,37 +465,29 @@ public class DataEntry
   {
     if (Items?.Count > 0)
     {
-      var encoded = ItemValue.LoadItems(pars, Items, ContainerSize, ItemAmount?.Get(pars) ?? 0);
+      var encoded = ItemValue.LoadItems(pars, Items, GetContainerSize(), ItemAmount?.Get(pars) ?? 0);
       Strings ??= [];
       Strings[ZDOVars.s_items] = DataValue.Simple(encoded);
     }
   }
-  public string GetItems(Pars pars)
-  {
-    if (Items == null) throw new ArgumentNullException(nameof(Items));
-    return ItemValue.LoadItems(pars, Items, ContainerSize, ItemAmount?.Get(pars) ?? 0);
-  }
+
   public void AddItems(Dictionary<string, string> parameters, ZDO zdo)
   {
     if (Items == null || Items.Count == 0) return;
     Pars pars = new(parameters, zdo);
     var currentItems = zdo.GetString(ZDOVars.s_items);
-    if (currentItems == "")
-    {
-      // Since no items exist, can just set.
-      zdo.Set(ZDOVars.s_items, GetItems(pars));
-    }
-    else
-    {
-      Inventory inv = new("", null, ContainerSize?.x ?? 4, ContainerSize?.y ?? 2);
+    var size = GetContainerSize();
+    Inventory inv = new("", null, size.x, size.y);
+    // Techically could just set items without pre-existing data.
+    // But this should be quite rare because even empty chest has data.
+    if (currentItems != "")
       inv.Load(new ZPackage(currentItems));
-      var items = GenerateItems(pars);
-      foreach (var item in items)
-        item.AddTo(pars, inv);
-      ZPackage pkg = new();
-      inv.Save(pkg);
-      zdo.Set(ZDOVars.s_items, pkg.GetBase64());
-    }
+    var items = GenerateItems(pars);
+    foreach (var item in items)
+      item.AddTo(pars, inv);
+    ZPackage pkg = new();
+    inv.Save(pkg);
+    zdo.Set(ZDOVars.s_items, pkg.GetBase64());
   }
   public void RemoveItems(Dictionary<string, string> parameters, ZDO zdo)
   {
@@ -502,7 +495,8 @@ public class DataEntry
     var currentItems = zdo.GetString(ZDOVars.s_items);
     if (currentItems == "") return;
     Pars pars = new(parameters, zdo);
-    Inventory inv = new("", null, ContainerSize?.x ?? 4, ContainerSize?.y ?? 2);
+    var size = GetContainerSize();
+    Inventory inv = new("", null, size.x, size.y);
     inv.Load(new ZPackage(currentItems));
     var items = GenerateItems(pars);
     foreach (var item in items)
@@ -514,7 +508,7 @@ public class DataEntry
   public List<ItemValue> GenerateItems(Pars pars)
   {
     if (Items == null) throw new ArgumentNullException(nameof(Items));
-    return ItemValue.Generate(pars, Items, ContainerSize ?? new(0, 0), ItemAmount?.Get(pars) ?? 0);
+    return ItemValue.Generate(pars, Items, GetContainerSize(), ItemAmount?.Get(pars) ?? 0);
   }
 
   private void HandleConnection(ZDO ownZdo, Pars pars)

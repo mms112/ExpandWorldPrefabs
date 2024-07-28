@@ -1071,7 +1071,7 @@ By default, the RPC is sent to the owner of the object.
 This list all RPC calls that are not related to any object.
 
 ```yaml
-# Teleports the client.
+# Shows a chat message.
   clientRpc:
   - name: ChatMessage
     1: vec, "text position"
@@ -1183,7 +1183,7 @@ This list all RPC calls that are not related to any object.
 ```
 
 ```yaml
-# Sets the client event.
+# Makes the client to spawn an object.
   clientRpc:
   - name: SpawnObject
     1: vec, "spawn position"
@@ -1212,7 +1212,7 @@ This list all RPC calls that are not related to any object.
     3: string, "name of pin"
     4: int, "pin type"
     5: bool, "open map"
-    6: bool "discover all"
+    6: bool, "discover all"
 ```
 
 ```yaml

@@ -223,11 +223,11 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
     return amount.Match(pars, inv.m_inventory.Count) == true;
   }
 
-  public static string LoadItems(Pars pars, List<ItemValue> items, Vector2i? size, int amount)
+  public static string LoadItems(Pars pars, List<ItemValue> items, Vector2i size, int amount)
   {
     ZPackage pkg = new();
     pkg.Write(106);
-    items = Generate(pars, items, size ?? new(0, 0), amount);
+    items = Generate(pars, items, size, amount);
     pkg.Write(items.Count);
     foreach (var item in items)
       item.Write(pars, pkg);
@@ -288,8 +288,8 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
   }
   private static Vector2i? FindNextFreeSlot(Dictionary<Vector2i, ItemValue> inventory, Vector2i size)
   {
-    var maxW = size.x == 0 ? 4 : size.x;
-    var maxH = size.y == 0 ? 2 : size.y;
+    var maxW = size.x;
+    var maxH = size.y;
     for (var y = 0; y < maxH; ++y)
       for (var x = 0; x < maxW; ++x)
       {
