@@ -66,43 +66,59 @@ public class DataLoading
   }
   private static void LoadValues(string file)
   {
-    var yaml = Yaml.LoadList<DataData>(file);
-    foreach (var data in yaml)
+    try
     {
-      if (data.value != null)
+      var yaml = Yaml.LoadList<DataData>(file);
+      foreach (var data in yaml)
       {
-        var kvp = Parse.Kvp(data.value);
-        var hash = kvp.Key.ToLowerInvariant().GetStableHashCode();
-        if (ValueGroups.ContainsKey(hash))
-          Log.Warning($"Duplicate value group entry: {kvp.Key} at {file}");
-        if (!ValueGroups.ContainsKey(hash))
-          ValueGroups[hash] = [];
-        ValueGroups[hash].Add(kvp.Value);
+        if (data.value != null)
+        {
+          var kvp = Parse.Kvp(data.value);
+          var hash = kvp.Key.ToLowerInvariant().GetStableHashCode();
+          if (ValueGroups.ContainsKey(hash))
+            Log.Warning($"Duplicate value group entry: {kvp.Key} at {file}");
+          if (!ValueGroups.ContainsKey(hash))
+            ValueGroups[hash] = [];
+          ValueGroups[hash].Add(kvp.Value);
+        }
+        if (data.valueGroup != null && data.values != null)
+        {
+          var hash = data.valueGroup.ToLowerInvariant().GetStableHashCode();
+          if (ValueGroups.ContainsKey(hash))
+            Log.Warning($"Duplicate value group entry: {data.valueGroup} at {file}");
+          if (!ValueGroups.ContainsKey(hash))
+            ValueGroups[hash] = [];
+          foreach (var value in data.values)
+            ValueGroups[hash].Add(value);
+        }
       }
-      if (data.valueGroup != null && data.values != null)
-      {
-        var hash = data.valueGroup.ToLowerInvariant().GetStableHashCode();
-        if (ValueGroups.ContainsKey(hash))
-          Log.Warning($"Duplicate value group entry: {data.valueGroup} at {file}");
-        if (!ValueGroups.ContainsKey(hash))
-          ValueGroups[hash] = [];
-        foreach (var value in data.values)
-          ValueGroups[hash].Add(value);
-      }
+    }
+    catch (Exception e)
+    {
+      Log.Error($"Failed to load file: {file}");
+      throw e;
     }
   }
   private static void LoadEntry(string file, Dictionary<int, DataEntry> oldData)
   {
-    var yaml = Yaml.LoadList<DataData>(file);
-    foreach (var data in yaml)
+    try
     {
-      if (data.name != null)
+      var yaml = Yaml.LoadList<DataData>(file);
+      foreach (var data in yaml)
       {
-        var hash = data.name.GetStableHashCode();
-        if (Data.ContainsKey(hash))
-          Log.Warning($"Duplicate data entry: {data.name} at {file}");
-        Data[hash] = oldData.TryGetValue(hash, out var prev) ? prev.Reset(data) : new DataEntry(data);
+        if (data.name != null)
+        {
+          var hash = data.name.GetStableHashCode();
+          if (Data.ContainsKey(hash))
+            Log.Warning($"Duplicate data entry: {data.name} at {file}");
+          Data[hash] = oldData.TryGetValue(hash, out var prev) ? prev.Reset(data) : new DataEntry(data);
+        }
       }
+    }
+    catch (Exception e)
+    {
+      Log.Error($"Failed to load file: {file}");
+      throw e;
     }
   }
   private static readonly Dictionary<int, List<string>> DefaultValueGroups = [];
