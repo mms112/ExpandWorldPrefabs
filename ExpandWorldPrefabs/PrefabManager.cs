@@ -120,7 +120,9 @@ public class Manager
 
   public static ZDO? CreateObject(ZdoEntry entry, bool triggerRules)
   {
-    var zdo = entry.Create(triggerRules);
+    HandleCreated.Skip = !triggerRules;
+    var zdo = entry.Create();
+    HandleCreated.Skip = false;
     if (zdo == null) return null;
     FixOwner(zdo);
     return zdo;

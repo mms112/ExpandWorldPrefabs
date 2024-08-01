@@ -76,7 +76,7 @@ public class Loading
     if (data.prefab == "" && types.Any(t => t.Type != ActionType.GlobalKey && t.Type != ActionType.Event))
       Log.Warning($"Prefab missing for type {data.type}");
     HashSet<string> events = [.. Parse.ToList(data.events)];
-    var commands = ParseCommands(data.commands ?? (data.command == null ? [] : [data.command]));
+    var commands = data.commands ?? (data.command == null ? [] : [data.command]);
     HashSet<string> environments = [.. Parse.ToList(data.environments).Select(s => s.ToLower())];
     HashSet<string> bannedEnvironments = [.. Parse.ToList(data.bannedEnvironments).Select(s => s.ToLower())];
     HashSet<string> locations = [.. Parse.ToList(data.locations)];
@@ -152,20 +152,6 @@ public class Loading
       };
     }).ToArray();
   }
-  private static string[] ParseCommands(string[] commands) => commands.Select(s =>
-  {
-    if (s.Contains("$$"))
-    {
-      Log.Warning($"Command \"{s}\" contains $$ which is obsolete. Use {"<>"} instead.");
-      return s.Replace("$$x", "<x>").Replace("$$y", "<y>").Replace("$$z", "<z>").Replace("$$a", "<a>").Replace("$$i", "<i>").Replace("$$j", "<j>");
-    }
-    if (s.Contains("{") && s.Contains("}"))
-    {
-      Log.Warning($"Command \"{s}\" contains {{}} which is obsolete. Use {"<>"} instead.");
-      return s.Replace("{", "<").Replace("}", ">");
-    }
-    return s;
-  }).ToArray();
 
   private static Spawn[] ParseSpawns(string[] spawns, float delay, bool triggerRules) => spawns.Select(s => new Spawn(s, delay, triggerRules)).ToArray();
 

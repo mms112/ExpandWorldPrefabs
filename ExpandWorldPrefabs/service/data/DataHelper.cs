@@ -68,29 +68,4 @@ public class DataHelper
     var lower = key.ToLowerInvariant();
     return ZoneSystem.instance.m_globalKeysValues.FirstOrDefault(kvp => kvp.Key.ToLowerInvariant() == lower).Value ?? "0";
   }
-
-  // Parameter value could be a value group, so that has to be resolved.
-  public static string ResolveValue(string value)
-  {
-    if (!value.StartsWith("<", StringComparison.OrdinalIgnoreCase)) return value;
-    if (!value.EndsWith(">", StringComparison.OrdinalIgnoreCase)) return value;
-    var sub = value.Substring(1, value.Length - 2);
-    if (TryGetValueFromGroup(sub, out var valueFromGroup))
-      return valueFromGroup;
-    return value;
-  }
-
-  public static bool TryGetValueFromGroup(string group, out string value)
-  {
-    var hash = group.ToLowerInvariant().GetStableHashCode();
-    if (!DataLoading.ValueGroups.ContainsKey(hash))
-    {
-      value = group;
-      return false;
-    }
-    var roll = UnityEngine.Random.Range(0, DataLoading.ValueGroups[hash].Count);
-    // Value from group could be another group, so yet another resolve is needed.
-    value = ResolveValue(DataLoading.ValueGroups[hash][roll]);
-    return true;
-  }
 }

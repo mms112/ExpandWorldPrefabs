@@ -77,6 +77,8 @@ public class Parameters(string prefab, string arg, Vector3 pos)
   private bool TryReplaceParameter(string key, out string resolved)
   {
     resolved = Get(key);
+    if (resolved == "")
+      resolved = ResolveValue(key);
     return resolved != "";
   }
 
@@ -91,7 +93,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     key switch
     {
       "<prefab>" => prefab,
-      "<par>" => DataHelper.ResolveValue(arg),
+      "<par>" => arg,
       "<par0>" => GetArg(0),
       "<par1>" => GetArg(1),
       "<par2>" => GetArg(2),
@@ -115,11 +117,35 @@ public class Parameters(string prefab, string arg, Vector3 pos)
   private string GetArg(int index)
   {
     args ??= arg.Split(' ');
-    return args.Length <= index ? "" : DataHelper.ResolveValue(args[9]);
+    return args.Length <= index ? "" : args[9];
   }
   protected static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   protected static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
 
+  // Parameter value could be a value group, so that has to be resolved.
+  private static string ResolveValue(string value)
+  {
+    if (!value.StartsWith("<", StringComparison.OrdinalIgnoreCase)) return value;
+    if (!value.EndsWith(">", StringComparison.OrdinalIgnoreCase)) return value;
+    var sub = value.Substring(1, value.Length - 2);
+    if (TryGetValueFromGroup(sub, out var valueFromGroup))
+      return valueFromGroup;
+    return value;
+  }
+
+  private static bool TryGetValueFromGroup(string group, out string value)
+  {
+    var hash = group.ToLowerInvariant().GetStableHashCode();
+    if (!DataLoading.ValueGroups.ContainsKey(hash))
+    {
+      value = group;
+      return false;
+    }
+    var roll = UnityEngine.Random.Range(0, DataLoading.ValueGroups[hash].Count);
+    // Value from group could be another group, so yet another resolve is needed.
+    value = ResolveValue(DataLoading.ValueGroups[hash][roll]);
+    return true;
+  }
 }
 public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(prefab, arg, zdo.m_position)
 {

@@ -28,7 +28,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
 
   public ZdoEntry(ZDO zdo) : this(zdo.m_prefab, zdo.m_position, zdo.m_rotation, zdo) { }
 
-  public ZDO? Create(bool triggerRules)
+  public ZDO? Create()
   {
     if (Prefab == 0) return null;
     var obj = ZNetScene.instance.GetPrefab(Prefab);
@@ -38,11 +38,10 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
       return null;
     }
     // Prefab hash is used to check whether to trigger rules.
-    var zdo = ZDOMan.instance.CreateNewZDO(Position, triggerRules ? Prefab : 0);
+    var zdo = ZDOMan.instance.CreateNewZDO(Position, Prefab);
     zdo.Persistent = view.m_persistent;
     zdo.Type = view.m_type;
     zdo.Distant = view.m_distant;
-    zdo.m_prefab = Prefab;
     zdo.SetOwnerInternal(Owner);
     Write(zdo);
     return zdo;
