@@ -185,7 +185,7 @@ public static class Parse
 
   public static Range<string> StringRange(string arg)
   {
-    var range = arg.Split('-').ToList();
+    var range = arg.Split(['-', ';']).ToList();
     if (range.Count > 1 && range[0] == "")
     {
       range[0] = "-" + range[1];

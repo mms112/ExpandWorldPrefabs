@@ -58,66 +58,66 @@ public abstract class RpcInfo
       Delay = Parse.Float(d, 0f);
     Parameters = lines.OrderBy(p => p.Key).Where(p => Parse.TryInt(p.Key, out var _)).Select(p => Parse.Kvp(p.Value)).ToArray();
   }
-  public void Invoke(ZDO zdo, Dictionary<string, string> parameters)
+  public void Invoke(ZDO zdo, Parameters pars)
   {
     var source = ZRoutedRpc.instance.m_id;
     if (SourceParameter != null)
     {
-      var id = Parse.ZdoId(Helper.ReplaceParameters(SourceParameter, parameters, zdo));
+      var id = Parse.ZdoId(pars.Replace(SourceParameter));
       source = ZDOMan.instance.GetZDO(id)?.GetOwner() ?? 0;
     }
-    var pars = Packaged ? GetPackagedParameters(zdo, parameters) : GetParameters(zdo, parameters);
+    var parameters = Packaged ? GetPackagedParameters(zdo, pars) : GetParameters(zdo, pars);
     if (Target == RpcTarget.Owner)
-      DelayedRpc.Add(Delay, source, zdo.GetOwner(), GetId(zdo), Hash, pars);
+      DelayedRpc.Add(Delay, source, zdo.GetOwner(), GetId(zdo), Hash, parameters);
     else if (Target == RpcTarget.All)
-      DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, GetId(zdo), Hash, pars);
+      DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, GetId(zdo), Hash, parameters);
     else if (Target == RpcTarget.ZDO)
     {
-      var id = Parse.ZdoId(Helper.ReplaceParameters(TargetParameter ?? "", parameters, zdo));
+      var id = Parse.ZdoId(pars.Replace(TargetParameter ?? ""));
       var peerId = ZDOMan.instance.GetZDO(id)?.GetOwner();
       if (peerId.HasValue)
-        DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, pars);
+        DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, parameters);
     }
   }
-  public void InvokeGlobal(Dictionary<string, string> parameters)
+  public void InvokeGlobal(Parameters pars)
   {
     var source = ZRoutedRpc.instance.m_id;
-    var pars = Packaged ? PackagedGetParameters(parameters) : GetParameters(parameters);
-    DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, ZDOID.None, Hash, pars);
+    var parameters = Packaged ? PackagedGetParameters(pars) : GetParameters(pars);
+    DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, ZDOID.None, Hash, parameters);
   }
-  private object[] GetParameters(ZDO? zdo, Dictionary<string, string> parameters)
+  private object[] GetParameters(ZDO? zdo, Parameters pars)
   {
-    var pars = Parameters.Select(p => Helper.ReplaceParameters(p.Value, parameters, zdo)).ToArray<object>();
-    for (var i = 0; i < pars.Length; i++)
+    var parameters = Parameters.Select(p => pars.Replace(p.Value)).ToArray<object>();
+    for (var i = 0; i < parameters.Length; i++)
     {
       var type = Parameters[i].Key;
-      var arg = (string)pars[i];
-      if (type == "int") pars[i] = Calculator.EvaluateInt(arg) ?? 0;
-      if (type == "long") pars[i] = Calculator.EvaluateLong(arg) ?? 0;
-      if (type == "float") pars[i] = Calculator.EvaluateFloat(arg) ?? 0f;
-      if (type == "bool") pars[i] = Parse.Boolean(arg);
-      if (type == "string") pars[i] = arg;
-      if (type == "vec") pars[i] = Calculator.EvaluateVector3(arg);
-      if (type == "quat") pars[i] = Calculator.EvaluateQuaternion(arg);
-      if (type == "hash") pars[i] = arg.GetStableHashCode();
-      if (type == "hit") pars[i] = Parse.Hit(zdo, arg);
-      if (type == "zdo") pars[i] = Parse.ZdoId(arg);
-      if (type == "enum_message") pars[i] = Parse.EnumMessage(arg);
-      if (type == "enum_reason") pars[i] = Parse.EnumReason(arg);
-      if (type == "enum_trap") pars[i] = Parse.EnumTrap(arg);
-      if (type == "enum_damagetext") pars[i] = Parse.EnumDamageText(arg);
-      if (type == "enum_terrainpaint") pars[i] = Parse.EnumTerrainPaint(arg);
+      var arg = (string)parameters[i];
+      if (type == "int") parameters[i] = Calculator.EvaluateInt(arg) ?? 0;
+      if (type == "long") parameters[i] = Calculator.EvaluateLong(arg) ?? 0;
+      if (type == "float") parameters[i] = Calculator.EvaluateFloat(arg) ?? 0f;
+      if (type == "bool") parameters[i] = Parse.Boolean(arg);
+      if (type == "string") parameters[i] = arg;
+      if (type == "vec") parameters[i] = Calculator.EvaluateVector3(arg);
+      if (type == "quat") parameters[i] = Calculator.EvaluateQuaternion(arg);
+      if (type == "hash") parameters[i] = arg.GetStableHashCode();
+      if (type == "hit") parameters[i] = Parse.Hit(zdo, arg);
+      if (type == "zdo") parameters[i] = Parse.ZdoId(arg);
+      if (type == "enum_message") parameters[i] = Parse.EnumMessage(arg);
+      if (type == "enum_reason") parameters[i] = Parse.EnumReason(arg);
+      if (type == "enum_trap") parameters[i] = Parse.EnumTrap(arg);
+      if (type == "enum_damagetext") parameters[i] = Parse.EnumDamageText(arg);
+      if (type == "enum_terrainpaint") parameters[i] = Parse.EnumTerrainPaint(arg);
     }
-    return pars;
+    return parameters;
   }
-  private object[] GetPackagedParameters(ZDO? zdo, Dictionary<string, string> parameters)
+  private object[] GetPackagedParameters(ZDO? zdo, Parameters pars)
   {
     ZPackage pkg = new();
-    var pars = Parameters.Select(p => Helper.ReplaceParameters(p.Value, parameters, zdo)).ToArray<object>();
-    for (var i = 0; i < pars.Length; i++)
+    var parameters = Parameters.Select(p => pars.Replace(p.Value)).ToArray<object>();
+    for (var i = 0; i < parameters.Length; i++)
     {
       var type = Parameters[i].Key;
-      var arg = (string)pars[i];
+      var arg = (string)parameters[i];
       if (type == "int") pkg.Write(Calculator.EvaluateInt(arg) ?? 0);
       if (type == "long") pkg.Write(Calculator.EvaluateLong(arg) ?? 0);
       if (type == "float") pkg.Write(Calculator.EvaluateFloat(arg) ?? 0f);
@@ -136,8 +136,8 @@ public abstract class RpcInfo
     return [pkg];
   }
 
-  private object[] GetParameters(Dictionary<string, string> parameters) => GetParameters(null, parameters);
-  private object[] PackagedGetParameters(Dictionary<string, string> parameters) => GetPackagedParameters(null, parameters);
+  private object[] GetParameters(Parameters pars) => GetParameters(null, pars);
+  private object[] PackagedGetParameters(Parameters pars) => GetPackagedParameters(null, pars);
 }
 
 

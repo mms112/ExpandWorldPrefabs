@@ -190,7 +190,7 @@ public class Loading
     }
     var type = split[0].ToLowerInvariant();
     var key = split[1].GetStableHashCode();
-    var value = split[2];
+    var value = string.Join(",", split.Skip(2));
     if (type == "hash")
     {
       entry.Hashes ??= [];

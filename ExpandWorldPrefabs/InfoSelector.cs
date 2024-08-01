@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Data;
 using UnityEngine;
 
 namespace ExpandWorld.Prefab;
@@ -7,24 +8,24 @@ namespace ExpandWorld.Prefab;
 
 public class InfoSelector
 {
-  public static Info? Select(ActionType type, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  public static Info? Select(ActionType type, ZDO zdo, string arg, Parameters parameters, ZDO? source)
   {
     var infos = InfoManager.Select(type);
     return SelectDefault(infos, zdo, arg, parameters, source) ?? SelectFallback(infos, zdo, arg, parameters, source);
   }
-  private static Info? SelectDefault(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  private static Info? SelectDefault(PrefabInfo infos, ZDO zdo, string arg, Parameters parameters, ZDO? source)
   {
     var prefab = zdo.m_prefab;
     if (!infos.TryGetValue(prefab, out var data)) return null;
     return SelectInfo(data, zdo, arg, parameters, source);
   }
-  private static Info? SelectFallback(PrefabInfo infos, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  private static Info? SelectFallback(PrefabInfo infos, ZDO zdo, string arg, Parameters parameters, ZDO? source)
   {
     var prefab = zdo.m_prefab;
     if (!infos.TryGetFallbackValue(prefab, out var data)) return null;
     return SelectInfo(data, zdo, arg, parameters, source);
   }
-  private static Info? SelectInfo(List<Info> data, ZDO zdo, string arg, Dictionary<string, string> parameters, ZDO? source)
+  private static Info? SelectInfo(List<Info> data, ZDO zdo, string arg, Parameters parameters, ZDO? source)
   {
     if (data.Count == 0) return null;
     var pos = zdo.m_position;
@@ -158,13 +159,13 @@ public class InfoSelector
     Random.state = state;
     return env.m_name.ToLower();
   }
-  public static Info? SelectGlobal(ActionType type, string arg, Dictionary<string, string> parameters, Vector3 pos, bool remove)
+  public static Info? SelectGlobal(ActionType type, string arg, Parameters parameters, Vector3 pos, bool remove)
   {
     var infos = InfoManager.SelectGlobal(type);
     return SelectGlobalInfo(infos.Info, arg, parameters, pos, remove) ?? SelectGlobalInfo(infos.Fallback, arg, parameters, pos, remove);
   }
 
-  private static Info? SelectGlobalInfo(List<Info> data, string arg, Dictionary<string, string> parameters, Vector3 pos, bool remove)
+  private static Info? SelectGlobalInfo(List<Info> data, string arg, Parameters parameters, Vector3 pos, bool remove)
   {
     if (data.Count == 0) return null;
     var day = EnvMan.IsDay();

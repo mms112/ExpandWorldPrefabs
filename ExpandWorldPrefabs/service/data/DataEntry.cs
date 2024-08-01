@@ -386,9 +386,8 @@ public class DataEntry
       ConnectionHash = pkg.ReadInt();
     }
   }
-  public bool Match(Dictionary<string, string> parameters, ZDO zdo)
+  public bool Match(Parameters pars, ZDO zdo)
   {
-    Pars pars = new(parameters, zdo);
     if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, zdo.GetString(pair.Key)) == false)) return false;
     if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, zdo.GetFloat(pair.Key)) == false)) return false;
     if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == false)) return false;
@@ -408,9 +407,8 @@ public class DataEntry
     }
     return true;
   }
-  public bool Unmatch(Dictionary<string, string> parameters, ZDO zdo)
+  public bool Unmatch(Parameters pars, ZDO zdo)
   {
-    Pars pars = new(parameters, zdo);
     if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, zdo.GetString(pair.Key)) == true)) return false;
     if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, zdo.GetFloat(pair.Key)) == true)) return false;
     if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == true)) return false;
@@ -461,7 +459,7 @@ public class DataEntry
     return (T)(object)value;
   }
 
-  public void RollItems(Pars pars)
+  public void RollItems(Parameters pars)
   {
     if (Items?.Count > 0)
     {
@@ -471,10 +469,9 @@ public class DataEntry
     }
   }
 
-  public void AddItems(Dictionary<string, string> parameters, ZDO zdo)
+  public void AddItems(Parameters parameters, ZDO zdo)
   {
     if (Items == null || Items.Count == 0) return;
-    Pars pars = new(parameters, zdo);
     var currentItems = zdo.GetString(ZDOVars.s_items);
     var size = GetContainerSize();
     Inventory inv = new("", null, size.x, size.y);
@@ -482,36 +479,35 @@ public class DataEntry
     // But this should be quite rare because even empty chest has data.
     if (currentItems != "")
       inv.Load(new ZPackage(currentItems));
-    var items = GenerateItems(pars);
+    var items = GenerateItems(parameters);
     foreach (var item in items)
-      item.AddTo(pars, inv);
+      item.AddTo(parameters, inv);
     ZPackage pkg = new();
     inv.Save(pkg);
     zdo.Set(ZDOVars.s_items, pkg.GetBase64());
   }
-  public void RemoveItems(Dictionary<string, string> parameters, ZDO zdo)
+  public void RemoveItems(Parameters parameters, ZDO zdo)
   {
     if (Items == null || Items.Count == 0) return;
     var currentItems = zdo.GetString(ZDOVars.s_items);
     if (currentItems == "") return;
-    Pars pars = new(parameters, zdo);
     var size = GetContainerSize();
     Inventory inv = new("", null, size.x, size.y);
     inv.Load(new ZPackage(currentItems));
-    var items = GenerateItems(pars);
+    var items = GenerateItems(parameters);
     foreach (var item in items)
-      item.RemoveFrom(pars, inv);
+      item.RemoveFrom(parameters, inv);
     ZPackage pkg = new();
     inv.Save(pkg);
     zdo.Set(ZDOVars.s_items, pkg.GetBase64());
   }
-  public List<ItemValue> GenerateItems(Pars pars)
+  public List<ItemValue> GenerateItems(Parameters pars)
   {
     if (Items == null) throw new ArgumentNullException(nameof(Items));
     return ItemValue.Generate(pars, Items, GetContainerSize(), ItemAmount?.Get(pars) ?? 0);
   }
 
-  private void HandleConnection(ZDO ownZdo, Pars pars)
+  private void HandleConnection(ZDO ownZdo, Parameters pars)
   {
     if (OriginalId == null) return;
     var ownId = ownZdo.m_uid;

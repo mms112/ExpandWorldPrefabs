@@ -11,7 +11,7 @@ public class Manager
   public static void HandleGlobal(ActionType type, string args, Vector3 pos, bool remove)
   {
     if (!ZNet.instance.IsServer()) return;
-    var parameters = Helper.CreateParameters(args, pos);
+    Parameters parameters = new("", args, pos);
     var info = InfoSelector.SelectGlobal(type, args, parameters, pos, remove);
     if (info == null) return;
     if (info.Commands.Length > 0)
@@ -26,12 +26,12 @@ public class Manager
     if (ZDOMan.instance.m_deadZDOs.ContainsKey(zdo.m_uid)) return;
     if (!ZNet.instance.IsServer()) return;
     var name = ZNetScene.instance.GetPrefab(zdo.m_prefab)?.name ?? "";
-    var parameters = Helper.CreateParameters(name, args, zdo);
+    ObjectParameters parameters = new(name, args, zdo);
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
     if (info == null) return;
 
     if (info.Commands.Length > 0)
-      Commands.Run(info, zdo, parameters);
+      Commands.Run(info, parameters);
 
     if (info.ObjectRpcs != null)
       ObjectRpc(info.ObjectRpcs, zdo, parameters);
@@ -64,7 +64,7 @@ public class Manager
       }
     }
   }
-  private static void HandleSpawns(Info info, ZDO zdo, Dictionary<string, string> parameters)
+  private static void HandleSpawns(Info info, ZDO zdo, Parameters pars)
   {
     // Original object must be regenerated to apply data.
     var regenerateOriginal = !info.Remove && info.Regenerate;
@@ -72,24 +72,24 @@ public class Manager
 
     var customData = DataHelper.Get(info.Data);
     foreach (var p in info.Spawns)
-      CreateObject(p, zdo, customData, parameters, p.TriggerRules);
+      CreateObject(p, zdo, customData, pars, p.TriggerRules);
 
     if (info.Swaps.Length == 0 && !regenerateOriginal) return;
     var data = DataHelper.Merge(new DataEntry(zdo), customData);
     foreach (var p in info.Swaps)
-      CreateObject(p, zdo, data, parameters, p.TriggerRules);
+      CreateObject(p, zdo, data, pars, p.TriggerRules);
     if (regenerateOriginal)
     {
       var removeItems = info.RemoveItems;
       var addItems = info.AddItems;
       ZdoEntry entry = new(zdo);
       if (data != null)
-        entry.Load(data, parameters);
+        entry.Load(data, pars);
       var newZdo = CreateObject(entry, false);
       if (newZdo != null)
       {
-        removeItems?.RemoveItems(parameters, newZdo);
-        addItems?.AddItems(parameters, newZdo);
+        removeItems?.RemoveItems(pars, newZdo);
+        addItems?.AddItems(pars, newZdo);
         PrefabConnector.AddSwap(zdo.m_uid, newZdo.m_uid);
       }
     }
@@ -101,7 +101,7 @@ public class Manager
     zdo.SetOwner(ZDOMan.instance.m_sessionID);
     ZDOMan.instance.DestroyZDO(zdo);
   }
-  public static void CreateObject(Spawn spawn, ZDO originalZdo, DataEntry? data, Dictionary<string, string> parameters, bool triggerRules)
+  public static void CreateObject(Spawn spawn, ZDO originalZdo, DataEntry? data, Parameters parameters, bool triggerRules)
   {
     var pos = originalZdo.m_position;
     var rotQuat = originalZdo.GetRotation();
@@ -111,7 +111,7 @@ public class Manager
     if (spawn.Snap)
       pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
     data = DataHelper.Merge(data, DataHelper.Get(spawn.Data));
-    var prefab = spawn.GetPrefab(parameters, originalZdo);
+    var prefab = spawn.GetPrefab(parameters);
     ZdoEntry zdoEntry = new(prefab, pos, rot, originalZdo);
     if (data != null)
       zdoEntry.Load(data, parameters);
@@ -186,34 +186,34 @@ public class Manager
     HandleCreated.Skip = false;
   }
 
-  public static void Poke(Info info, ZDO zdo, Dictionary<string, string> parameters)
+  public static void Poke(Info info, ZDO zdo, Parameters pars)
   {
     if (info.LegacyPokes.Length > 0)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, zdo.m_position, parameters);
-      var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, zdo);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, zdo.m_position, pars);
+      var pokeParameter = pars.Replace(info.PokeParameter);
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
     foreach (var poke in info.Pokes)
     {
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, zdo.m_position, parameters);
-      var pokeParameter = Helper.ReplaceParameters(poke.Parameter, parameters, zdo);
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, zdo.m_position, pars);
+      var pokeParameter = pars.Replace(info.PokeParameter);
       DelayedPoke.Add(poke.Delay, zdos, pokeParameter);
 
     }
   }
-  public static void PokeGlobal(Info info, Dictionary<string, string> parameters, Vector3 pos)
+  public static void PokeGlobal(Info info, Parameters pars, Vector3 pos)
   {
     if (info.LegacyPokes.Length > 0)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, parameters);
-      var pokeParameter = Helper.ReplaceParameters(info.PokeParameter, parameters, null);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, pars);
+      var pokeParameter = pars.Replace(info.PokeParameter);
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
     foreach (var poke in info.Pokes)
     {
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, pos, parameters);
-      var pokeParameter = Helper.ReplaceParameters(poke.Parameter, parameters, null);
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit, poke.Filter, pos, pars);
+      var pokeParameter = pars.Replace(poke.Parameter);
       DelayedPoke.Add(poke.Delay, zdos, pokeParameter);
 
     }
@@ -224,17 +224,17 @@ public class Manager
       Handle(ActionType.Poke, parameter, z);
   }
 
-  public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
+  public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Parameters parameters)
   {
     foreach (var i in info)
       i.Invoke(zdo, parameters);
   }
-  public static void ClientRpc(ClientRpcInfo[] info, ZDO zdo, Dictionary<string, string> parameters)
+  public static void ClientRpc(ClientRpcInfo[] info, ZDO zdo, Parameters parameters)
   {
     foreach (var i in info)
       i.Invoke(zdo, parameters);
   }
-  public static void GlobalClientRpc(ClientRpcInfo[] info, Dictionary<string, string> parameters)
+  public static void GlobalClientRpc(ClientRpcInfo[] info, Parameters parameters)
   {
     foreach (var i in info)
       i.InvokeGlobal(parameters);

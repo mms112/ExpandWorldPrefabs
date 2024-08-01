@@ -10,15 +10,12 @@ namespace ExpandWorld.Prefab;
 public class Commands
 {
 
-  public static void Run(Info info, ZDO? zdo, Dictionary<string, string> parameters)
+  public static void Run(Info info, Parameters pars)
   {
     if (info.Commands.Length == 0) return;
-    var pars = parameters;
-    var commands = info.Commands.Select(s => Helper.ReplaceParameters(s, parameters, zdo)).ToArray();
+    var commands = info.Commands.Select(pars.Replace).ToArray();
     Run(commands);
   }
-  public static void Run(Info info, Dictionary<string, string> parameters) =>
-    Run(info, null, parameters);
 
   private static void Run(IEnumerable<string> commands)
   {

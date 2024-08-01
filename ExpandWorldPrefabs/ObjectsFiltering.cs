@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Data;
 using Service;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace ExpandWorld.Prefab;
 public class ObjectsFiltering
 {
   // Note: Can include the object itself.
-  public static ZDO[] GetNearby(int limit, Object[] objects, Vector3 pos, Dictionary<string, string> parameters)
+  public static ZDO[] GetNearby(int limit, Object[] objects, Vector3 pos, Parameters parameters)
   {
     if (objects.Length == 0) return [];
     var maxRadius = objects.Max(o => o.MaxDistance);
@@ -21,7 +22,7 @@ public class ObjectsFiltering
     var zdoLists = GetSectorIndices(pos, maxRadius);
     return GetObjects(limit, zdoLists, objects, pos, parameters);
   }
-  public static ZDO[] GetNearby(int limit, Object objects, Vector3 pos, Dictionary<string, string> parameters)
+  public static ZDO[] GetNearby(int limit, Object objects, Vector3 pos, Parameters parameters)
   {
     if (objects.MaxDistance > 10000)
     {
@@ -31,7 +32,7 @@ public class ObjectsFiltering
     var zdoLists = GetSectorIndices(pos, objects.MaxDistance);
     return GetObjects(limit, zdoLists, objects, pos, parameters);
   }
-  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object objects, Vector3 pos, Dictionary<string, string> parameters)
+  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object objects, Vector3 pos, Parameters parameters)
   {
     var zm = ZDOMan.instance;
     var query = zdoLists.SelectMany(z => z).Where(z => objects.IsValid(z, pos, parameters));
@@ -39,7 +40,7 @@ public class ObjectsFiltering
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
   }
-  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object objects, Vector3 pos, Dictionary<string, string> parameters)
+  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object objects, Vector3 pos, Parameters parameters)
   {
     var zm = ZDOMan.instance;
     var query = zdos.Where(z => objects.IsValid(z, pos, parameters));
@@ -47,7 +48,7 @@ public class ObjectsFiltering
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
   }
-  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object[] objects, Vector3 pos, Dictionary<string, string> parameters)
+  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object[] objects, Vector3 pos, Parameters parameters)
   {
     var zm = ZDOMan.instance;
     var query = zdoLists.SelectMany(z => z).Where(z => objects.Any(o => o.IsValid(z, pos, parameters)));
@@ -55,7 +56,7 @@ public class ObjectsFiltering
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
   }
-  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, Vector3 pos, Dictionary<string, string> parameters)
+  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, Vector3 pos, Parameters parameters)
   {
     var zm = ZDOMan.instance;
     var query = zdos.Where(z => objects.Any(o => o.IsValid(z, pos, parameters)));
@@ -66,7 +67,7 @@ public class ObjectsFiltering
 
 
 
-  public static bool HasNearby(Range<int>? limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  public static bool HasNearby(Range<int>? limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     if (objects.Length == 0) return true;
     var maxRadius = objects.Max(o => o.MaxDistance);
@@ -84,7 +85,7 @@ public class ObjectsFiltering
     else
       return HasLimitObjects(zdoLists, limit, objects, zdo, parameters);
   }
-  public static bool HasNotNearby(Range<int>? limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  public static bool HasNotNearby(Range<int>? limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     if (objects.Length == 0) return true;
     var maxRadius = objects.Max(o => o.MaxDistance);
@@ -95,19 +96,19 @@ public class ObjectsFiltering
       return !HasLimitObjects(zdoLists, limit, objects, zdo, parameters);
   }
 
-  private static bool HasAllObjects(List<List<ZDO>> zdoLists, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  private static bool HasAllObjects(List<List<ZDO>> zdoLists, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
     var zm = ZDOMan.instance;
     return objects.All(o => zdoLists.Any(z => z.Any(z => o.IsValid(z, pos, parameters) && z != zdo)));
   }
-  private static bool HasAllObjects(Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  private static bool HasAllObjects(Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
     var zm = ZDOMan.instance;
     return objects.All(o => zdos.Any(z => o.IsValid(z, pos, parameters) && z != zdo));
   }
-  private static bool HasLimitObjects(List<List<ZDO>> zdoLists, Range<int> limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  private static bool HasLimitObjects(List<List<ZDO>> zdoLists, Range<int> limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
     var counter = 0;
@@ -126,7 +127,7 @@ public class ObjectsFiltering
     return limit.Min <= counter && counter <= limit.Max;
   }
 
-  private static bool HasLimitObjects(Dictionary<ZDOID, ZDO>.ValueCollection zdos, Range<int> limit, Object[] objects, ZDO zdo, Dictionary<string, string> parameters)
+  private static bool HasLimitObjects(Dictionary<ZDOID, ZDO>.ValueCollection zdos, Range<int> limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
     var counter = 0;

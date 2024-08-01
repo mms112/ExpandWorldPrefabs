@@ -19,15 +19,8 @@ public class DataHelper
     return result;
   }
   public static bool Exists(int hash) => DataLoading.Data.ContainsKey(hash);
-  public static bool Match(int hash, ZDO zdo)
-  {
-    if (DataLoading.Data.TryGetValue(hash, out var data))
-    {
-      return data.Match([], zdo);
-    }
-    return false;
-  }
-  public static bool Match(int hash, ZDO zdo, Dictionary<string, string> pars)
+
+  public static bool Match(int hash, ZDO zdo, Parameters pars)
   {
     if (DataLoading.Data.TryGetValue(hash, out var data))
     {

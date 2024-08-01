@@ -48,9 +48,8 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     return zdo;
   }
 
-  public void Load(DataEntry data, Dictionary<string, string> parameters)
+  public void Load(DataEntry data, Parameters pars)
   {
-    Pars pars = new(parameters, zdo);
     data.RollItems(pars);
     if (data.Floats?.Count > 0)
     {
