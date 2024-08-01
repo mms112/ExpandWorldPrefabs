@@ -4,6 +4,7 @@
   - Adds support for filtering with the data type items.
   - Adds new parameters "par5", "par6", "par7", "par8" and "par9".
   - Adds new parameters "item_*" to get the amount of a specific item in containers.
+  - Adds a new parameter "snap" to get world height at current position.
   - Fixes global key filters not being converted to lower case.
   - Fixes nested parameters not working.
   - Fixes zdo based parameters not working when spawning objects.

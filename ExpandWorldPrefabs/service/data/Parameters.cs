@@ -108,6 +108,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
       "<x>" => Format(pos.x),
       "<y>" => Format(pos.y),
       "<z>" => Format(pos.z),
+      "<snap>" => Format(WorldGenerator.instance.GetHeight(pos.x, pos.z)),
       _ => "",
     };
 
