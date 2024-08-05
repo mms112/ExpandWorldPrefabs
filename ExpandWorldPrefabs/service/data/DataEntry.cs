@@ -47,7 +47,6 @@ public class DataEntry
   public IVector3Value? Position;
   public IQuaternionValue? Rotation;
 
-  public HashSet<string> RequiredParameters = [];
   public void Load(ZDO zdo)
   {
     var id = zdo.m_uid;
@@ -145,8 +144,6 @@ public class DataEntry
       Position = data.Position;
     if (data.Rotation != null)
       Rotation = data.Rotation;
-    foreach (var par in data.RequiredParameters)
-      RequiredParameters.Add(par);
   }
   // Reusing the same object keeps references working.
   public DataEntry Reset(DataData data)
@@ -169,7 +166,6 @@ public class DataEntry
     TargetConnectionId = null;
     Position = null;
     Rotation = null;
-    RequiredParameters.Clear();
     Load(data);
     return this;
   }
@@ -185,7 +181,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse float {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Floats.Add(Hash(kvp.Key), DataValue.Float(kvp.Value, RequiredParameters));
+        Floats.Add(Hash(kvp.Key), DataValue.Float(kvp.Value));
       }
     }
     if (data.ints != null)
@@ -197,7 +193,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse int {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Ints.Add(Hash(kvp.Key), DataValue.Int(kvp.Value, RequiredParameters));
+        Ints.Add(Hash(kvp.Key), DataValue.Int(kvp.Value));
       }
     }
     if (data.bools != null)
@@ -209,7 +205,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse bool {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Bools.Add(Hash(kvp.Key), DataValue.Bool(kvp.Value, RequiredParameters));
+        Bools.Add(Hash(kvp.Key), DataValue.Bool(kvp.Value));
       }
     }
     if (data.hashes != null)
@@ -221,7 +217,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse hash {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Hashes.Add(Hash(kvp.Key), DataValue.Hash(kvp.Value, RequiredParameters));
+        Hashes.Add(Hash(kvp.Key), DataValue.Hash(kvp.Value));
       }
     }
     if (data.longs != null)
@@ -233,7 +229,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse long {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Longs.Add(Hash(kvp.Key), DataValue.Long(kvp.Value, RequiredParameters));
+        Longs.Add(Hash(kvp.Key), DataValue.Long(kvp.Value));
       }
     }
     if (data.strings != null)
@@ -245,7 +241,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse string {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Strings.Add(Hash(kvp.Key), DataValue.String(kvp.Value, RequiredParameters));
+        Strings.Add(Hash(kvp.Key), DataValue.String(kvp.Value));
       }
     }
     if (data.vecs != null)
@@ -257,7 +253,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse vector {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Vecs.Add(Hash(kvp.Key), DataValue.Vector3(kvp.Value, RequiredParameters));
+        Vecs.Add(Hash(kvp.Key), DataValue.Vector3(kvp.Value));
       }
     }
     if (data.quats != null)
@@ -269,7 +265,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse quaternion {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        Quats.Add(Hash(kvp.Key), DataValue.Quaternion(kvp.Value, RequiredParameters));
+        Quats.Add(Hash(kvp.Key), DataValue.Quaternion(kvp.Value));
       }
     }
     if (data.bytes != null)
@@ -286,12 +282,12 @@ public class DataEntry
     }
     if (data.items != null)
     {
-      Items = data.items.Select(item => new ItemValue(item, RequiredParameters)).ToList();
+      Items = data.items.Select(item => new ItemValue(item)).ToList();
     }
     if (!string.IsNullOrWhiteSpace(data.containerSize))
       ContainerSize = Parse.Vector2Int(data.containerSize!);
     if (!string.IsNullOrWhiteSpace(data.itemAmount))
-      ItemAmount = DataValue.Int(data.itemAmount!, RequiredParameters);
+      ItemAmount = DataValue.Int(data.itemAmount!);
     if (componentsToAdd.Count > 0)
     {
       Ints ??= [];
@@ -300,9 +296,9 @@ public class DataEntry
         Ints[$"HasFields{component}".GetStableHashCode()] = DataValue.Simple(1);
     }
     if (!string.IsNullOrWhiteSpace(data.position))
-      Position = DataValue.Vector3(data.position!, RequiredParameters);
+      Position = DataValue.Vector3(data.position!);
     if (!string.IsNullOrWhiteSpace(data.rotation))
-      Rotation = DataValue.Quaternion(data.rotation!, RequiredParameters);
+      Rotation = DataValue.Quaternion(data.rotation!);
     if (!string.IsNullOrWhiteSpace(data.connection))
     {
       var split = Parse.SplitWithEmpty(data.connection!);
@@ -314,7 +310,7 @@ public class DataEntry
         // Hacky way, this should be entirely rethought but not much use for the connection system so far.
         if (hash.Contains(":") || hash.Contains("<"))
         {
-          TargetConnectionId = DataValue.ZdoId(hash, RequiredParameters);
+          TargetConnectionId = DataValue.ZdoId(hash);
           // Must be set to run the connection code.
           OriginalId = TargetConnectionId;
         }
@@ -335,28 +331,28 @@ public class DataEntry
       Floats ??= [];
       var count = pkg.ReadByte();
       for (var i = 0; i < count; ++i)
-        Floats[pkg.ReadInt()] = DataValue.Float(pkg);
+        Floats[pkg.ReadInt()] = new SimpleFloatValue(pkg.ReadSingle());
     }
     if ((num & 2) != 0)
     {
       Vecs ??= [];
       var count = pkg.ReadByte();
       for (var i = 0; i < count; ++i)
-        Vecs[pkg.ReadInt()] = DataValue.Vector3(pkg);
+        Vecs[pkg.ReadInt()] = new SimpleVector3Value(pkg.ReadVector3());
     }
     if ((num & 4) != 0)
     {
       Quats ??= [];
       var count = pkg.ReadByte();
       for (var i = 0; i < count; ++i)
-        Quats[pkg.ReadInt()] = DataValue.Quaternion(pkg);
+        Quats[pkg.ReadInt()] = new SimpleQuaternionValue(pkg.ReadQuaternion());
     }
     if ((num & 8) != 0)
     {
       Ints ??= [];
       var count = pkg.ReadByte();
       for (var i = 0; i < count; ++i)
-        Ints[pkg.ReadInt()] = DataValue.Int(pkg);
+        Ints[pkg.ReadInt()] = new SimpleIntValue(pkg.ReadInt());
     }
     // Intended to come before strings (changing would break existing data).
     if ((num & 64) != 0)
@@ -364,14 +360,14 @@ public class DataEntry
       Longs ??= [];
       var count = pkg.ReadByte();
       for (var i = 0; i < count; ++i)
-        Longs[pkg.ReadInt()] = DataValue.Long(pkg);
+        Longs[pkg.ReadInt()] = new SimpleLongValue(pkg.ReadLong());
     }
     if ((num & 16) != 0)
     {
       Strings ??= [];
       var count = pkg.ReadByte();
       for (var i = 0; i < count; ++i)
-        Strings[pkg.ReadInt()] = DataValue.String(pkg);
+        Strings[pkg.ReadInt()] = new SimpleStringValue(pkg.ReadString());
     }
     if ((num & 128) != 0)
     {

@@ -9,9 +9,9 @@ namespace Data;
 public class DataValue
 {
 
-  public static IZdoIdValue ZdoId(string values, HashSet<string> requiredParameters)
+  public static IZdoIdValue ZdoId(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     var zdo = Parse.ZdoId(split[0]);
     if (split.Length == 1 && zdo != ZDOID.None)
       return new SimpleZdoIdValue(zdo);
@@ -25,73 +25,76 @@ public class DataValue
   public static IVector3Value Simple(Vector3 value) => new SimpleVector3Value(value);
   public static IQuaternionValue Simple(Quaternion value) => new SimpleQuaternionValue(value);
 
-
-  public static IIntValue Int(ZPackage pkg) => new SimpleIntValue(pkg.ReadInt());
-  public static IIntValue Int(string values, HashSet<string> requiredParameters)
+  public static IIntValue Int(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     if (split.Length == 1 && int.TryParse(split[0], out var result))
       return new SimpleIntValue(result);
     return new IntValue(split);
   }
 
-  public static IFloatValue Float(ZPackage pkg) => new SimpleFloatValue(pkg.ReadSingle());
-  public static IFloatValue Float(string values, HashSet<string> requiredParameters)
+  public static IFloatValue Float(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     if (split.Length == 1 && Parse.TryFloat(split[0], out var result))
       return new SimpleFloatValue(result);
     return new FloatValue(split);
   }
 
-  public static ILongValue Long(ZPackage pkg) => new SimpleLongValue(pkg.ReadLong());
-  public static ILongValue Long(string values, HashSet<string> requiredParameters)
+  public static ILongValue Long(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     if (split.Length == 1 && long.TryParse(split[0], out var result))
       return new SimpleLongValue(result);
     return new LongValue(split);
   }
 
-  public static IStringValue String(ZPackage pkg) => new SimpleStringValue(pkg.ReadString());
-  public static IStringValue String(string values, HashSet<string> requiredParameters)
+  public static IStringValue String(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     if (split.Length == 1 && !HasParameters(split[0]))
       return new SimpleStringValue(split[0]);
     return new StringValue(split);
   }
-  public static IBoolValue Bool(bool value) => new SimpleBoolValue(value);
-  public static IBoolValue Bool(string values, HashSet<string> requiredParameters)
+  public static IBoolValue Bool(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     if (split.Length == 1 && bool.TryParse(split[0], out var result))
       return new SimpleBoolValue(result);
     return new BoolValue(split);
   }
 
 
-  public static IHashValue Hash(string value) => new SimpleHashValue(value);
-  public static IHashValue Hash(string values, HashSet<string> requiredParameters)
+  public static IHashValue Hash(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     if (split.Length == 1 && !HasParameters(split[0]))
       return new SimpleHashValue(split[0]);
     return new HashValue(split);
   }
-  public static IVector3Value Vector3(ZPackage pkg) => new SimpleVector3Value(pkg.ReadVector3());
-  public static IVector3Value Vector3(string values, HashSet<string> requiredParameters)
+  public static IPrefabValue Prefab(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
+    if (split.Length == 1 && !HasParameters(split[0]))
+    {
+      if (split.Contains("*"))
+        return new SimpleWildPrefabValue(split[0]);
+      return new SimplePrefabValue(split[0]);
+    }
+    return new PrefabValue(split);
+  }
+
+  public static IVector3Value Vector3(string values)
+  {
+    var split = SplitWithValues(values);
     var parsed = Parse.VectorXZYNull(split);
     if (parsed.HasValue)
       return new SimpleVector3Value(parsed.Value);
     return new Vector3Value(split);
   }
-  public static IQuaternionValue Quaternion(ZPackage pkg) => new SimpleQuaternionValue(pkg.ReadQuaternion());
-  public static IQuaternionValue Quaternion(string values, HashSet<string> requiredParameters)
+  public static IQuaternionValue Quaternion(string values)
   {
-    var split = SplitWithValues(values, requiredParameters);
+    var split = SplitWithValues(values);
     var parsed = Parse.AngleYXZNull(split);
     if (parsed.HasValue)
       return new SimpleQuaternionValue(parsed.Value);
@@ -100,7 +103,7 @@ public class DataValue
 
   private static bool HasParameters(string value) => value.Contains("<") && value.Contains(">");
 
-  private static string[] SplitWithValues(string str, HashSet<string> requiredParameters)
+  private static string[] SplitWithValues(string str)
   {
     List<string> result = [];
     var split = Parse.SplitWithEmpty(str);
@@ -127,10 +130,6 @@ public class DataValue
           parameters.Add($"<{parSplit[i]}>");
           hashes.Add(hash);
         }
-        else
-          // Code would be cleaner if required parameters were parsed separately.
-          // But the info is already here to take.
-          requiredParameters.Add(parSplit[i]);
       }
       if (parameters.Count == 0)
         result.Add(value);
@@ -184,7 +183,7 @@ public class AnyValue(string[] values)
     return Values.Select(pars.Replace).Where(v => v != null && v != "<none").ToArray();
   }
 }
-public class ItemValue(ItemData data, HashSet<string> requiredParameters)
+public class ItemValue(ItemData data)
 {
 
   public static bool Match(Parameters pars, List<ItemValue> data, Vector2i? size, ZDO zdo, IIntValue? amount)
@@ -291,20 +290,20 @@ public class ItemValue(ItemData data, HashSet<string> requiredParameters)
     return null;
   }
   // Prefab is saved as string, so hash can't be used.
-  public IStringValue Prefab = DataValue.String(data.prefab, requiredParameters);
+  public IStringValue Prefab = DataValue.String(data.prefab);
   public float Chance = data.chance;
-  public IIntValue? Stack = data.stack == null ? null : DataValue.Int(data.stack, requiredParameters);
-  public IFloatValue? Durability = data.durability == null ? null : DataValue.Float(data.durability, requiredParameters);
+  public IIntValue? Stack = data.stack == null ? null : DataValue.Int(data.stack);
+  public IFloatValue? Durability = data.durability == null ? null : DataValue.Float(data.durability);
   public string Position = data.pos;
   private Vector2i RolledPosition = Parse.Vector2Int(data.pos);
-  public IBoolValue? Equipped = data.equipped == null ? null : DataValue.Bool(data.equipped, requiredParameters);
-  public IIntValue? Quality = data.quality == null ? null : DataValue.Int(data.quality, requiredParameters);
-  public IIntValue? Variant = data.variant == null ? null : DataValue.Int(data.variant, requiredParameters);
-  public ILongValue? CrafterID = data.crafterID == null ? null : DataValue.Long(data.crafterID, requiredParameters);
-  public IStringValue? CrafterName = data.crafterName == null ? null : DataValue.String(data.crafterName, requiredParameters);
-  public Dictionary<string, IStringValue> CustomData = data.customData?.ToDictionary(kvp => kvp.Key, kvp => DataValue.String(kvp.Value, requiredParameters)) ?? [];
-  public IIntValue? WorldLevel = data.worldLevel == null ? null : DataValue.Int(data.worldLevel, requiredParameters);
-  public IBoolValue? PickedUp = data.pickedUp == null ? null : DataValue.Bool(data.pickedUp, requiredParameters);
+  public IBoolValue? Equipped = data.equipped == null ? null : DataValue.Bool(data.equipped);
+  public IIntValue? Quality = data.quality == null ? null : DataValue.Int(data.quality);
+  public IIntValue? Variant = data.variant == null ? null : DataValue.Int(data.variant);
+  public ILongValue? CrafterID = data.crafterID == null ? null : DataValue.Long(data.crafterID);
+  public IStringValue? CrafterName = data.crafterName == null ? null : DataValue.String(data.crafterName);
+  public Dictionary<string, IStringValue> CustomData = data.customData?.ToDictionary(kvp => kvp.Key, kvp => DataValue.String(kvp.Value)) ?? [];
+  public IIntValue? WorldLevel = data.worldLevel == null ? null : DataValue.Int(data.worldLevel);
+  public IBoolValue? PickedUp = data.pickedUp == null ? null : DataValue.Bool(data.pickedUp);
   // Must know before writing is the prefab good, so it has to be rolled first.
   private string RolledPrefab = "";
   public bool RollPrefab(Parameters pars)

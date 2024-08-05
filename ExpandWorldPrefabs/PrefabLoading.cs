@@ -180,31 +180,31 @@ public class Loading
     if (type == "hash")
     {
       entry.Hashes ??= [];
-      entry.Hashes.Add(key, DataValue.Hash(value, entry.RequiredParameters));
+      entry.Hashes.Add(key, DataValue.Hash(value));
       return;
     }
     if (type == "string")
     {
       entry.Strings ??= [];
-      entry.Strings.Add(key, DataValue.String(value, entry.RequiredParameters));
+      entry.Strings.Add(key, DataValue.String(value));
       return;
     }
     if (type == "bool")
     {
       entry.Bools ??= [];
-      entry.Bools.Add(key, DataValue.Bool(value, entry.RequiredParameters));
+      entry.Bools.Add(key, DataValue.Bool(value));
       return;
     }
     if (type == "int")
     {
       entry.Ints ??= [];
-      entry.Ints.Add(key, DataValue.Int(value, entry.RequiredParameters));
+      entry.Ints.Add(key, DataValue.Int(value));
       return;
     }
     if (type == "float")
     {
       entry.Floats ??= [];
-      entry.Floats.Add(key, DataValue.Float(value, entry.RequiredParameters));
+      entry.Floats.Add(key, DataValue.Float(value));
       return;
     }
     Log.Error($"Invalid filter type: {type}");
@@ -236,12 +236,16 @@ public class Loading
   {
     var split = Parse.Kvp(items);
     if (split.Value == "") return DataHelper.Get(items);
-    DataEntry data = new();
-    data.Items = [];
-    ItemData itemData = new();
-    itemData.prefab = split.Key;
-    itemData.stack = split.Value;
-    ItemValue item = new(itemData, []);
+    DataEntry data = new()
+    {
+      Items = []
+    };
+    ItemData itemData = new()
+    {
+      prefab = split.Key,
+      stack = split.Value
+    };
+    ItemValue item = new(itemData);
     data.Items.Add(item);
     return data;
   }

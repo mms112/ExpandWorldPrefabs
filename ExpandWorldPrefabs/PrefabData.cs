@@ -180,8 +180,7 @@ public class Info
 }
 public class Spawn
 {
-  private readonly int Prefab = 0;
-  private readonly string WildPrefab = "";
+  private readonly IPrefabValue Prefab;
   public readonly Vector3 Pos = Vector3.zero;
   public readonly bool Snap = false;
   public readonly Quaternion Rot = Quaternion.identity;
@@ -193,13 +192,7 @@ public class Spawn
     Delay = delay;
     TriggerRules = triggerRules;
     var split = Parse.ToList(line);
-    if (split[0].Contains("<") && split[0].Contains(">"))
-      WildPrefab = split[0];
-    else
-    {
-      Prefab = split[0].GetStableHashCode();
-      Prefab = ZNetScene.instance.GetPrefab(Prefab) ? Prefab : 0;
-    }
+    Prefab = DataValue.Prefab(split[0]);
     var posParsed = false;
     for (var i = 1; i < split.Count; i++)
     {
@@ -234,26 +227,19 @@ public class Spawn
     }
 
   }
-  public int GetPrefab(Parameters pars)
-  {
-    if (Prefab != 0) return Prefab;
-    var prefabName = pars.Replace(WildPrefab);
-    var prefab = prefabName.GetStableHashCode();
-    return ZNetScene.instance.GetPrefab(prefab) ? prefab : 0;
-  }
+  public int GetPrefab(Parameters pars) => Prefab.Get(pars) ?? 0;
 }
 
 public class Poke(PokeData data)
 {
   public Object Filter = new(data.prefab, data.minDistance, data.maxDistance, data.minHeight, data.maxHeight, data.data);
-  public string Parameter = data.parameter;
-  public int Limit = data.limit;
-  public float Delay = data.delay;
+  public IStringValue Parameter = DataValue.String(data.parameter);
+  public IIntValue Limit = DataValue.Int(data.limit);
+  public IFloatValue Delay = DataValue.Float(data.delay);
 }
 public class Object
 {
-  public int Prefab = 0;
-  public HashSet<int>? Prefabs;
+  public IPrefabValue Prefabs;
   public string WildPrefab = "";
   public float MinDistance = 0f;
   public float MaxDistance = 100f;
@@ -263,7 +249,7 @@ public class Object
   public int Weight = 1;
   public Object(string prefab, float minDistance, float maxDistance, float minHeight, float maxHeight, string data)
   {
-    ParsePrefabs(prefab);
+    Prefabs = DataValue.Prefab(prefab);
     MinDistance = minDistance;
     if (maxDistance > 0)
       MaxDistance = maxDistance;
@@ -282,7 +268,7 @@ public class Object
   public Object(string line)
   {
     var split = Parse.ToList(line);
-    ParsePrefabs(split[0]);
+    Prefabs = DataValue.Prefab(split[0]);
 
     if (split.Count > 1)
     {
@@ -310,40 +296,10 @@ public class Object
       MaxHeight = range.Max;
     }
   }
-  private void ParsePrefabs(string prefabs)
-  {
-    if (prefabs.Contains("<") && prefabs.Contains(">"))
-      WildPrefab = prefabs;
-    else
-    {
-      var hash = prefabs.GetStableHashCode();
-      if (ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
-        Prefab = hash;
-      else
-      {
-        var split = Parse.ToList(prefabs);
-        Prefabs = [];
-        foreach (var prefab in split)
-        {
-          hash = prefab.GetStableHashCode();
-          if (ZNetScene.instance.m_namedPrefabs.ContainsKey(hash))
-            Prefabs.Add(hash);
-          else
-          {
-            var values = DataHelper.GetValuesFromGroup(prefab);
-            if (values == null)
-              Log.Error($"Invalid object filter prefab: {prefab}");
-            else
-              Prefabs.UnionWith(values.Select(v => v.GetStableHashCode()));
-          }
-        }
-      }
-    }
-  }
+
   public bool IsValid(ZDO zdo, Vector3 pos, Parameters pars)
   {
-    if (Prefab != 0 && zdo.GetPrefab() != Prefab) return false;
-    if (Prefabs != null && !Prefabs.Contains(zdo.GetPrefab())) return false;
+    if (Prefabs.Match(pars, zdo.GetPrefab()) == false) return false;
     if (WildPrefab != "")
     {
       var prefabName = pars.Replace(WildPrefab);
@@ -365,8 +321,8 @@ public class PokeData
 {
   [DefaultValue("")]
   public string prefab = "";
-  [DefaultValue(0f)]
-  public float delay = 0f;
+  [DefaultValue("0f")]
+  public string delay = "0f";
   [DefaultValue("")]
   public string parameter = "";
   [DefaultValue(0f)]
@@ -377,8 +333,8 @@ public class PokeData
   public float maxHeight = 0f;
   [DefaultValue(0f)]
   public float minHeight = 0f;
-  [DefaultValue(0)]
-  public int limit = 0;
+  [DefaultValue("0")]
+  public string limit = "0";
   [DefaultValue("")]
   public string data = "";
 }

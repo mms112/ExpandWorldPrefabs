@@ -112,32 +112,6 @@ public class InfoManager
     Log.Error($"Unknown entry type {type}");
     return new();
   }
-
-  private static Dictionary<string, int> PrefabCache = [];
-  public static IEnumerable<int> GetPrefabs(string prefab)
-  {
-    var p = prefab.ToLowerInvariant();
-    if (PrefabCache.Count == 0)
-      PrefabCache = ZNetScene.instance.m_namedPrefabs.ToDictionary(pair => pair.Value.name, pair => pair.Key);
-    if (p == "*")
-      return PrefabCache.Values;
-    if (p[0] == '*' && p[p.Length - 1] == '*')
-    {
-      p = p.Substring(1, p.Length - 2);
-      return PrefabCache.Where(pair => pair.Key.ToLowerInvariant().Contains(p)).Select(pair => pair.Value);
-    }
-    if (p[0] == '*')
-    {
-      p = p.Substring(1);
-      return PrefabCache.Where(pair => pair.Key.EndsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value);
-    }
-    if (p[p.Length - 1] == '*')
-    {
-      p = p.Substring(0, p.Length - 1);
-      return PrefabCache.Where(pair => pair.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value);
-    }
-    return [];
-  }
 }
 
 public class PrefabInfo
@@ -181,7 +155,7 @@ public class PrefabInfo
     foreach (var prefab in prefabs)
     {
       if (prefab.Contains("*"))
-        hashes.UnionWith(InfoManager.GetPrefabs(prefab));
+        hashes.UnionWith(PrefabHelper.GetPrefabs(prefab));
       else
       {
         var hash = prefab.GetStableHashCode();

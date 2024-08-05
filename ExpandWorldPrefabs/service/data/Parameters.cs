@@ -76,17 +76,10 @@ public class Parameters(string prefab, string arg, Vector3 pos)
   }
   private bool TryReplaceParameter(string key, out string resolved)
   {
-    resolved = Get(key);
+    resolved = GetParameter(key);
     if (resolved == "")
       resolved = ResolveValue(key);
-    return resolved != "";
-  }
-
-  public string Get(string key)
-  {
-    // Key-value pairs could be cached here but unlikely that the same key is used multiple times.
-    var value = GetParameter(key);
-    return value == "" ? key : value;
+    return resolved != key;
   }
 
   protected virtual string GetParameter(string key) =>
@@ -117,7 +110,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
   private string GetArg(int index)
   {
     args ??= arg.Split(' ');
-    return args.Length <= index ? "" : args[9];
+    return args.Length <= index ? "" : args[index];
   }
   protected static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   protected static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);

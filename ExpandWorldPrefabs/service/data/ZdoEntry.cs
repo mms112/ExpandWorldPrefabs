@@ -39,6 +39,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     }
     // Prefab hash is used to check whether to trigger rules.
     var zdo = ZDOMan.instance.CreateNewZDO(Position, Prefab);
+    zdo.m_prefab = Prefab;
     zdo.Persistent = view.m_persistent;
     zdo.Type = view.m_type;
     zdo.Distant = view.m_distant;
