@@ -128,12 +128,8 @@ public class PrefabInfo
   }
   public void Add(Info info)
   {
-    var prefabs = Parse.ToList(info.Prefabs);
-    HashSet<int> hashes = [];
-    // Resolving dynamic values and caching hashes helps with performance.
-    // Downside is that rules must be reloaded manually when changing value groups.
-    ParsePrefabs(prefabs, hashes);
-    foreach (var hash in hashes)
+    var prefabs = PrefabHelper.GetPrefabs(info.Prefabs).ToList();
+    foreach (var hash in prefabs)
     {
       if (info.Fallback)
       {

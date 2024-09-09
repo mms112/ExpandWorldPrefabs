@@ -8,7 +8,7 @@ public class HashValue(string[] values) : AnyValue(values), IHashValue
   public bool? Match(Parameters pars, int value)
   {
     var values = GetAllValues(pars);
-    if (values.Length == 0) return null;
+    if (values.Count == 0) return null;
     return values.Any(v => v.GetStableHashCode() == value);
   }
 }

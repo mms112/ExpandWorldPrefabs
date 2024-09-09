@@ -10,7 +10,7 @@ public class Vector3Value(string[] values) : AnyValue(values), IVector3Value
   public bool? Match(Parameters pars, Vector3 value)
   {
     var values = GetAllValues(pars);
-    if (values.Length == 0) return null;
+    if (values.Count == 0) return null;
     return values.Any(v => Parse.VectorXZYNull(v) == value);
   }
 }

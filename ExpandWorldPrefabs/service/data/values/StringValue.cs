@@ -10,7 +10,7 @@ public class StringValue(string[] values) : AnyValue(values), IStringValue
   public bool? Match(Parameters pars, string value)
   {
     var values = GetAllValues(pars);
-    if (values.Length == 0) return null;
+    if (values.Count == 0) return null;
     return IsPattern ? values.Any(v => SimpleStringValue.PatternMatch(value, v)) : values.Contains(value);
   }
 }

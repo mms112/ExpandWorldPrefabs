@@ -2,12 +2,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Service;
 
 namespace Data;
 
+// Separate class because parsing and caching is quite complicated.
+// Input string can contain wildcards, multiple values and value groups.
+// There should be a single entry point that handles all of these.
+
+// Caching simply saves results for the same input string.
+// Since value groups can be changed, cache should be cleared when needed.
+
 public class PrefabHelper
 {
-
   public static int? GetPrefab(string value)
   {
     var prefabs = GetPrefabs(value);
@@ -15,25 +22,32 @@ public class PrefabHelper
     if (prefabs.Count == 1) return prefabs[0];
     return prefabs[UnityEngine.Random.Range(0, prefabs.Count)];
   }
-  private static readonly Dictionary<string, List<int>> Prefabs = [];
+  private static readonly Dictionary<string, List<int>> ResultCache = [];
+
+  public static void ClearCache() => ResultCache.Clear();
   public static List<int> GetPrefabs(string value)
   {
-    if (Prefabs.ContainsKey(value)) return Prefabs[value];
-
-    var prefabs = ParsePrefabs(value).ToList();
-    Prefabs[value] = prefabs;
+    if (ResultCache.ContainsKey(value)) return ResultCache[value];
+    var values = Parse.ToList(value);
+    var prefabs = GetPrefabs(values);
+    // No point to cache error results from users.
+    if (prefabs == null) return [];
+    ResultCache[value] = prefabs;
     return prefabs;
   }
-  public static List<int>? GetPrefabs(string[] values)
+  // Called by PrefabValue that handles the caching.
+  // Ideally this would be cached here but difficult with parameters.
+
+  public static List<int>? GetPrefabs(List<string> values)
   {
-    if (values.Length == 0) return null;
-    if (values.Length == 1) return GetPrefabs(values[0]);
-    var value = values.Select(GetPrefabs).Aggregate((a, b) => a.Intersect(b).ToList());
-    return value.Count == 0 ? null : value;
+    if (values.Count == 0) return null;
+    if (values.Count == 1) return ParsePrefabs(values[0])?.ToList();
+    var value = values.Select(ParsePrefabs).Where(s => s != null).Aggregate((a, b) => a.Intersect(b).ToList()).ToList();
+    return value == null || value.Count == 0 ? null : value;
   }
 
   private static Dictionary<string, int> PrefabCache = [];
-  private static IEnumerable<int> ParsePrefabs(string prefab)
+  private static IEnumerable<int>? ParsePrefabs(string prefab)
   {
     var p = prefab.ToLowerInvariant();
     if (PrefabCache.Count == 0)
@@ -57,6 +71,10 @@ public class PrefabHelper
     }
     if (PrefabCache.ContainsKey(p))
       return [PrefabCache[p]];
-    return PrefabCache.Where(pair => pair.Key.ToLowerInvariant().Contains(p)).Select(pair => pair.Value);
+    var group = DataHelper.GetValuesFromGroup(prefab);
+    if (group != null)
+      return group.SelectMany(ParsePrefabs);
+    Log.Warning($"Failed to resolve prefab: {prefab}");
+    return null;
   }
 }

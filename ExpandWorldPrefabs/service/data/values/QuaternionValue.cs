@@ -10,7 +10,7 @@ public class QuaternionValue(string[] values) : AnyValue(values), IQuaternionVal
   public bool? Match(Parameters pars, Quaternion value)
   {
     var values = GetAllValues(pars);
-    if (values.Length == 0) return null;
+    if (values.Count == 0) return null;
     return values.Any(v => Parse.AngleYXZNull(v) == value);
   }
 }

@@ -14,7 +14,7 @@ public class ZdoIdValue(string[] values) : AnyValue(values), IZdoIdValue
   public bool? Match(Parameters pars, ZDOID value)
   {
     var values = GetAllValues(pars);
-    if (values.Length == 0) return null;
+    if (values.Count == 0) return null;
     return values.Any(v => Parse.ZdoId(v) == value);
   }
 }

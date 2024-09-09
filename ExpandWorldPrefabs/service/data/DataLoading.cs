@@ -62,6 +62,7 @@ public class DataLoading
     // Entries need fully resolved value groups, so two passes are needed.
     foreach (var file in files)
       LoadEntry(file, prev);
+    PrefabHelper.ClearCache();
     Log.Info($"Loaded {Data.Count} data entries.");
   }
   private static void LoadValues(string file)

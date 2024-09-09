@@ -178,9 +178,9 @@ public class AnyValue(string[] values)
     var value = RollValue();
     return value == null || value == "<none>" ? null : value;
   }
-  protected string[] GetAllValues(Parameters pars)
+  protected List<string> GetAllValues(Parameters pars)
   {
-    return Values.Select(pars.Replace).Where(v => v != null && v != "<none").ToArray();
+    return Values.Select(pars.Replace).Where(v => v != null && v != "<none").ToList();
   }
 }
 public class ItemValue(ItemData data)
