@@ -59,8 +59,6 @@ public class HandleRPC
       SetArmorVisualItem(zdo, data);
     else if (data.m_methodHash == SetSlotVisualHash)
       SetSlotVisual(zdo, data);
-    else if (data.m_methodHash == UseDoorHash)
-      UseDoor(zdo, data);
   }
 
 
@@ -229,18 +227,6 @@ public class HandleRPC
   private static void AnimateLever(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
   {
     Manager.Handle(ActionType.State, "start", zdo, GetSource(data.m_senderPeerID));
-  }
-  static readonly int UseDoorHash = "UseDoor".GetStableHashCode();
-  static readonly ParameterInfo[] UseDoorPars = AccessTools.Method(typeof(Door), nameof(Door.RPC_UseDoor)).GetParameters();
-  private static void UseDoor(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
-  {
-    data.m_parameters.SetPos(0);
-    var pars = ZNetView.Deserialize(data.m_senderPeerID, UseDoorPars, data.m_parameters);
-    if (pars.Length < 2) return;
-    var direction = (bool)pars[1];
-    var state = direction ? "forward" : "backward";
-
-    Manager.Handle(ActionType.State, state, zdo, GetSource(data.m_senderPeerID));
   }
   static readonly int AnimateLeverReturnHash = "RPC_AnimateLeverReturn".GetStableHashCode();
   static readonly ParameterInfo[] AnimateLeverReturnPars = AccessTools.Method(typeof(Incinerator), nameof(Incinerator.RPC_AnimateLeverReturn)).GetParameters();

@@ -164,7 +164,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
   private string GetGeneralParameter(string key) =>
     key switch
     {
-      "<zdo" => zdo.m_uid.ToString(),
+      "<zdo>" => zdo.m_uid.ToString(),
       "<pos>" => $"{Format(zdo.m_position.x)},{Format(zdo.m_position.z)},{Format(zdo.m_position.y)}",
       "<i>" => ZoneSystem.instance.GetZone(zdo.m_position).x.ToString(),
       "<j>" => ZoneSystem.instance.GetZone(zdo.m_position).y.ToString(),

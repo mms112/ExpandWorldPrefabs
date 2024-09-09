@@ -9,6 +9,7 @@
   - Fixes global key filters not being converted to lower case.
   - Fixes nested parameters not working.
   - Fixes zdo based parameters not working when spawning objects.
+  - Removes door usage from the type `state` (no longer sent to the server).
 
 - v1.17
   - Adds new filters `paint`, `minPaint` and `maxPaint`.

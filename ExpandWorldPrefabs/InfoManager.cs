@@ -149,29 +149,6 @@ public class PrefabInfo
       }
     }
   }
-  private void ParsePrefabs(List<string> prefabs, HashSet<int> hashes)
-  {
-    var scene = ZNetScene.instance;
-    foreach (var prefab in prefabs)
-    {
-      if (prefab.Contains("*"))
-        hashes.UnionWith(PrefabHelper.GetPrefabs(prefab));
-      else
-      {
-        var hash = prefab.GetStableHashCode();
-        if (scene.m_namedPrefabs.ContainsKey(hash))
-          hashes.Add(hash);
-        else
-        {
-          var values = DataHelper.GetValuesFromGroup(prefab);
-          if (values != null)
-            ParsePrefabs(values, hashes);
-          else
-            Log.Warning($"Prefab {prefab} not found");
-        }
-      }
-    }
-  }
   public bool TryGetValue(int prefab, out List<Info> list) => Info.TryGetValue(prefab, out list);
   public bool TryGetFallbackValue(int prefab, out List<Info> list) => Fallback.TryGetValue(prefab, out list);
 
