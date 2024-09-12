@@ -75,11 +75,10 @@ public class DataValue
   public static IPrefabValue Prefab(string values)
   {
     var split = SplitWithValues(values);
-    if (split.Length == 1 && !HasParameters(split[0]))
+    if (!HasParameters(split[0]))
     {
-      if (split.Contains("*"))
-        return new SimpleWildPrefabValue(split[0]);
-      return new SimplePrefabValue(split[0]);
+      var prefabs = PrefabHelper.GetPrefabs(split[0]);
+      return prefabs.Count == 1 ? new SimplePrefabValue(prefabs[0]) : new SimplePrefabsValue(prefabs);
     }
     return new PrefabValue(split);
   }
@@ -186,31 +185,32 @@ public class AnyValue(string[] values)
 public class ItemValue(ItemData data)
 {
 
-  public static bool Match(Parameters pars, List<ItemValue> data, Vector2i? size, ZDO zdo, IIntValue? amount)
+  public static bool Match(Parameters pars, List<ItemValue> data, ZDO zdo, IIntValue? amount)
   {
-    var str = zdo.GetString(ZDOVars.s_items);
-    Inventory inv = new("", null, size.HasValue ? size.Value.x : 4, size.HasValue ? size.Value.y : 2);
-    if (str != "")
-    {
-      ZPackage pkg = new(str);
-      inv.Load(pkg);
-    }
+    var inv = CreateInventory(zdo);
     var matches = data.Where(item => item.Match(pars, inv)).Count();
     // If no amount is set, then must match exactly.
     if (amount == null)
       return matches == data.Count && inv.m_inventory.Count == 0;
     return amount.Match(pars, matches) == true;
   }
-  public static bool Match(Parameters pars, Vector2i? size, ZDO zdo, IIntValue amount)
+  public static bool Match(Parameters pars, ZDO zdo, IIntValue amount)
   {
+    var inv = CreateInventory(zdo);
+    return amount.Match(pars, inv.m_inventory.Count) == true;
+  }
+
+  public static Inventory CreateInventory(ZDO zdo, int width = 100000, int height = 10000)
+  {
+    // Load only loads up to the inventory size, so the size must be large enough.
+    var inv = new Inventory("", null, width, height);
     var str = zdo.GetString(ZDOVars.s_items);
-    Inventory inv = new("", null, size.HasValue ? size.Value.x : 4, size.HasValue ? size.Value.y : 2);
     if (str != "")
     {
       ZPackage pkg = new(str);
       inv.Load(pkg);
     }
-    return amount.Match(pars, inv.m_inventory.Count) == true;
+    return inv;
   }
 
   public static string LoadItems(Parameters pars, List<ItemValue> items, Vector2i size, int amount)

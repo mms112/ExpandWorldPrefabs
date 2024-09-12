@@ -33,15 +33,18 @@ public class InfoSelector
     var distance = Utils.LengthXZ(pos);
     var day = EnvMan.IsDay();
     var args = arg.Split(' ');
+    var waterY = pos.y - ZoneSystem.instance.m_waterLevel;
     var linq = data
       .Where(d => CheckArgs(d, args))
       .Where(d => (d.Biomes & biome) == biome)
-      .Where(d => d.Day || !day)
-      .Where(d => d.Night || day)
-      .Where(d => distance >= d.MinDistance)
-      .Where(d => distance < d.MaxDistance)
-      .Where(d => pos.y >= d.MinY)
-      .Where(d => pos.y < d.MaxY)
+      .Where(d => d.Day.GetBool(parameters) != false || !day)
+      .Where(d => d.Night.GetBool(parameters) != false || day)
+      .Where(d => d.MinDistance == null || !d.MinDistance.TryGet(parameters, out var v) || v < distance)
+      .Where(d => d.MaxDistance == null || !d.MaxDistance.TryGet(parameters, out var v) || v >= distance)
+      .Where(d => d.MinY == null || !d.MinY.TryGet(parameters, out var v) || v < pos.y)
+      .Where(d => d.MaxY == null || !d.MaxY.TryGet(parameters, out var v) || v >= pos.y)
+      .Where(d => d.MinAltitude == null || !d.MinAltitude.TryGet(parameters, out var v) || v < waterY)
+      .Where(d => d.MaxAltitude == null || !d.MaxAltitude.TryGet(parameters, out var v) || v >= waterY)
       .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
       .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters));
     // Minor optimization to resolve simpler checks first (not measured).
@@ -126,15 +129,19 @@ public class InfoSelector
         (d.MinPaint == null || (d.MinPaint.Value.b <= paint.b && d.MinPaint.Value.g <= paint.g && d.MinPaint.Value.r <= paint.r)) &&
         (d.MaxPaint == null || (d.MaxPaint.Value.b >= paint.b && d.MaxPaint.Value.g >= paint.g && d.MaxPaint.Value.r >= paint.r))).ToArray();
     }
-    var valid = linq.ToArray();
+    return Randomize(linq.ToArray(), parameters);
+  }
+  private static Info? Randomize(Info[] valid, Parameters parameters)
+  {
     if (valid.Length == 0) return null;
-    if (valid.Length == 1 && valid[0].Weight >= 1f) return valid[0];
-    var totalWeight = Mathf.Max(1f, valid.Sum(d => d.Weight));
+    var weights = valid.Select(d => d.Weight.Get(parameters) ?? 1f).ToArray();
+    if (valid.Length == 1 && weights[0] >= 1f) return valid[0];
+    var totalWeight = Mathf.Max(1f, weights.Sum());
     var random = Random.Range(0f, totalWeight);
-    foreach (var item in valid)
+    for (int i = 0; i < valid.Length; i++)
     {
-      random -= item.Weight;
-      if (random <= 0f) return item;
+      random -= weights[i];
+      if (random <= 0f) return valid[i];
     }
     return null;
   }
@@ -171,28 +178,21 @@ public class InfoSelector
     var day = EnvMan.IsDay();
     var args = arg.Split(' ');
     var distance = Utils.LengthXZ(pos);
+    var waterY = pos.y - ZoneSystem.instance.m_waterLevel;
     var linq = data
       .Where(d => CheckArgs(d, args))
-      .Where(d => remove == d.Remove)
-      .Where(d => d.Day || !day)
-      .Where(d => d.Night || day)
-      .Where(d => distance >= d.MinDistance)
-      .Where(d => distance < d.MaxDistance)
-      .Where(d => pos.y >= d.MinY)
-      .Where(d => pos.y < d.MaxY)
+      .Where(d => remove == d.Remove.GetBool(parameters))
+      .Where(d => d.Day.GetBool(parameters) != false || !day)
+      .Where(d => d.Night.GetBool(parameters) != false || day)
+      .Where(d => d.MinDistance == null || distance >= d.MinDistance.Get(parameters))
+      .Where(d => d.MaxDistance == null || distance < d.MaxDistance.Get(parameters))
+      .Where(d => d.MinY == null || !d.MinY.TryGet(parameters, out var v) || v < pos.y)
+      .Where(d => d.MaxY == null || !d.MaxY.TryGet(parameters, out var v) || v >= pos.y)
+      .Where(d => d.MinAltitude == null || !d.MinAltitude.TryGet(parameters, out var v) || v < waterY)
+      .Where(d => d.MaxAltitude == null || !d.MaxAltitude.TryGet(parameters, out var v) || v >= waterY)
       .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
       .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters));
 
-    var valid = linq.ToArray();
-    if (valid.Length == 0) return null;
-    if (valid.Length == 1 && valid[0].Weight >= 1f) return valid[0];
-    var totalWeight = Mathf.Max(1f, valid.Sum(d => d.Weight));
-    var random = Random.Range(0f, totalWeight);
-    foreach (var item in valid)
-    {
-      random -= item.Weight;
-      if (random <= 0f) return item;
-    }
-    return null;
+    return Randomize(linq.ToArray(), parameters);
   }
 }

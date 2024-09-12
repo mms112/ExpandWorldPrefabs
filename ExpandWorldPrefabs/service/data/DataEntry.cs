@@ -393,8 +393,8 @@ public class DataEntry
     if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == false)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == false)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == false)) return false;
-    if (Items != null) return ItemValue.Match(pars, Items, ContainerSize, zdo, ItemAmount);
-    else if (ItemAmount != null) return ItemValue.Match(pars, ContainerSize, zdo, ItemAmount);
+    if (Items != null) return ItemValue.Match(pars, Items, zdo, ItemAmount);
+    else if (ItemAmount != null) return ItemValue.Match(pars, zdo, ItemAmount);
     if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
     {
       var conn = zdo.GetConnectionZDOID(ConnectionType);
@@ -414,8 +414,8 @@ public class DataEntry
     if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == true)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == true)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == true)) return false;
-    if (Items != null) return !ItemValue.Match(pars, Items, ContainerSize, zdo, ItemAmount);
-    else if (ItemAmount != null) return !ItemValue.Match(pars, ContainerSize, zdo, ItemAmount);
+    if (Items != null) return !ItemValue.Match(pars, Items, zdo, ItemAmount);
+    else if (ItemAmount != null) return !ItemValue.Match(pars, zdo, ItemAmount);
     if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
     {
       var conn = zdo.GetConnectionZDOID(ConnectionType);
@@ -468,14 +468,9 @@ public class DataEntry
   public void AddItems(Parameters parameters, ZDO zdo)
   {
     if (Items == null || Items.Count == 0) return;
-    var currentItems = zdo.GetString(ZDOVars.s_items);
     var size = GetContainerSize();
-    Inventory inv = new("", null, size.x, size.y);
-    // Techically could just set items without pre-existing data.
-    // But this should be quite rare because even empty chest has data.
-    if (currentItems != "")
-      inv.Load(new ZPackage(currentItems));
-    var items = GenerateItems(parameters);
+    var inv = ItemValue.CreateInventory(zdo, size.x, size.y);
+    var items = GenerateItems(parameters, size);
     foreach (var item in items)
       item.AddTo(parameters, inv);
     ZPackage pkg = new();
@@ -485,22 +480,20 @@ public class DataEntry
   public void RemoveItems(Parameters parameters, ZDO zdo)
   {
     if (Items == null || Items.Count == 0) return;
-    var currentItems = zdo.GetString(ZDOVars.s_items);
-    if (currentItems == "") return;
-    var size = GetContainerSize();
-    Inventory inv = new("", null, size.x, size.y);
-    inv.Load(new ZPackage(currentItems));
-    var items = GenerateItems(parameters);
+    var inv = ItemValue.CreateInventory(zdo);
+    if (inv.m_inventory.Count == 0) return;
+
+    var items = GenerateItems(parameters, new(10000, 10000));
     foreach (var item in items)
       item.RemoveFrom(parameters, inv);
     ZPackage pkg = new();
     inv.Save(pkg);
     zdo.Set(ZDOVars.s_items, pkg.GetBase64());
   }
-  public List<ItemValue> GenerateItems(Parameters pars)
+  public List<ItemValue> GenerateItems(Parameters pars, Vector2i size)
   {
     if (Items == null) throw new ArgumentNullException(nameof(Items));
-    return ItemValue.Generate(pars, Items, GetContainerSize(), ItemAmount?.Get(pars) ?? 0);
+    return ItemValue.Generate(pars, Items, size, ItemAmount?.Get(pars) ?? 0);
   }
 
   private void HandleConnection(ZDO ownZdo, Parameters pars)

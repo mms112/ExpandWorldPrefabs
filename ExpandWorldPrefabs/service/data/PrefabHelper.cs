@@ -24,7 +24,11 @@ public class PrefabHelper
   }
   private static readonly Dictionary<string, List<int>> ResultCache = [];
 
-  public static void ClearCache() => ResultCache.Clear();
+  public static void ClearCache()
+  {
+    ResultCache.Clear();
+    PrefabCache.Clear();
+  }
   public static List<int> GetPrefabs(string value)
   {
     if (ResultCache.ContainsKey(value)) return ResultCache[value];
@@ -69,11 +73,11 @@ public class PrefabHelper
       p = p.Substring(0, p.Length - 1);
       return PrefabCache.Where(pair => pair.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value);
     }
-    if (PrefabCache.ContainsKey(p))
-      return [PrefabCache[p]];
+    if (PrefabCache.ContainsKey(prefab))
+      return [PrefabCache[prefab]];
     var group = DataHelper.GetValuesFromGroup(prefab);
     if (group != null)
-      return group.SelectMany(ParsePrefabs);
+      return group.Select(s => s.GetStableHashCode());
     Log.Warning($"Failed to resolve prefab: {prefab}");
     return null;
   }

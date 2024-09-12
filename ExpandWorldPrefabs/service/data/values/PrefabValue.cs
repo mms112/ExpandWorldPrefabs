@@ -1,6 +1,5 @@
 
 using System.Collections.Generic;
-using Service;
 using UnityEngine;
 
 namespace Data;
@@ -36,36 +35,17 @@ public class PrefabValue(string[] values) : AnyValue(values), IPrefabValue
     return Cache.Contains(value);
   }
 }
-public class SimpleWildPrefabValue : IPrefabValue
+public class SimplePrefabsValue(List<int> value) : IPrefabValue
 {
-  private readonly List<int> Values;
-  public SimpleWildPrefabValue(string value)
-  {
-    Values = PrefabHelper.GetPrefabs(value);
-    if (Values.Count == 0)
-      Log.Warning($"No prefabs found for {value}");
-  }
+  private readonly List<int> Values = value;
 
   public int? Get(Parameters pars) => RollValue();
   public bool? Match(Parameters pars, int value) => Values.Contains(value);
-  private int RollValue()
-  {
-    if (Values.Count == 1)
-      return Values[0];
-    return Values[Random.Range(0, Values.Count)];
-  }
+  private int RollValue() => Values[Random.Range(0, Values.Count)];
 }
-public class SimplePrefabValue : IPrefabValue
+public class SimplePrefabValue(int value) : IPrefabValue
 {
-  private readonly int Value;
-  public SimplePrefabValue(string value)
-  {
-    Value = value.GetStableHashCode();
-    if (ZNetScene.instance.m_namedPrefabs.ContainsKey(Value))
-      return;
-    Value = 0;
-    Log.Warning($"Prefab {value} not found");
-  }
+  private readonly int Value = value;
 
   public int? Get(Parameters pars) => Value;
   public bool? Match(Parameters pars, int value) => Value == value;

@@ -22,6 +22,8 @@ This mod uses the [data system](https://github.com/JereKuusela/valheim-world_edi
 
 ### Parameterrs
 
+Most of the values can be parametrized. These are indicated by letter P in this document.
+
 Following parameters are available to be used in the yaml file:
 
 - `<prefab>`: Original prefab id.
@@ -83,16 +85,16 @@ Most fields are put on a single line. List values are separated by `,`.
       - Use field `end` to trigger on event end.
       - Note: There is no prefab for this type, so most fields won't work.
   - Objects spawned or removed by this mod won't trigger `create` or `destroy`.
-- weight (default: `1`): Chance to be selected if multiple entries match.
+- weight (default: `1`, P): Chance to be selected if multiple entries match.
   - All weights are summed and the probability is `weight / sum`.
   - If the sum is less than 1, the probability is `weight`, so there is a chance to not select any entry.
 - fallback (default: `false`): If true, this entry can only be selected if no other entries match.
 
 ### Actions
 
-- remove (default: `false`): If true, the original object is removed.
-- removeDelay: Delay in seconds for remove.
-- data: Changes data to the original object.
+- remove (default: `false`, P): If true, the original object is removed.
+- removeDelay (P): Delay in seconds for remove.
+- data (P): Changes data to the original object.
   - Name of the data entry (from `data.yaml`) or data code that is added to the object.
   - This is done by respawning the original object with the new data.
 - injectData (default: `false`): If true, the object is not respawned when adding data.
@@ -133,15 +135,17 @@ Most fields are put on a single line. List values are separated by `,`.
 
 ## Filters
 
+If a filter is not specified, it's not checked and is always considered valid.
+
 - biomes: List of valid biomes.
-- day (default: `true`): Valid during the day.
-- night (default: `true`): Valid during the night.
-- minDistance (default: `0` meters): Minimum distance from the world center.
-- maxDistance (default: `100000` meters): Maximum distance from the world center.
-- minAltitude (default: `-10000` meters): Minimum altitude (y coordinate - 30).
-- maxAltitude (default: `10000` meters): Maximum altitude (y coordinate - 30).
-- minY: Minimum y coordinate. Same as altitude but without the water level offset.
-- maxY: Maximum y coordinate. Same as altitude but without the water level offset.
+- day (P): Valid during the day.
+- night (P): Valid during the night.
+- minDistance (P): Minimum distance from the world center.
+- maxDistance (P): Maximum distance from the world center.
+- minY (P): Minimum y coordinate.
+- maxY (P): Maximum y coordinate.
+- minAltitude (P): Minimum altitude (y coordinate + 30).
+- maxAltitude (P): Maximum altitude (y coordinate + 30).
 - environments: List of valid environments.
 - bannedEnvironments: List of  invalid environments.
 - globalKeys: List of global keys that must be set.
@@ -195,7 +199,7 @@ See object filtering [examples](examples_object_filtering.md).
 
 ### Pokes
 
-- poke: List of poke objects:
+- poke (P): List of poke objects:
   - prefab: Target object id or value group.
   - parameter: Custom value used as the parameter for the `poke` type.
   - delay: Delay in seconds for poking. Default is 0 seconds.

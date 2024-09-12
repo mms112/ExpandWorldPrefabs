@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Data;
 using Service;
 using UnityEngine;
@@ -17,8 +16,8 @@ public class Data
   public string[]? types = null;
   [DefaultValue(false)]
   public bool fallback = false;
-  [DefaultValue(1f)]
-  public float weight = 1f;
+  [DefaultValue("1f")]
+  public string weight = "1";
   [DefaultValue(null)]
   public string? swap = null;
   [DefaultValue(null)]
@@ -29,36 +28,36 @@ public class Data
   public string[]? spawns = null;
   [DefaultValue(0f)]
   public float spawnDelay = 0f;
-  [DefaultValue(false)]
-  public bool remove = false;
-  [DefaultValue(0f)]
-  public float removeDelay = 0f;
-  [DefaultValue(false)]
-  public bool drops = false;
+  [DefaultValue("")]
+  public string remove = "";
+  [DefaultValue("")]
+  public string removeDelay = "";
+  [DefaultValue("")]
+  public string drops = "";
   [DefaultValue("")]
   public string data = "";
   [DefaultValue(null)]
   public string? command = null;
   [DefaultValue(null)]
   public string[]? commands = null;
-  [DefaultValue(true)]
-  public bool day = true;
-  [DefaultValue(true)]
-  public bool night = true;
+  [DefaultValue("true")]
+  public string day = "true";
+  [DefaultValue("true")]
+  public string night = "true";
   [DefaultValue("")]
   public string biomes = "";
-  [DefaultValue(0f)]
-  public float minDistance = 0f;
-  [DefaultValue(100000f)]
-  public float maxDistance = 100000f;
-  [DefaultValue(-10000f)]
-  public float minAltitude = -10000f;
-  [DefaultValue(10000f)]
-  public float maxAltitude = 10000f;
-  [DefaultValue(null)]
-  public float? minY = null;
-  [DefaultValue(null)]
-  public float? maxY = null;
+  [DefaultValue("")]
+  public string minDistance = "";
+  [DefaultValue("")]
+  public string maxDistance = "";
+  [DefaultValue("")]
+  public string minAltitude = "";
+  [DefaultValue("")]
+  public string maxAltitude = "";
+  [DefaultValue("")]
+  public string minY = "";
+  [DefaultValue("")]
+  public string maxY = "";
   [DefaultValue("")]
   public string environments = "";
   [DefaultValue("")]
@@ -125,6 +124,8 @@ public class Data
   public string addItems = "";
   [DefaultValue("")]
   public string removeItems = "";
+  [DefaultValue(false)]
+  public bool cancel = false;
 }
 
 
@@ -134,22 +135,24 @@ public class Info
   public ActionType Type = ActionType.Create;
   public bool Fallback = false;
   public string[] Args = [];
-  public float Weight = 1f;
+  public IFloatValue Weight = new SimpleFloatValue(1f);
   public Spawn[] Swaps = [];
   public Spawn[] Spawns = [];
-  public bool Remove = false;
+  public IBoolValue Remove = new SimpleBoolValue(false);
   public bool Regenerate = false;
-  public float RemoveDelay = 0f;
-  public bool Drops = false;
-  public string Data = "";
+  public IFloatValue RemoveDelay = new SimpleFloatValue(0f);
+  public IBoolValue Drops = new SimpleBoolValue(false);
+  public IStringValue Data = new SimpleStringValue("");
   public bool InjectData = false;
   public string[] Commands = [];
-  public bool Day = true;
-  public bool Night = true;
-  public float MinDistance = 0f;
-  public float MaxDistance = 0f;
-  public float MinY = 0f;
-  public float MaxY = 0f;
+  public IBoolValue Day = new SimpleBoolValue(true);
+  public IBoolValue Night = new SimpleBoolValue(true);
+  public IFloatValue? MinDistance;
+  public IFloatValue? MaxDistance;
+  public IFloatValue? MinY;
+  public IFloatValue? MaxY;
+  public IFloatValue? MinAltitude;
+  public IFloatValue? MaxAltitude;
   public Heightmap.Biome Biomes = Heightmap.Biome.None;
   public float EventDistance = 0f;
   public HashSet<string> Events = [];
@@ -177,6 +180,7 @@ public class Info
   public Color? MaxPaint;
   public DataEntry? AddItems;
   public DataEntry? RemoveItems;
+  public bool Cancel;
 }
 public class Spawn
 {
@@ -239,22 +243,26 @@ public class Poke(PokeData data)
 }
 public class Object
 {
-  public IPrefabValue Prefabs;
-  public string WildPrefab = "";
-  public float MinDistance = 0f;
-  public float MaxDistance = 100f;
-  public float MinHeight = 0f;
-  public float MaxHeight = 0f;
-  public int Data = 0;
-  public int Weight = 1;
-  public Object(string prefab, float minDistance, float maxDistance, float minHeight, float maxHeight, string data)
+  private readonly IPrefabValue PrefabsValue;
+  private readonly IFloatValue MinDistanceValue;
+  private readonly IFloatValue MaxDistanceValue;
+  private readonly IFloatValue? MinHeightValue;
+  private readonly IFloatValue? MaxHeightValue;
+  private readonly int Data = 0;
+  private readonly IIntValue WeightValue = new SimpleIntValue(1);
+
+  public Object(string prefab, string minDistance, string maxDistance, string minHeight, string maxHeight, string data)
   {
-    Prefabs = DataValue.Prefab(prefab);
-    MinDistance = minDistance;
-    if (maxDistance > 0)
-      MaxDistance = maxDistance;
-    MinHeight = minHeight;
-    MaxHeight = maxHeight;
+    PrefabsValue = DataValue.Prefab(prefab);
+    MinDistanceValue = DataValue.Float(minDistance);
+    if (maxDistance != "")
+      MaxDistanceValue = DataValue.Float(maxDistance);
+    else
+      MaxDistanceValue = new SimpleFloatValue(100);
+    if (minHeight != "")
+      MinHeightValue = DataValue.Float(minHeight);
+    if (maxHeight != "")
+      MaxHeightValue = DataValue.Float(maxHeight);
     if (data != "")
     {
       Data = data.GetStableHashCode();
@@ -268,13 +276,16 @@ public class Object
   public Object(string line)
   {
     var split = Parse.ToList(line);
-    Prefabs = DataValue.Prefab(split[0]);
+    PrefabsValue = DataValue.Prefab(split[0]);
+    MinDistanceValue = new SimpleFloatValue(0f);
+    MaxDistanceValue = new SimpleFloatValue(100f);
 
     if (split.Count > 1)
     {
-      var range = Parse.FloatRange(split[1]);
-      MinDistance = range.Min == range.Max ? 0f : range.Min;
-      MaxDistance = range.Max;
+      var range = Parse.StringRange(split[1]);
+      if (range.Min != range.Max)
+        MinDistanceValue = DataValue.Float(range.Min);
+      MaxDistanceValue = DataValue.Float(range.Max);
     }
     if (split.Count > 2)
     {
@@ -287,31 +298,41 @@ public class Object
     }
     if (split.Count > 3)
     {
-      Weight = Parse.Int(split[3]);
+      WeightValue = DataValue.Int(split[3]);
     }
     if (split.Count > 4)
     {
-      var range = Parse.FloatRange(split[4]);
-      MinHeight = range.Min == range.Max ? 0f : range.Min;
-      MaxHeight = range.Max;
+      var range = Parse.StringRange(split[4]);
+      if (range.Min != range.Max)
+        MinHeightValue = DataValue.Float(range.Min);
+      MaxHeightValue = DataValue.Float(range.Max);
     }
+  }
+  private float? MinDistance;
+  public float MaxDistance;
+  private float? MinHeight;
+  private float? MaxHeight;
+  public int Weight;
+
+  public void Roll(Parameters pars)
+  {
+    MinDistance = MinDistanceValue.Get(pars);
+    MaxDistance = MaxDistanceValue.Get(pars) ?? 100f;
+    MinHeight = MinHeightValue?.Get(pars);
+    MaxHeight = MaxHeightValue?.Get(pars);
+    Weight = WeightValue.Get(pars) ?? 1;
   }
 
   public bool IsValid(ZDO zdo, Vector3 pos, Parameters pars)
   {
-    if (Prefabs.Match(pars, zdo.GetPrefab()) == false) return false;
-    if (WildPrefab != "")
-    {
-      var prefabName = pars.Replace(WildPrefab);
-      var hash = prefabName.GetStableHashCode();
-      if (zdo.GetPrefab() != hash) return false;
-    }
     var d = Utils.DistanceXZ(pos, zdo.GetPosition());
-    if (MinDistance > 0f && d < MinDistance) return false;
+    if (MinDistance != null && d < MinDistance) return false;
     if (d > MaxDistance) return false;
     var dy = Mathf.Abs(pos.y - zdo.GetPosition().y);
-    if (MinHeight > 0f && dy < MinHeight) return false;
-    if (MaxHeight > 0f && dy > MaxHeight) return false;
+    if (MinHeight != null && dy < MinHeight) return false;
+    if (MaxHeight != null && dy > MaxHeight) return false;
+
+    if (PrefabsValue.Match(pars, zdo.GetPrefab()) == false) return false;
     if (Data == 0) return true;
     return DataHelper.Match(Data, zdo, pars);
   }
@@ -325,14 +346,14 @@ public class PokeData
   public string delay = "0f";
   [DefaultValue("")]
   public string parameter = "";
-  [DefaultValue(0f)]
-  public float maxDistance = 0f;
-  [DefaultValue(0f)]
-  public float minDistance = 0f;
-  [DefaultValue(0f)]
-  public float maxHeight = 0f;
-  [DefaultValue(0f)]
-  public float minHeight = 0f;
+  [DefaultValue("")]
+  public string maxDistance = "";
+  [DefaultValue("")]
+  public string minDistance = "";
+  [DefaultValue("")]
+  public string maxHeight = "";
+  [DefaultValue("")]
+  public string minHeight = "";
   [DefaultValue("0")]
   public string limit = "0";
   [DefaultValue("")]

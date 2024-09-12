@@ -40,6 +40,13 @@ public class FloatValue(string[] values) : AnyValue(values), IFloatValue
       return roll;
     return Calculator.EvaluateFloat(split[3].Replace("<value>", roll?.ToString(CultureInfo.InvariantCulture)));
   }
+  public bool TryGet(Parameters pars, out float value)
+  {
+    var v = Get(pars);
+    if (v.HasValue) value = v.Value;
+    else value = 0;
+    return v.HasValue;
+  }
   public bool? Match(Parameters pars, float value)
   {
     // If all values are null, default to a match.
@@ -126,10 +133,16 @@ public class SimpleFloatValue(float value) : IFloatValue
 {
   private readonly float Value = value;
   public float? Get(Parameters pars) => Value;
+  public bool TryGet(Parameters pars, out float value)
+  {
+    value = Value;
+    return true;
+  }
   public bool? Match(Parameters pars, float value) => Value == value;
 }
 public interface IFloatValue
 {
   float? Get(Parameters pars);
+  bool TryGet(Parameters pars, out float value);
   bool? Match(Parameters pars, float value);
 }

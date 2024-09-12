@@ -13,6 +13,7 @@ public class ObjectsFiltering
   public static ZDO[] GetNearby(int limit, Object[] objects, Vector3 pos, Parameters parameters)
   {
     if (objects.Length == 0) return [];
+    foreach (var o in objects) o.Roll(parameters);
     var maxRadius = objects.Max(o => o.MaxDistance);
     if (maxRadius > 10000)
     {
@@ -24,12 +25,14 @@ public class ObjectsFiltering
   }
   public static ZDO[] GetNearby(int limit, Object objects, Vector3 pos, Parameters parameters)
   {
-    if (objects.MaxDistance > 10000)
+    objects.Roll(parameters);
+    var maxRadius = objects.MaxDistance;
+    if (maxRadius > 10000)
     {
       var zdos = ZDOMan.instance.m_objectsByID.Values;
       return GetObjects(limit, zdos, objects, pos, parameters);
     }
-    var zdoLists = GetSectorIndices(pos, objects.MaxDistance);
+    var zdoLists = GetSectorIndices(pos, maxRadius);
     return GetObjects(limit, zdoLists, objects, pos, parameters);
   }
   private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object objects, Vector3 pos, Parameters parameters)
@@ -70,6 +73,7 @@ public class ObjectsFiltering
   public static bool HasNearby(Range<int>? limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     if (objects.Length == 0) return true;
+    foreach (var o in objects) o.Roll(parameters);
     var maxRadius = objects.Max(o => o.MaxDistance);
     if (maxRadius > 10000)
     {
@@ -88,6 +92,7 @@ public class ObjectsFiltering
   public static bool HasNotNearby(Range<int>? limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     if (objects.Length == 0) return true;
+    foreach (var o in objects) o.Roll(parameters);
     var maxRadius = objects.Max(o => o.MaxDistance);
     var zdoLists = GetSectorIndices(zdo.m_position, maxRadius);
     if (limit == null)

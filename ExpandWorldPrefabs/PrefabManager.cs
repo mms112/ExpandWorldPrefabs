@@ -20,15 +20,15 @@ public class Manager
       GlobalClientRpc(info.ClientRpcs, parameters);
     PokeGlobal(info, parameters, pos);
   }
-  public static void Handle(ActionType type, string args, ZDO zdo, ZDO? source = null)
+  public static Info? Handle(ActionType type, string args, ZDO zdo, ZDO? source = null)
   {
     // Already destroyed before.
-    if (ZDOMan.instance.m_deadZDOs.ContainsKey(zdo.m_uid)) return;
-    if (!ZNet.instance.IsServer()) return;
+    if (ZDOMan.instance.m_deadZDOs.ContainsKey(zdo.m_uid)) return null;
+    if (!ZNet.instance.IsServer()) return null;
     var name = ZNetScene.instance.GetPrefab(zdo.m_prefab)?.name ?? "";
     ObjectParameters parameters = new(name, args, zdo);
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
-    if (info == null) return;
+    if (info == null) return null;
 
     if (info.Commands.Length > 0)
       Commands.Run(info, parameters);
@@ -37,16 +37,20 @@ public class Manager
       ObjectRpc(info.ObjectRpcs, zdo, parameters);
     if (info.ClientRpcs != null)
       ClientRpc(info.ClientRpcs, zdo, parameters);
-    HandleSpawns(info, zdo, parameters);
+
+    var remove = info.Remove.GetBool(parameters) == true;
+    var regenerate = info.Regenerate;
+    var dataStr = info.Data.Get(parameters) ?? "";
+    HandleSpawns(info, zdo, parameters, remove, regenerate, dataStr);
     Poke(info, zdo, parameters);
-    if (info.Drops)
+    if (info.Drops.GetBool(parameters) == true)
       SpawnDrops(zdo);
     // Original object was regenerated to apply data.
-    if (info.Remove || info.Regenerate)
-      DelayedRemove.Add(info.RemoveDelay, zdo, info.Remove && info.TriggerRules);
+    if (remove || regenerate)
+      DelayedRemove.Add(info.RemoveDelay.Get(parameters) ?? 0f, zdo, remove && info.TriggerRules);
     else if (info.InjectData)
     {
-      var data = DataHelper.Get(info.Data);
+      var data = DataHelper.Get(dataStr);
       var removeItems = info.RemoveItems;
       var addItems = info.AddItems;
       if (data != null)
@@ -63,14 +67,15 @@ public class Manager
         ZDOMan.instance.ForceSendZDO(zdo.m_uid);
       }
     }
+    return info;
   }
-  private static void HandleSpawns(Info info, ZDO zdo, Parameters pars)
+  private static void HandleSpawns(Info info, ZDO zdo, Parameters pars, bool remove, bool regenerate, string dataStr)
   {
     // Original object must be regenerated to apply data.
-    var regenerateOriginal = !info.Remove && info.Regenerate;
+    var regenerateOriginal = !remove && regenerate;
     if (info.Spawns.Length == 0 && info.Swaps.Length == 0 && !regenerateOriginal) return;
 
-    var customData = DataHelper.Get(info.Data);
+    var customData = DataHelper.Get(dataStr);
     foreach (var p in info.Spawns)
       CreateObject(p, zdo, customData, pars, p.TriggerRules);
 

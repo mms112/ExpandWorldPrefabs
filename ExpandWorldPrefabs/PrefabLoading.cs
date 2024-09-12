@@ -97,28 +97,31 @@ public class Loading
     return types.Select(t =>
     {
       var d = t.Type != ActionType.Destroy ? data.data : "";
+      bool? remove = t.Type == ActionType.Destroy ? false : swaps.Length > 0 ? true : data.remove == "" ? false : null;
       return new Info()
       {
         Prefabs = data.prefab,
         Type = t.Type,
         Fallback = data.fallback,
         Args = t.Parameters,
-        Remove = t.Type != ActionType.Destroy && (data.remove || swaps.Length > 0),
+        Remove = remove == null ? DataValue.Bool(data.remove) : new SimpleBoolValue(remove.Value),
         Regenerate = (d != "" || data.addItems != "" || data.removeItems != "") && !data.injectData,
-        RemoveDelay = data.removeDelay,
-        Drops = t.Type != ActionType.Destroy && data.drops,
+        RemoveDelay = data.removeDelay == "" ? new SimpleFloatValue(0) : DataValue.Float(data.removeDelay),
+        Drops = t.Type == ActionType.Destroy || data.drops == "" ? new SimpleBoolValue(false) : DataValue.Bool(data.drops),
         Spawns = [.. spawns],
         Swaps = [.. swaps],
-        Data = d,
+        Data = DataValue.String(d),
         InjectData = data.injectData,
         Commands = commands,
-        Weight = data.weight,
-        Day = data.day,
-        Night = data.night,
-        MinDistance = data.minDistance < 1f ? data.minDistance * 10000f : data.minDistance,
-        MaxDistance = data.maxDistance < 1f ? data.maxDistance * 10000f : data.maxDistance,
-        MinY = data.minY ?? data.minAltitude - waterLevel,
-        MaxY = data.maxY ?? data.maxAltitude - waterLevel,
+        Weight = DataValue.Float(data.weight),
+        Day = DataValue.Bool(data.day),
+        Night = DataValue.Bool(data.night),
+        MinDistance = data.minDistance == "" ? null : Parse.TryFloat(data.minDistance, out var minDistance) ? minDistance < 1f ? new SimpleFloatValue(minDistance * 10000f) : new SimpleFloatValue(minDistance) : DataValue.Float(data.minDistance),
+        MaxDistance = data.data == "" ? null : Parse.TryFloat(data.maxDistance, out var maxDistance) ? maxDistance < 1f ? new SimpleFloatValue(maxDistance * 10000f) : new SimpleFloatValue(maxDistance) : DataValue.Float(data.maxDistance),
+        MinY = data.minY == "" ? null : DataValue.Float(data.minY),
+        MaxY = data.maxY == "" ? null : DataValue.Float(data.maxY),
+        MinAltitude = data.minAltitude == "" ? null : DataValue.Float(data.minAltitude),
+        MaxAltitude = data.maxAltitude == "" ? null : DataValue.Float(data.maxAltitude),
         Biomes = Yaml.ToBiomes(data.biomes),
         Environments = environments,
         BannedEnvironments = bannedEnvironments,
@@ -148,7 +151,8 @@ public class Loading
         MinPaint = minPaint,
         MaxPaint = maxPaint,
         AddItems = addItems,
-        RemoveItems = removeItems
+        RemoveItems = removeItems,
+        Cancel = data.cancel,
       };
     }).ToArray();
   }
@@ -205,6 +209,12 @@ public class Loading
     {
       entry.Floats ??= [];
       entry.Floats.Add(key, DataValue.Float(value));
+      return;
+    }
+    if (type == "long")
+    {
+      entry.Longs ??= [];
+      entry.Longs.Add(key, DataValue.Long(value));
       return;
     }
     Log.Error($"Invalid filter type: {type}");
