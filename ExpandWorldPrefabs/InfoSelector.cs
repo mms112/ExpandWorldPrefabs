@@ -37,8 +37,8 @@ public class InfoSelector
     var linq = data
       .Where(d => CheckArgs(d, args))
       .Where(d => (d.Biomes & biome) == biome)
-      .Where(d => d.Day.GetBool(parameters) != false || !day)
-      .Where(d => d.Night.GetBool(parameters) != false || day)
+      .Where(d => d.Day?.GetBool(parameters) != false || !day)
+      .Where(d => d.Night?.GetBool(parameters) != false || day)
       .Where(d => d.MinDistance == null || !d.MinDistance.TryGet(parameters, out var v) || v < distance)
       .Where(d => d.MaxDistance == null || !d.MaxDistance.TryGet(parameters, out var v) || v >= distance)
       .Where(d => d.MinY == null || !d.MinY.TryGet(parameters, out var v) || v < pos.y)
@@ -134,7 +134,7 @@ public class InfoSelector
   private static Info? Randomize(Info[] valid, Parameters parameters)
   {
     if (valid.Length == 0) return null;
-    var weights = valid.Select(d => d.Weight.Get(parameters) ?? 1f).ToArray();
+    var weights = valid.Select(d => d.Weight?.Get(parameters) ?? 1f).ToArray();
     if (valid.Length == 1 && weights[0] >= 1f) return valid[0];
     var totalWeight = Mathf.Max(1f, weights.Sum());
     var random = Random.Range(0f, totalWeight);
@@ -181,9 +181,9 @@ public class InfoSelector
     var waterY = pos.y - ZoneSystem.instance.m_waterLevel;
     var linq = data
       .Where(d => CheckArgs(d, args))
-      .Where(d => remove == d.Remove.GetBool(parameters))
-      .Where(d => d.Day.GetBool(parameters) != false || !day)
-      .Where(d => d.Night.GetBool(parameters) != false || day)
+      .Where(d => remove == d.Remove?.GetBool(parameters))
+      .Where(d => d.Day?.GetBool(parameters) != false || !day)
+      .Where(d => d.Night?.GetBool(parameters) != false || day)
       .Where(d => d.MinDistance == null || distance >= d.MinDistance.Get(parameters))
       .Where(d => d.MaxDistance == null || distance < d.MaxDistance.Get(parameters))
       .Where(d => d.MinY == null || !d.MinY.TryGet(parameters, out var v) || v < pos.y)

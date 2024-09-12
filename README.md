@@ -92,8 +92,18 @@ Most fields are put on a single line. List values are separated by `,`.
 
 ### Actions
 
-- remove (default: `false`, P): If true, the original object is removed.
-- removeDelay (P): Delay in seconds for remove.
+- addItems: Data entry that is used to add items to the container object.
+  - Data type "items" is used for this.
+  - If the item exists, its stack amount is increased up to the max.
+  - Remaining stack amount is added as new items.
+  - For adding a single item, shorthand `itemid, amount` can be used.
+- cancel (default: `false`, P): If true, the RPC call of the triggering action is cancelled.
+  - This affects types `command`, `damage`, `say`, `state` and `repair`.
+  - This only works properly for some actions, since the RPC calls are usually for cosmetic changes.
+  - For example chat messages can be cancelled so that they are never shown to other players (for example for non-admin custom commands).
+- command: Console command to run.
+  - Parameters are supported.
+  - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
 - data (P): Changes data to the original object.
   - Name of the data entry (from `data.yaml`) or data code that is added to the object.
   - This is done by respawning the original object with the new data.
@@ -102,7 +112,12 @@ Most fields are put on a single line. List values are separated by `,`.
   - Some possible cases are:
     - When adding data that is only used by this mod. In this case, clients wouldn't use the data anyway.
     - When changing data that changes during the normal game play. For example creature health.
-- spawnDelay: Delay in seconds for spawns and swaps.
+- remove (default: `false`, P): If true, the original object is removed.
+- removeDelay (P): Delay in seconds for remove.
+- removeItems: Data entry that is used to removes items from the container object.
+  - Data type "items" is used for this.
+  - If the item doesn't exist then nothing happens.
+  - For removing a single item, shorthand `itemid, amount` can be used.
 - spawn: Spawns another object.
   - Format is `id, posX,posZ,posY, rotY,rotX,rotZ, data, delay, triggerRules`.
   - Most parts are optional. For example following formats are valid:
@@ -113,25 +128,14 @@ Most fields are put on a single line. List values are separated by `,`.
   - Id is required and supports parameters.
   - Position must be set before rotation.
   - PosY can be `snap` to snap to the ground.
+- spawnDelay: Delay in seconds for spawns and swaps.
 - swap: Swaps the original object with another object.
   - Format and keywords are same as for `spawn`.
   - The initial data is copied from the original object.
   - Swap is done by removing the original object and spawning the swapped object.
   - If the swapped object is not valid, the original object is still removed.
   - Note: Swapping can break ZDO connection, so spawn points may respawn even when the creature is alive.
-- command: Console command to run.
-  - Parameters are supported.
-  - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
 - triggerRules (default: `false`): If true, spawns or remove from this entry can trigger other entries.
-- addItems: Data entry that is used to add items to the container object.
-  - Data type "items" is used for this.
-  - If the item exists, its stack amount is increased up to the max.
-  - Remaining stack amount is added as new items.
-  - For adding a single item, shorthand `itemid, amount` can be used.
-- removeItems: Data entry that is used to removes items from the container object.
-  - Data type "items" is used for this.
-  - If the item doesn't exist then nothing happens.
-  - For removing a single item, shorthand `itemid, amount` can be used.
 
 ## Filters
 

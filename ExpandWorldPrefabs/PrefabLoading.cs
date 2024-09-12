@@ -104,24 +104,24 @@ public class Loading
         Type = t.Type,
         Fallback = data.fallback,
         Args = t.Parameters,
-        Remove = remove == null ? DataValue.Bool(data.remove) : new SimpleBoolValue(remove.Value),
+        Remove = remove == null ? data.remove == null ? null : DataValue.Bool(data.remove) : new SimpleBoolValue(remove.Value),
         Regenerate = (d != "" || data.addItems != "" || data.removeItems != "") && !data.injectData,
-        RemoveDelay = data.removeDelay == "" ? new SimpleFloatValue(0) : DataValue.Float(data.removeDelay),
-        Drops = t.Type == ActionType.Destroy || data.drops == "" ? new SimpleBoolValue(false) : DataValue.Bool(data.drops),
+        RemoveDelay = data.removeDelay == null ? null : DataValue.Float(data.removeDelay),
+        Drops = t.Type == ActionType.Destroy || data.drops == null ? null : DataValue.Bool(data.drops),
         Spawns = [.. spawns],
         Swaps = [.. swaps],
         Data = DataValue.String(d),
         InjectData = data.injectData,
         Commands = commands,
-        Weight = DataValue.Float(data.weight),
-        Day = DataValue.Bool(data.day),
-        Night = DataValue.Bool(data.night),
-        MinDistance = data.minDistance == "" ? null : Parse.TryFloat(data.minDistance, out var minDistance) ? minDistance < 1f ? new SimpleFloatValue(minDistance * 10000f) : new SimpleFloatValue(minDistance) : DataValue.Float(data.minDistance),
-        MaxDistance = data.data == "" ? null : Parse.TryFloat(data.maxDistance, out var maxDistance) ? maxDistance < 1f ? new SimpleFloatValue(maxDistance * 10000f) : new SimpleFloatValue(maxDistance) : DataValue.Float(data.maxDistance),
-        MinY = data.minY == "" ? null : DataValue.Float(data.minY),
-        MaxY = data.maxY == "" ? null : DataValue.Float(data.maxY),
-        MinAltitude = data.minAltitude == "" ? null : DataValue.Float(data.minAltitude),
-        MaxAltitude = data.maxAltitude == "" ? null : DataValue.Float(data.maxAltitude),
+        Weight = data.weight == null ? null : DataValue.Float(data.weight),
+        Day = data.day == null ? null : DataValue.Bool(data.day),
+        Night = data.night == null ? null : DataValue.Bool(data.night),
+        MinDistance = data.minDistance == null ? null : Parse.TryFloat(data.minDistance, out var minDistance) ? minDistance < 1f ? new SimpleFloatValue(minDistance * 10000f) : new SimpleFloatValue(minDistance) : DataValue.Float(data.minDistance),
+        MaxDistance = data.maxDistance == null ? null : Parse.TryFloat(data.maxDistance, out var maxDistance) ? maxDistance < 1f ? new SimpleFloatValue(maxDistance * 10000f) : new SimpleFloatValue(maxDistance) : DataValue.Float(data.maxDistance),
+        MinY = data.minY == null ? null : DataValue.Float(data.minY),
+        MaxY = data.maxY == null ? null : DataValue.Float(data.maxY),
+        MinAltitude = data.minAltitude == null ? null : DataValue.Float(data.minAltitude),
+        MaxAltitude = data.maxAltitude == null ? null : DataValue.Float(data.maxAltitude),
         Biomes = Yaml.ToBiomes(data.biomes),
         Environments = environments,
         BannedEnvironments = bannedEnvironments,
@@ -152,7 +152,7 @@ public class Loading
         MaxPaint = maxPaint,
         AddItems = addItems,
         RemoveItems = removeItems,
-        Cancel = data.cancel,
+        Cancel = data.cancel == null ? null : DataValue.Bool(data.cancel),
       };
     }).ToArray();
   }
@@ -232,7 +232,7 @@ public class Loading
     return null;
   }
 
-  private static Range<int>? ParseObjectsLimit(string str) => str == "" ?
+  private static Range<int>? ParseObjectsLimit(string? str) => str == null ?
     null : int.TryParse(str, out var limit) ?
       new Range<int>(limit, 0) : Parse.IntRange(str);
 

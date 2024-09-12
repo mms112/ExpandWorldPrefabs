@@ -20,15 +20,15 @@ public class Manager
       GlobalClientRpc(info.ClientRpcs, parameters);
     PokeGlobal(info, parameters, pos);
   }
-  public static Info? Handle(ActionType type, string args, ZDO zdo, ZDO? source = null)
+  public static bool Handle(ActionType type, string args, ZDO zdo, ZDO? source = null)
   {
     // Already destroyed before.
-    if (ZDOMan.instance.m_deadZDOs.ContainsKey(zdo.m_uid)) return null;
-    if (!ZNet.instance.IsServer()) return null;
+    if (ZDOMan.instance.m_deadZDOs.ContainsKey(zdo.m_uid)) return false;
+    if (!ZNet.instance.IsServer()) return false;
     var name = ZNetScene.instance.GetPrefab(zdo.m_prefab)?.name ?? "";
     ObjectParameters parameters = new(name, args, zdo);
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
-    if (info == null) return null;
+    if (info == null) return false;
 
     if (info.Commands.Length > 0)
       Commands.Run(info, parameters);
@@ -38,16 +38,16 @@ public class Manager
     if (info.ClientRpcs != null)
       ClientRpc(info.ClientRpcs, zdo, parameters);
 
-    var remove = info.Remove.GetBool(parameters) == true;
+    var remove = info.Remove?.GetBool(parameters) == true;
     var regenerate = info.Regenerate;
-    var dataStr = info.Data.Get(parameters) ?? "";
+    var dataStr = info.Data?.Get(parameters) ?? "";
     HandleSpawns(info, zdo, parameters, remove, regenerate, dataStr);
     Poke(info, zdo, parameters);
-    if (info.Drops.GetBool(parameters) == true)
+    if (info.Drops?.GetBool(parameters) == true)
       SpawnDrops(zdo);
     // Original object was regenerated to apply data.
     if (remove || regenerate)
-      DelayedRemove.Add(info.RemoveDelay.Get(parameters) ?? 0f, zdo, remove && info.TriggerRules);
+      DelayedRemove.Add(info.RemoveDelay?.Get(parameters) ?? 0f, zdo, remove && info.TriggerRules);
     else if (info.InjectData)
     {
       var data = DataHelper.Get(dataStr);
@@ -67,7 +67,8 @@ public class Manager
         ZDOMan.instance.ForceSendZDO(zdo.m_uid);
       }
     }
-    return info;
+    var cancel = info.Cancel?.GetBool(parameters) == true;
+    return cancel;
   }
   private static void HandleSpawns(Info info, ZDO zdo, Parameters pars, bool remove, bool regenerate, string dataStr)
   {

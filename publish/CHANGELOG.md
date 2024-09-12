@@ -6,12 +6,13 @@
   - Adds new parameters "item_*" to get the amount of a specific item in containers.
   - Adds a new parameter "snap" to get world height at current position.
   - Adds the file name to the error message when failing to load a file.
-  - Adds parameter support to fields `weight`, `remove`, `removeDelay`, `data`, `day`, `night`, `minDistance`, `maxDistance`, `minY`, `maxY`, `minAltitude`, `maxAltitude` and `poke`.
+  - Adds parameter support to fields `cancel`, `data`, `day`, `maxAltitude`, `maxDistance`, `minAltitude`, `minDistance`, `minY`, `night`, `poke`, `remove`, `removeDelay`, `weight`.
   - Fixes global key filters not being converted to lower case.
   - Fixes nested parameters not working.
   - Fixes zdo based parameters not working when spawning objects.
   - Fixes the type long missing from filter types.
   - Fixes container items filtering not working with any container size.
+  - Fixes the fields `maxAltitude` and `minAltitude` being checked incorrectly (60 meters off).
   - Removes the default value of 10000 meters from `maxAltitude`.
   - Removes door usage from the type `state` (no longer sent to the server).
 

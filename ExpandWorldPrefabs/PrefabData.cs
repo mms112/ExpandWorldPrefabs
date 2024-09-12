@@ -13,51 +13,51 @@ public class Data
   public string prefab = "";
   public string type = "";
   [DefaultValue(null)]
-  public string[]? types = null;
+  public string[]? types;
   [DefaultValue(false)]
   public bool fallback = false;
-  [DefaultValue("1f")]
-  public string weight = "1";
   [DefaultValue(null)]
-  public string? swap = null;
+  public string? weight;
   [DefaultValue(null)]
-  public string[]? swaps = null;
+  public string? swap;
   [DefaultValue(null)]
-  public string? spawn = null;
+  public string[]? swaps;
   [DefaultValue(null)]
-  public string[]? spawns = null;
+  public string? spawn;
+  [DefaultValue(null)]
+  public string[]? spawns;
   [DefaultValue(0f)]
-  public float spawnDelay = 0f;
-  [DefaultValue("")]
-  public string remove = "";
-  [DefaultValue("")]
-  public string removeDelay = "";
+  public float spawnDelay;
+  [DefaultValue(null)]
+  public string? remove;
+  [DefaultValue(null)]
+  public string? removeDelay;
   [DefaultValue("")]
   public string drops = "";
   [DefaultValue("")]
   public string data = "";
   [DefaultValue(null)]
-  public string? command = null;
+  public string? command;
   [DefaultValue(null)]
-  public string[]? commands = null;
-  [DefaultValue("true")]
-  public string day = "true";
-  [DefaultValue("true")]
-  public string night = "true";
+  public string[]? commands;
+  [DefaultValue(null)]
+  public string? day;
+  [DefaultValue(null)]
+  public string? night;
   [DefaultValue("")]
   public string biomes = "";
-  [DefaultValue("")]
-  public string minDistance = "";
-  [DefaultValue("")]
-  public string maxDistance = "";
-  [DefaultValue("")]
-  public string minAltitude = "";
-  [DefaultValue("")]
-  public string maxAltitude = "";
-  [DefaultValue("")]
-  public string minY = "";
-  [DefaultValue("")]
-  public string maxY = "";
+  [DefaultValue(null)]
+  public string? minDistance;
+  [DefaultValue(null)]
+  public string? maxDistance;
+  [DefaultValue(null)]
+  public string? minAltitude;
+  [DefaultValue(null)]
+  public string? maxAltitude;
+  [DefaultValue(null)]
+  public string? minY;
+  [DefaultValue(null)]
+  public string? maxY;
   [DefaultValue("")]
   public string environments = "";
   [DefaultValue("")]
@@ -69,11 +69,11 @@ public class Data
   [DefaultValue("")]
   public string events = "";
   [DefaultValue(null)]
-  public float? eventDistance = null;
+  public float? eventDistance;
   [DefaultValue(null)]
-  public PokeData[]? poke = null;
+  public PokeData[]? poke;
   [DefaultValue(null)]
-  public string[]? pokes = null;
+  public string[]? pokes;
   [DefaultValue(0)]
   public int pokeLimit = 0;
   [DefaultValue("")]
@@ -82,11 +82,11 @@ public class Data
   public float pokeDelay = 0f;
 
   [DefaultValue(null)]
-  public string[]? objects = null;
-  [DefaultValue("")]
-  public string objectsLimit = "";
+  public string[]? objects;
   [DefaultValue(null)]
-  public string[]? bannedObjects = null;
+  public string? objectsLimit;
+  [DefaultValue(null)]
+  public string[]? bannedObjects;
   [DefaultValue("")]
   public string bannedObjectsLimit = "";
   [DefaultValue("")]
@@ -124,8 +124,8 @@ public class Data
   public string addItems = "";
   [DefaultValue("")]
   public string removeItems = "";
-  [DefaultValue(false)]
-  public bool cancel = false;
+  [DefaultValue(null)]
+  public string? cancel;
 }
 
 
@@ -135,18 +135,18 @@ public class Info
   public ActionType Type = ActionType.Create;
   public bool Fallback = false;
   public string[] Args = [];
-  public IFloatValue Weight = new SimpleFloatValue(1f);
+  public IFloatValue? Weight;
   public Spawn[] Swaps = [];
   public Spawn[] Spawns = [];
-  public IBoolValue Remove = new SimpleBoolValue(false);
+  public IBoolValue? Remove;
   public bool Regenerate = false;
-  public IFloatValue RemoveDelay = new SimpleFloatValue(0f);
-  public IBoolValue Drops = new SimpleBoolValue(false);
-  public IStringValue Data = new SimpleStringValue("");
+  public IFloatValue? RemoveDelay;
+  public IBoolValue? Drops;
+  public IStringValue? Data;
   public bool InjectData = false;
   public string[] Commands = [];
-  public IBoolValue Day = new SimpleBoolValue(true);
-  public IBoolValue Night = new SimpleBoolValue(true);
+  public IBoolValue? Day;
+  public IBoolValue? Night;
   public IFloatValue? MinDistance;
   public IFloatValue? MaxDistance;
   public IFloatValue? MinY;
@@ -173,14 +173,14 @@ public class Info
   public float LocationDistance = 0f;
   public DataEntry? Filter;
   public DataEntry? BannedFilter;
-  public bool TriggerRules = false;
+  public bool TriggerRules;
   public ObjectRpcInfo[]? ObjectRpcs;
   public ClientRpcInfo[]? ClientRpcs;
   public Color? MinPaint;
   public Color? MaxPaint;
   public DataEntry? AddItems;
   public DataEntry? RemoveItems;
-  public bool Cancel;
+  public IBoolValue? Cancel;
 }
 public class Spawn
 {
