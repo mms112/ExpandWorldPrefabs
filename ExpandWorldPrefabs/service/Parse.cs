@@ -254,8 +254,8 @@ public static class Parse
     var x = FloatNull(args, 0);
     var y = FloatNull(args, 2);
     var z = FloatNull(args, 1);
-    if (x == null || y == null || z == null) return null;
-    return new(x.Value, y.Value, z.Value);
+    if (x == null && y == null && z == null) return null;
+    return new(x ?? 0f, y ?? 0f, z ?? 0f);
   }
   public static Quaternion? AngleYXZNull(string? arg) => arg == null ? null : AngleYXZNull(Split(arg));
   public static Quaternion? AngleYXZNull(string[] values)
@@ -263,8 +263,8 @@ public static class Parse
     var y = FloatNull(values, 0);
     var x = FloatNull(values, 1);
     var z = FloatNull(values, 2);
-    if (y == null || x == null || z == null) return null;
-    return Quaternion.Euler(new(x.Value, y.Value, z.Value));
+    if (y == null && x == null && z == null) return null;
+    return Quaternion.Euler(new(x ?? 0f, y ?? 0f, z ?? 0f));
   }
   public static string String(string[] args, int index) => args.Length > index ? args[index] : "";
   public static int Hash(string[] args, int index) => args.Length > index ? args[index].GetStableHashCode() : 0;

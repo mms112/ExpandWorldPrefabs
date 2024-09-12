@@ -19,15 +19,15 @@ public class Data
   [DefaultValue(null)]
   public string? weight;
   [DefaultValue(null)]
-  public string? swap;
+  public SpawnData[]? swap;
   [DefaultValue(null)]
   public string[]? swaps;
   [DefaultValue(null)]
-  public string? spawn;
+  public SpawnData[]? spawn;
   [DefaultValue(null)]
   public string[]? spawns;
-  [DefaultValue(0f)]
-  public float spawnDelay;
+  [DefaultValue(null)]
+  public float? spawnDelay;
   [DefaultValue(null)]
   public string? remove;
   [DefaultValue(null)]
@@ -101,11 +101,11 @@ public class Data
   public string? bannedFilter = null;
   [DefaultValue(null)]
   public string[]? bannedFilters = null;
-  [DefaultValue(0f)]
-  public float delay = 0f;
+  [DefaultValue(null)]
+  public float? delay;
 
-  [DefaultValue(false)]
-  public bool triggerRules = false;
+  [DefaultValue(null)]
+  public bool? triggerRules = null;
   [DefaultValue(null)]
   public Dictionary<string, string>[]? objectRpc = null;
   [DefaultValue(null)]
@@ -136,8 +136,8 @@ public class Info
   public bool Fallback = false;
   public string[] Args = [];
   public IFloatValue? Weight;
-  public Spawn[] Swaps = [];
-  public Spawn[] Spawns = [];
+  public Spawn[]? Swaps;
+  public Spawn[]? Spawns;
   public IBoolValue? Remove;
   public bool Regenerate = false;
   public IFloatValue? RemoveDelay;
@@ -182,19 +182,48 @@ public class Info
   public DataEntry? RemoveItems;
   public IBoolValue? Cancel;
 }
+
+public class SpawnData
+{
+  [DefaultValue(null)]
+  public string? prefab;
+  [DefaultValue(null)]
+  public string? pos;
+  [DefaultValue(null)]
+  public string? rot;
+  [DefaultValue(null)]
+  public string? data;
+  [DefaultValue(null)]
+  public string? delay;
+  [DefaultValue(null)]
+  public string? triggerRules;
+
+}
 public class Spawn
 {
   private readonly IPrefabValue Prefab;
-  public readonly Vector3 Pos = Vector3.zero;
-  public readonly bool Snap = false;
-  public readonly Quaternion Rot = Quaternion.identity;
-  public readonly string Data = "";
-  public readonly float Delay = 0;
-  public readonly bool TriggerRules = false;
-  public Spawn(string line, float delay, bool triggerRules)
+  public readonly IVector3Value? Pos;
+  public readonly IBoolValue? Snap;
+  public readonly IQuaternionValue? Rot;
+  public readonly IStringValue? Data;
+  public readonly IFloatValue? Delay;
+  public readonly IBoolValue? TriggerRules;
+
+  public Spawn(SpawnData data, float? delay, bool? triggerRules)
   {
-    Delay = delay;
-    TriggerRules = triggerRules;
+    Prefab = data.prefab == null ? new SimplePrefabValue(0) : DataValue.Prefab(data.prefab);
+    Pos = data.pos == null ? null : DataValue.Vector3(data.pos);
+    Snap = data.pos == null ? null : new SimpleBoolValue(false);
+    Rot = data.rot == null ? null : DataValue.Quaternion(data.rot);
+    Data = data.data == null ? null : DataValue.String(data.data);
+    Delay = data.delay == null ? delay == null ? null : new SimpleFloatValue(delay.Value) : DataValue.Float(data.delay);
+    TriggerRules = data.triggerRules == null ? triggerRules == null ? null : new SimpleBoolValue(triggerRules.Value) : DataValue.Bool(data.triggerRules);
+  }
+
+  public Spawn(string line, float? delay, bool? triggerRules)
+  {
+    Delay = delay == null ? null : new SimpleFloatValue(delay.Value);
+    TriggerRules = triggerRules == null ? null : new SimpleBoolValue(triggerRules.Value);
     var split = Parse.ToList(line);
     Prefab = DataValue.Prefab(split[0]);
     var posParsed = false;
@@ -202,32 +231,32 @@ public class Spawn
     {
       var value = split[i];
       if (Parse.TryBoolean(value, out var boolean))
-        TriggerRules = boolean;
+        TriggerRules = new SimpleBoolValue(boolean);
       else if (Parse.TryFloat(value, out var number1))
       {
         if (split.Count <= i + 2)
-          Delay = number1;
+          Delay = new SimpleFloatValue(number1);
         else if (Parse.TryFloat(split[i + 1], out var number2))
         {
           var number3 = Parse.Float(split[i + 2]);
           if (posParsed)
           {
-            Rot = Quaternion.Euler(number2, number1, number3);
+            Rot = new SimpleQuaternionValue(Quaternion.Euler(number2, number1, number3));
           }
           else
           {
-            Pos = new Vector3(number1, number3, number2);
+            Pos = new SimpleVector3Value(new Vector3(number1, number3, number2));
             if (split[i + 2] == "snap")
-              Snap = true;
+              Snap = new SimpleBoolValue(true);
             posParsed = true;
           }
           i += 2;
         }
         else
-          Delay = number1;
+          Delay = new SimpleFloatValue(number1);
       }
       else
-        Data = value;
+        Data = new SimpleStringValue(value);
     }
 
   }

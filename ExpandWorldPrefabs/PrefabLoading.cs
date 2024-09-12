@@ -68,10 +68,10 @@ public class Loading
   private static Info[] FromData(Data data)
   {
     var waterLevel = ZoneSystem.instance.m_waterLevel;
-    var spawnDelay = Math.Max(data.delay, data.spawnDelay);
-    var triggerRules = data.triggerRules;
-    var swaps = ParseSpawns(data.swaps ?? (data.swap == null ? [] : [data.swap]), spawnDelay, triggerRules);
-    var spawns = ParseSpawns(data.spawns ?? (data.spawn == null ? [] : [data.spawn]), spawnDelay, triggerRules);
+    float? spawnDelay = data.delay == null && data.spawnDelay == null ? null : Math.Max(data.delay ?? 0f, data.spawnDelay ?? 0f);
+    bool? triggerRules = data.triggerRules;
+    var swaps = data.swap == null ? data.swaps == null ? null : ParseSpawns(data.swaps, spawnDelay, triggerRules) : ParseSpawns(data.swap, spawnDelay, triggerRules);
+    var spawns = data.spawn == null ? data.spawns == null ? null : ParseSpawns(data.spawns, spawnDelay, triggerRules) : ParseSpawns(data.spawn, spawnDelay, triggerRules);
     var types = (data.types ?? [data.type]).Select(s => new InfoType(data.prefab, s)).ToArray();
     if (data.prefab == "" && types.Any(t => t.Type != ActionType.GlobalKey && t.Type != ActionType.Event))
       Log.Warning($"Prefab missing for type {data.type}");
@@ -97,7 +97,7 @@ public class Loading
     return types.Select(t =>
     {
       var d = t.Type != ActionType.Destroy ? data.data : "";
-      bool? remove = t.Type == ActionType.Destroy ? false : swaps.Length > 0 ? true : data.remove == "" ? false : null;
+      bool? remove = t.Type == ActionType.Destroy ? false : swaps != null ? true : data.remove == "" ? false : null;
       return new Info()
       {
         Prefabs = data.prefab,
@@ -108,8 +108,8 @@ public class Loading
         Regenerate = (d != "" || data.addItems != "" || data.removeItems != "") && !data.injectData,
         RemoveDelay = data.removeDelay == null ? null : DataValue.Float(data.removeDelay),
         Drops = t.Type == ActionType.Destroy || data.drops == null ? null : DataValue.Bool(data.drops),
-        Spawns = [.. spawns],
-        Swaps = [.. swaps],
+        Spawns = spawns,
+        Swaps = swaps,
         Data = DataValue.String(d),
         InjectData = data.injectData,
         Commands = commands,
@@ -145,7 +145,7 @@ public class Loading
         BannedObjectsLimit = bannedObjectsLimit,
         Filter = filters,
         BannedFilter = bannedFilters,
-        TriggerRules = triggerRules,
+        TriggerRules = triggerRules ?? false,
         ObjectRpcs = objectRpcs,
         ClientRpcs = clientRpcs,
         MinPaint = minPaint,
@@ -157,7 +157,8 @@ public class Loading
     }).ToArray();
   }
 
-  private static Spawn[] ParseSpawns(string[] spawns, float delay, bool triggerRules) => spawns.Select(s => new Spawn(s, delay, triggerRules)).ToArray();
+  private static Spawn[] ParseSpawns(string[] spawns, float? delay, bool? triggerRules) => spawns.Select(s => new Spawn(s, delay, triggerRules)).ToArray();
+  private static Spawn[] ParseSpawns(SpawnData[] spawns, float? delay, bool? triggerRules) => spawns.Select(s => new Spawn(s, delay, triggerRules)).ToArray();
 
   private static DataEntry? ParseFilters(string[] filters)
   {

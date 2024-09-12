@@ -74,16 +74,18 @@ public class Manager
   {
     // Original object must be regenerated to apply data.
     var regenerateOriginal = !remove && regenerate;
-    if (info.Spawns.Length == 0 && info.Swaps.Length == 0 && !regenerateOriginal) return;
+    if (info.Spawns == null && info.Swaps == null && !regenerateOriginal) return;
 
     var customData = DataHelper.Get(dataStr);
-    foreach (var p in info.Spawns)
-      CreateObject(p, zdo, customData, pars, p.TriggerRules);
+    if (info.Spawns != null)
+      foreach (var p in info.Spawns)
+        CreateObject(p, zdo, customData, pars);
 
-    if (info.Swaps.Length == 0 && !regenerateOriginal) return;
+    if (info.Swaps == null && !regenerateOriginal) return;
     var data = DataHelper.Merge(new DataEntry(zdo), customData);
-    foreach (var p in info.Swaps)
-      CreateObject(p, zdo, data, pars, p.TriggerRules);
+    if (info.Swaps != null)
+      foreach (var p in info.Swaps)
+        CreateObject(p, zdo, data, pars);
     if (regenerateOriginal)
     {
       var removeItems = info.RemoveItems;
@@ -107,21 +109,21 @@ public class Manager
     zdo.SetOwner(ZDOMan.instance.m_sessionID);
     ZDOMan.instance.DestroyZDO(zdo);
   }
-  public static void CreateObject(Spawn spawn, ZDO originalZdo, DataEntry? data, Parameters parameters, bool triggerRules)
+  public static void CreateObject(Spawn spawn, ZDO originalZdo, DataEntry? data, Parameters parameters)
   {
     var pos = originalZdo.m_position;
     var rotQuat = originalZdo.GetRotation();
-    pos += rotQuat * spawn.Pos;
-    rotQuat *= spawn.Rot;
+    pos += rotQuat * (spawn.Pos?.Get(parameters) ?? Vector3.zero);
+    rotQuat *= spawn.Rot?.Get(parameters) ?? Quaternion.identity;
     var rot = rotQuat.eulerAngles;
-    if (spawn.Snap)
+    if (spawn.Snap?.GetBool(parameters) == true)
       pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
-    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data));
+    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data?.Get(parameters) ?? ""));
     var prefab = spawn.GetPrefab(parameters);
     ZdoEntry zdoEntry = new(prefab, pos, rot, originalZdo);
     if (data != null)
       zdoEntry.Load(data, parameters);
-    DelayedSpawn.Add(spawn.Delay, zdoEntry, triggerRules);
+    DelayedSpawn.Add(spawn.Delay?.Get(parameters) ?? 0f, zdoEntry, spawn.TriggerRules?.GetBool(parameters) ?? true);
   }
 
   public static ZDO? CreateObject(ZdoEntry entry, bool triggerRules)

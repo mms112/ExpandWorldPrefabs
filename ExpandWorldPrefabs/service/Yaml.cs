@@ -20,11 +20,32 @@ public class Yaml
     if (!Directory.Exists(BaseDirectory))
       Directory.CreateDirectory(BaseDirectory);
     var data = Directory.GetFiles(BaseDirectory, pattern, SearchOption.AllDirectories).Reverse().Select(name =>
-      string.Join("\n", File.ReadAllLines(name).ToList())
+      Migrate(File.ReadAllLines(name))
     );
     return string.Join("\n", data) ?? "";
   }
 
+  private static string Migrate(string[] lines)
+  {
+    List<string> result = [];
+    foreach (var line in lines)
+    {
+      if (line.StartsWith("  spawn: "))
+      {
+        // Convert to spawns list.
+        result.Add("  spawns:");
+        result.Add("  - " + line.Substring(9));
+      }
+      else if (line.StartsWith("  swap: "))
+      {
+        // Convert to swaps list.
+        result.Add("  swaps:");
+        result.Add("  - " + line.Substring(8));
+      }
+      else result.Add(line);
+    }
+    return string.Join("\n", result);
+  }
   public static Heightmap.Biome ToBiomes(string biomeStr)
   {
     Heightmap.Biome result = 0;
