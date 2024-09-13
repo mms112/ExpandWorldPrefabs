@@ -85,57 +85,11 @@ Most fields are put on a single line. List values are separated by `,`.
       - Use field `end` to trigger on event end.
       - Note: There is no prefab for this type, so most fields won't work.
   - Objects spawned or removed by this mod won't trigger `create` or `destroy`.
+- types: List of types.
 - weight (default: `1`, P): Chance to be selected if multiple entries match.
   - All weights are summed and the probability is `weight / sum`.
   - If the sum is less than 1, the probability is `weight`, so there is a chance to not select any entry.
 - fallback (default: `false`): If true, this entry can only be selected if no other entries match.
-
-### Actions
-
-- addItems: Data entry that is used to add items to the container object.
-  - Data type "items" is used for this.
-  - If the item exists, its stack amount is increased up to the max.
-  - Remaining stack amount is added as new items.
-  - For adding a single item, shorthand `itemid, amount` can be used.
-- cancel (default: `false`, P): If true, the RPC call of the triggering action is cancelled.
-  - This affects types `command`, `damage`, `say`, `state` and `repair`.
-  - This only works properly for some actions, since the RPC calls are usually for cosmetic changes.
-  - For example chat messages can be cancelled so that they are never shown to other players (for example for non-admin custom commands).
-- command: Console command to run.
-  - Parameters are supported.
-  - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
-- data (P): Changes data to the original object.
-  - Name of the data entry (from `data.yaml`) or data code that is added to the object.
-  - This is done by respawning the original object with the new data.
-- injectData (default: `false`): If true, the object is not respawned when adding data.
-  - Note: This doesn't work in most cases because clients don't load the new data.
-  - Some possible cases are:
-    - When adding data that is only used by this mod. In this case, clients wouldn't use the data anyway.
-    - When changing data that changes during the normal game play. For example creature health.
-- remove (default: `false`, P): If true, the original object is removed.
-- removeDelay (P): Delay in seconds for remove.
-- removeItems: Data entry that is used to removes items from the container object.
-  - Data type "items" is used for this.
-  - If the item doesn't exist then nothing happens.
-  - For removing a single item, shorthand `itemid, amount` can be used.
-- spawn: Spawns another object.
-  - Format is `id, posX,posZ,posY, rotY,rotX,rotZ, data, delay, triggerRules`.
-  - Most parts are optional. For example following formats are valid:
-    - `id, posX,posZ,posY, rotY,rotX,rotZ, delay`
-    - `id, posX,posZ,posY, data, triggerRules`
-    - `id, data, delay`
-    - `id, triggerRules`
-  - Id is required and supports parameters.
-  - Position must be set before rotation.
-  - PosY can be `snap` to snap to the ground.
-- spawnDelay: Delay in seconds for spawns and swaps.
-- swap: Swaps the original object with another object.
-  - Format and keywords are same as for `spawn`.
-  - The initial data is copied from the original object.
-  - Swap is done by removing the original object and spawning the swapped object.
-  - If the swapped object is not valid, the original object is still removed.
-  - Note: Swapping can break ZDO connection, so spawn points may respawn even when the creature is alive.
-- triggerRules (default: `false`): If true, spawns or remove from this entry can trigger other entries.
 
 ## Filters
 
@@ -165,6 +119,9 @@ If a filter is not specified, it's not checked and is always considered valid.
   - If set without `eventDistance`, the search distance is 100 meters.
 - eventDistance: Search distance for nearby events.
   - If set without `events`, any nearby event is valid.
+
+### Data filters
+
 - filter: Data filter for the object. This can be a data entry or a single data value.
   - Format for a single data value is `type, key, value`. Supported types are bool, int, hash, float and string.
     - `filter: bool, boss, true` would apply only to boss creatures.
@@ -181,7 +138,9 @@ If a filter is not specified, it's not checked and is always considered valid.
     - If item amount is set, then at least that many items must match.
     - Items are checked in the same order as they are defined in the "items" list.
     - If item amount is set but items are not, then only the item count is checked.
+- filters: List of data value filters. All must match.
 - bannedFilter: Data filter that must not be true.
+- bannedFilters: List of data value filters. None must match.
 
 ### Object filters
 
@@ -189,40 +148,77 @@ If a filter is not specified, it's not checked and is always considered valid.
   - If not set, then each filter must be matched at least once. One object can match multiple filters.
   - If set, that many filters must be matched. Each filter can be matched by multiple objects.
   - Note: When using max, all objects must be searched.
-- objects: List of object information. Format is `- id, distance, data, weight`:
+- objects: List of object information. Format is `- id, distance, data, weight, height`:
   - id: Object id. Keywords are supported ("all", "creature" and "<>").
   - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
     - Note: All objects are searched if the max distance is more than 10000 meters.
   - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
   - weight: Optional. How much tis match counts towards the `objectsLimit`. Default is 1.
+  - height: Optional. Height difference to the object  (`max` or `min-max`).
   - Note: If `objectsLimit` is set and multiple filters match, the first one is matched.
 - bannedObjectsLimit: How many of the filters must not match (`min` or `min-max`).
 - bannedObjects: List of object information.
 
 See object filtering [examples](examples_object_filtering.md).
 
+### Actions
+
+- addItems: Data entry that is used to add items to the container object.
+  - Data type "items" is used for this.
+  - If the item exists, its stack amount is increased up to the max.
+  - Remaining stack amount is added as new items.
+  - For adding a single item, shorthand `itemid, amount` can be used.
+- cancel (default: `false`, P): If true, the RPC call of the triggering action is cancelled.
+  - This affects types `command`, `damage`, `say`, `state` and `repair`.
+  - This only works properly for some actions, since the RPC calls are usually for cosmetic changes.
+  - For example chat messages can be cancelled so that they are never shown to other players (for example for non-admin custom commands).
+- command: Console command to run.
+  - Parameters are supported.
+  - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
+- commands: List of console commands to run.
+- data (P): Changes data to the original object.
+  - Name of the data entry (from `data.yaml`) or data code that is added to the object.
+  - This is done by respawning the original object with the new data.
+- injectData (default: `false`): If true, the object is not respawned when adding data.
+  - Note: This doesn't work in most cases because clients don't load the new data.
+  - Some possible cases are:
+    - When adding data that is only used by this mod. In this case, clients wouldn't use the data anyway.
+    - When changing data that changes during the normal game play. For example creature health.
+- remove (default: `false`, P): If true, the original object is removed.
+- removeDelay (P): Delay in seconds for remove.
+- removeItems: Data entry that is used to removes items from the container object.
+  - Data type "items" is used for this.
+  - If the item doesn't exist then nothing happens.
+  - For removing a single item, shorthand `itemid, amount` can be used.
+- triggerRules (default: `false`): If true, spawns or remove from this entry can trigger other entries.
+
+### Spawns
+
+- spawn (P): Spawns another object.
+  - prefab: Object id or value group.
+  - data: Entry in the `data.yaml` to be used as initial data.
+  - delay: Delay in seconds for spawning.
+  - pos: Position offset in x,z,y from the original object.
+  - rot: Rotation offset in y,x,z from the original object.
+  - triggerRules: If true, this spawn can trigger other entries.
+- swap (P): Swaps the original object with another object.
+  - Format and keywords are same as for `spawn`.
+  - The initial data is copied from the original object.
+  - Swap is done by removing the original object and spawning the swapped object.
+  - If the swapped object is not valid, the original object is still removed.
+  - Note: Swapping can break ZDO connection, so spawn points may respawn even when the creature is alive.
+
 ### Pokes
 
 - poke (P): List of poke objects:
   - prefab: Target object id or value group.
   - parameter: Custom value used as the parameter for the `poke` type.
-  - delay: Delay in seconds for poking. Default is 0 seconds.
+  - delay: Delay in seconds for poking.
   - limit: Maximum amount of poked objects. If not set, all matching objects are poked.
-  - minDistance: Minimum distance from the poker. Default is 0 meters.
+  - minDistance: Minimum distance from the poker.
   - maxDistance: Maximum distance from the poker. Default is 100 meters.
-  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
-
-### Legacy pokes
-
-Old way of poking.
-
-- pokeDelay: Delay in seconds for poking.
-- pokeParameter: Custom value used as the parameter for the `poke` type.
-- pokeLimit: Maximum amount of poked objects.
-  - If not set, all matching objects are poked.
-- pokes: List of object information. Format is `- id, distance, data`:
-  - id: Object id or value group.
-  - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
+  - minHeight: Minimum height difference from the poker.
+  - maxHeight: Maximum height difference from the poker.
   - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
 
 ### RPCs
@@ -253,17 +249,6 @@ RPC format:
 - 3: Third parameter.
 - ...: More parameters.
 
-### Lists
-
-To set multiple values, following fields can be used instead:
-
-- types: List of types.
-- swaps: Swaps the object with multiple objects.
-- spawns: Spawns multiple objects.
-- commands: List of console commands to run.
-- filters: List of data value filters. All must match.
-- bannedFilters: List of data value filters. None must match.
-
 ### States
 
 State works for following objects:
@@ -287,6 +272,38 @@ State works for following objects:
 - Pickables: Picking triggers state `picked` or `unpicked`.
 - Traps: Triggering the trap triggers state with the target id.
 - Ward: Triggering the ward triggers state `flash`.
+
+### Legacy
+
+Legacy ways will be supported but they may miss some features.
+
+Old way of poking.
+
+- pokeDelay: Delay in seconds for poking.
+- pokeParameter: Custom value used as the parameter for the `poke` type.
+- pokeLimit: Maximum amount of poked objects.
+  - If not set, all matching objects are poked.
+- pokes: List of object information. Format is `- id, distance, data`:
+  - id: Object id or value group.
+  - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
+  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
+
+Old way of spawning.
+
+- spawns: Short-format for spawns without parameter support.
+  - Format is `id, posX,posZ,posY, rotY,rotX,rotZ, data, delay, triggerRules`.
+  - Most parts are optional. For example following formats are valid:
+    - `id, posX,posZ,posY, rotY,rotX,rotZ, delay`
+    - `id, posX,posZ,posY, data, triggerRules`
+    - `id, data, delay`
+    - `id, triggerRules`
+  - Id is required and supports parameters.
+  - Position must be set before rotation.
+  - PosY can be `snap` to snap to the ground.
+- spawn: Single line short-format for spawns without parameter support.
+- spawnDelay: Delay in seconds for spawns and swaps.
+- swaps: Short-format for swaps without parameter support.
+- swap: Single line short-format for swaps without parameter support.
 
 ## Credits
 

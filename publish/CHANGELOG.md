@@ -1,12 +1,14 @@
 - v1.18
-  - Adds spawn specific triggerRules to the field `spawn`.
+  - Adds a new way of spawning with `spawn` and `swap` fields.
   - Adds new fields `addItems` and `removeItems` to more easily add or remove items from containers.
+  - Adds new fields `maxHeight` and `minHeight` to pokes and object filters.
   - Adds support for filtering with the data type items.
   - Adds new parameters "par5", "par6", "par7", "par8" and "par9".
   - Adds new parameters "item_*" to get the amount of a specific item in containers.
   - Adds a new parameter "snap" to get world height at current position.
   - Adds the file name to the error message when failing to load a file.
-  - Adds parameter support to fields `cancel`, `data`, `day`, `maxAltitude`, `maxDistance`, `minAltitude`, `minDistance`, `minY`, `night`, `poke`, `remove`, `removeDelay`, `weight`.
+  - Adds parameter support to fields `data`, `day`, `maxAltitude`, `maxDistance`, `minAltitude`, `minDistance`, `minY`, `night`, `poke`, `remove`, `removeDelay`, `weight`.
+  - Adds a new field `cancel` to cancel some triggering actions.
   - Fixes global key filters not being converted to lower case.
   - Fixes nested parameters not working.
   - Fixes zdo based parameters not working when spawning objects.
