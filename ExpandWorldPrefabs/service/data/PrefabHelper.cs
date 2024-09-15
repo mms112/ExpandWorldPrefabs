@@ -31,11 +31,14 @@ public class PrefabHelper
   }
   public static List<int> GetPrefabs(string value)
   {
+    Log.Warning($"GetPrefabs: {value}");
     if (ResultCache.ContainsKey(value)) return ResultCache[value];
     var values = Parse.ToList(value);
+    Log.Warning($"GetPrefabs: {string.Join(", ", values)}");
     var prefabs = GetPrefabs(values);
     // No point to cache error results from users.
     if (prefabs == null) return [];
+    Log.Warning($"GetPrefabs: {prefabs.Count}");
     ResultCache[value] = prefabs;
     return prefabs;
   }
@@ -45,39 +48,45 @@ public class PrefabHelper
   public static List<int>? GetPrefabs(List<string> values)
   {
     if (values.Count == 0) return null;
-    if (values.Count == 1) return ParsePrefabs(values[0])?.ToList();
-    var value = values.Select(ParsePrefabs).Where(s => s != null).Aggregate((a, b) => a.Intersect(b).ToList()).ToList();
-    return value == null || value.Count == 0 ? null : value;
+    if (values.Count == 1) return ParsePrefabs(values[0]);
+    var prefabs = values.Select(ParsePrefabs).Where(s => s != null).ToList();
+    HashSet<int> value = [];
+    foreach (var p in prefabs)
+    {
+      if (p == null) continue;
+      foreach (var i in p) value.Add(i);
+    }
+    return value.Count == 0 ? null : [.. value];
   }
 
   private static Dictionary<string, int> PrefabCache = [];
-  private static IEnumerable<int>? ParsePrefabs(string prefab)
+  private static List<int>? ParsePrefabs(string prefab)
   {
     var p = prefab.ToLowerInvariant();
     if (PrefabCache.Count == 0)
       PrefabCache = ZNetScene.instance.m_namedPrefabs.ToDictionary(pair => pair.Value.name, pair => pair.Key);
     if (p == "*")
-      return PrefabCache.Values;
+      return [.. PrefabCache.Values];
     if (p[0] == '*' && p[p.Length - 1] == '*')
     {
       p = p.Substring(1, p.Length - 2);
-      return PrefabCache.Where(pair => pair.Key.ToLowerInvariant().Contains(p)).Select(pair => pair.Value);
+      return PrefabCache.Where(pair => pair.Key.ToLowerInvariant().Contains(p)).Select(pair => pair.Value).ToList();
     }
     if (p[0] == '*')
     {
       p = p.Substring(1);
-      return PrefabCache.Where(pair => pair.Key.EndsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value);
+      return PrefabCache.Where(pair => pair.Key.EndsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value).ToList();
     }
     if (p[p.Length - 1] == '*')
     {
       p = p.Substring(0, p.Length - 1);
-      return PrefabCache.Where(pair => pair.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value);
+      return PrefabCache.Where(pair => pair.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value).ToList();
     }
     if (PrefabCache.ContainsKey(prefab))
       return [PrefabCache[prefab]];
     var group = DataHelper.GetValuesFromGroup(prefab);
     if (group != null)
-      return group.Select(s => s.GetStableHashCode());
+      return group.Select(s => s.GetStableHashCode()).ToList();
     Log.Warning($"Failed to resolve prefab: {prefab}");
     return null;
   }
