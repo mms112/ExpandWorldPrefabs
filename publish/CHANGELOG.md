@@ -1,4 +1,5 @@
 - v1.19
+  - Adds the file name to the error message when failing to load a file.
   - Changes the default value of zdo field parameters to be acquired from the object.
   - Fixes multiple prefabs not working on the field `prefab`.
 
@@ -10,7 +11,6 @@
   - Adds new parameters "par5", "par6", "par7", "par8" and "par9".
   - Adds new parameters "item_*" to get the amount of a specific item in containers.
   - Adds a new parameter "snap" to get world height at current position.
-  - Adds the file name to the error message when failing to load a file.
   - Adds parameter support to fields `data`, `day`, `maxAltitude`, `maxDistance`, `minAltitude`, `minDistance`, `minY`, `night`, `poke`, `remove`, `removeDelay`, `weight`.
   - Adds a new field `cancel` to cancel some triggering actions.
   - Fixes global key filters not being converted to lower case.

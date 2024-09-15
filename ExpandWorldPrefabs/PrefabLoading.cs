@@ -13,29 +13,6 @@ public class Loading
   private static readonly string FilePath = Path.Combine(Yaml.BaseDirectory, FileName);
   private static readonly string Pattern = "expand_prefabs*.yaml";
 
-  private static void Load(string yaml)
-  {
-    InfoManager.Clear();
-    if (Helper.IsClient()) return;
-
-    var data = ParseYaml(yaml);
-    if (data.Count == 0)
-    {
-      Log.Warning($"Failed to load any prefab data.");
-      return;
-    }
-    Log.Info($"Reloading prefab rules ({data.Count} entries).");
-    foreach (var item in data)
-    {
-      InfoManager.Add(item);
-    }
-    InfoManager.Patch();
-  }
-
-  public static void FromSetting()
-  {
-    //if (Helper.IsClient()) Load(EWP.valuePrefabData.Value);
-  }
   public static void FromFile()
   {
     if (Helper.IsClient()) return;
@@ -48,23 +25,30 @@ public class Loading
     }
     else
     {
-      var yaml = Yaml.Read(Pattern);
-      Load(yaml);
+      Load();
     }
   }
-  private static List<Info> ParseYaml(string yaml)
+
+  private static void Load()
   {
-    try
+    InfoManager.Clear();
+    if (Helper.IsClient()) return;
+
+    var data = Yaml.Read<Data>(Pattern, true);
+    if (data.Count == 0)
     {
-      return Yaml.Deserialize<Data>(yaml, FileName).SelectMany(FromData).ToList();
+      Log.Warning($"Failed to load any prefab data.");
+      return;
     }
-    catch (Exception e)
+    Log.Info($"Reloading prefab rules ({data.Count} entries).");
+    var items = data.SelectMany(FromData).ToList();
+    foreach (var item in items)
     {
-      Log.Error(e.Message);
-      Log.Error(e.StackTrace);
+      InfoManager.Add(item);
     }
-    return [];
+    InfoManager.Patch();
   }
+
   private static Info[] FromData(Data data)
   {
     var waterLevel = ZoneSystem.instance.m_waterLevel;

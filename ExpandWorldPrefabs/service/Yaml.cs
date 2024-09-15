@@ -15,14 +15,30 @@ public class Yaml
   public static string BackupDirectory = Path.Combine(Paths.ConfigPath, "expand_world_backups");
 
 
-  public static string Read(string pattern)
+  public static List<T> Read<T>(string pattern, bool migrate)
   {
     if (!Directory.Exists(BaseDirectory))
       Directory.CreateDirectory(BaseDirectory);
-    var data = Directory.GetFiles(BaseDirectory, pattern, SearchOption.AllDirectories).Reverse().Select(name =>
-      Migrate(File.ReadAllLines(name))
-    );
-    return string.Join("\n", data) ?? "";
+    var files = Directory.GetFiles(BaseDirectory, pattern, SearchOption.AllDirectories).Reverse().ToList();
+    return Read<T>(files, migrate);
+  }
+
+  public static List<T> Read<T>(List<string> files, bool migrate)
+  {
+    List<T> result = [];
+    foreach (var file in files)
+    {
+      try
+      {
+        var lines = migrate ? Migrate(File.ReadAllLines(file)) : File.ReadAllText(file);
+        result.AddRange(Deserialize<T>(lines, file));
+      }
+      catch (Exception ex)
+      {
+        Log.Error($"Error reading {Path.GetFileName(file)}: {ex.Message}");
+      }
+    }
+    return result;
   }
 
   private static string Migrate(string[] lines)
@@ -125,8 +141,8 @@ public class Yaml
   private static void BackupFile(string path)
   {
     if (!File.Exists(path)) return;
-    if (!System.IO.Directory.Exists(BackupDirectory))
-      System.IO.Directory.CreateDirectory(BackupDirectory);
+    if (!Directory.Exists(BackupDirectory))
+      Directory.CreateDirectory(BackupDirectory);
     var stamp = DateTime.Now.ToString("yyyy-MM-dd");
     var name = $"{Path.GetFileNameWithoutExtension(path)}_{stamp}{Path.GetExtension(path)}.bak";
     File.Copy(path, Path.Combine(BackupDirectory, name), true);
@@ -138,10 +154,10 @@ public class Yaml
       Directory.CreateDirectory(BaseDirectory);
   }
 
-  public static IDeserializer Deserializer() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
-  public static IDeserializer DeserializerUnSafe() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).IgnoreUnmatchedProperties().Build();
+  private static IDeserializer Deserializer() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+  private static IDeserializer DeserializerUnSafe() => new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).IgnoreUnmatchedProperties().Build();
 
-  public static List<T> Deserialize<T>(string raw, string fileName)
+  private static List<T> Deserialize<T>(string raw, string file)
   {
     try
     {
@@ -149,7 +165,7 @@ public class Yaml
     }
     catch (Exception ex1)
     {
-      Log.Error($"{fileName}: {ex1.Message}");
+      Log.Error($"{Path.GetFileName(file)}: {ex1.Message}");
       try
       {
         return DeserializerUnSafe().Deserialize<List<T>>(raw) ?? [];
@@ -159,10 +175,5 @@ public class Yaml
         return [];
       }
     }
-  }
-  public static List<T> LoadList<T>(string file) where T : new()
-  {
-    if (!File.Exists(file)) return [];
-    return Deserialize<T>(File.ReadAllText(file), file);
   }
 }
