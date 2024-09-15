@@ -210,19 +210,50 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
    key switch
    {
      "key" => DataHelper.GetGlobalKey(value),
-     "string" => zdo.GetString(value),
-     "float" => zdo.GetFloat(value).ToString(CultureInfo.InvariantCulture),
-     "int" => zdo.GetInt(value).ToString(CultureInfo.InvariantCulture),
-     "long" => zdo.GetLong(value).ToString(CultureInfo.InvariantCulture),
-     "bool" => zdo.GetBool(value) ? "true" : "false",
+     "string" => GetString(value),
+     "float" => GetFloat(value).ToString(CultureInfo.InvariantCulture),
+     "int" => GetInt(value).ToString(CultureInfo.InvariantCulture),
+     "long" => GetLong(value).ToString(CultureInfo.InvariantCulture),
+     "bool" => GetBool(value) ? "true" : "false",
      "hash" => ZNetScene.instance.GetPrefab(zdo.GetInt(value))?.name ?? "",
-     "vec" => DataEntry.PrintVectorXZY(zdo.GetVec3(value, Vector3.zero)),
-     "quat" => DataEntry.PrintAngleYXZ(zdo.GetQuaternion(value, Quaternion.identity)),
+     "vec" => DataEntry.PrintVectorXZY(GetVec3(value)),
+     "quat" => DataEntry.PrintAngleYXZ(GetQuaternion(value)),
      "byte" => Convert.ToBase64String(zdo.GetByteArray(value)),
      "zdo" => zdo.GetZDOID(value).ToString(),
      "item" => GetAmountOfItems(value).ToString(),
      _ => "",
    };
+
+  private string GetString(string value) => ZDOExtraData.s_strings.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var str) ? str : GetStringField(value);
+  private float GetFloat(string value) => ZDOExtraData.s_floats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var f) ? f : GetFloatField(value);
+  private int GetInt(string value) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var i) ? i : GetIntField(value);
+  private long GetLong(string value) => ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var l) ? l : GetLongField(value);
+  private bool GetBool(string value) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var b) ? b > 0 : GetBoolField(value);
+  private Vector3 GetVec3(string value) => ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var v) ? v : GetVecField(value);
+  private Quaternion GetQuaternion(string value) => ZDOExtraData.s_quats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var q) ? q : GetQuatField(value);
+
+
+
+  private string GetStringField(string value) => GetField(value) is string s ? s : "";
+  private float GetFloatField(string value) => GetField(value) is float f ? f : 0;
+  private int GetIntField(string value) => GetField(value) is int i ? i : 0;
+  private bool GetBoolField(string value) => GetField(value) is bool b ? b : false;
+  private long GetLongField(string value) => GetField(value) is long l ? l : 0;
+  private Vector3 GetVecField(string value) => GetField(value) is Vector3 v ? v : Vector3.zero;
+  private Quaternion GetQuatField(string value) => GetField(value) is Quaternion q ? q : Quaternion.identity;
+
+  private object? GetField(string value)
+  {
+    var kvp = Parse.Kvp(value, '.');
+    if (kvp.Value == "") return null;
+    var prefab = ZNetScene.instance.GetPrefab(zdo.m_prefab);
+    if (prefab == null) return null;
+    // Reflection to get the component and field.
+    var component = prefab.GetComponent(kvp.Key);
+    if (component == null) return null;
+    var field = component.GetType().GetField(kvp.Value);
+    return field?.GetValue(component);
+  }
 
   private int GetAmountOfItems(string prefab)
   {

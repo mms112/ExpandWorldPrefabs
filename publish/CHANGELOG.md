@@ -1,5 +1,6 @@
 - v1.19
-  - Fixes multiple prefabs not working o nthe field `prefab`.
+  - Changes the default value of zdo field parameters to be acquired from the object.
+  - Fixes multiple prefabs not working on the field `prefab`.
 
 - v1.18
   - Adds a new way of spawning with `spawn` and `swap` fields.

@@ -106,11 +106,9 @@ If a filter is not specified, it's not checked and is always considered valid.
 - maxAltitude (P): Maximum altitude (y coordinate + 30).
 - environments: List of valid environments.
 - bannedEnvironments: List of  invalid environments.
-- globalKeys: List of global keys that must be set.
-  - Parameters are supported.
+- globalKeys (P): List of global keys that must be set.
   - The values are converted to lower case because the game always uses lower case.
-- bannedGlobalKeys: List of global keys that must not be set.
-  - Parameters are supported.
+- bannedGlobalKeys (P): List of global keys that must not be set.
   - The values are converted to lower case because the game always uses lower case.
 - locations: List of location ids. At least one must be nearby.
 - locationDistance (default: `0` meters): Search distance for nearby locations.
