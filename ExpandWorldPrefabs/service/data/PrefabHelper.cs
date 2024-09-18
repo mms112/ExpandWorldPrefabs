@@ -31,14 +31,11 @@ public class PrefabHelper
   }
   public static List<int> GetPrefabs(string value)
   {
-    Log.Warning($"GetPrefabs: {value}");
     if (ResultCache.ContainsKey(value)) return ResultCache[value];
     var values = Parse.ToList(value);
-    Log.Warning($"GetPrefabs: {string.Join(", ", values)}");
     var prefabs = GetPrefabs(values);
     // No point to cache error results from users.
     if (prefabs == null) return [];
-    Log.Warning($"GetPrefabs: {prefabs.Count}");
     ResultCache[value] = prefabs;
     return prefabs;
   }

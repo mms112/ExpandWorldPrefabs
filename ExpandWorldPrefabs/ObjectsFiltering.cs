@@ -104,13 +104,11 @@ public class ObjectsFiltering
   private static bool HasAllObjects(List<List<ZDO>> zdoLists, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
-    var zm = ZDOMan.instance;
-    return objects.All(o => zdoLists.Any(z => z.Any(z => o.IsValid(z, pos, parameters) && z != zdo)));
+    return objects.All(o => zdoLists.Any(zdos => zdos.Any(z => o.IsValid(z, pos, parameters) && z != zdo)));
   }
   private static bool HasAllObjects(Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
-    var zm = ZDOMan.instance;
     return objects.All(o => zdos.Any(z => o.IsValid(z, pos, parameters) && z != zdo));
   }
   private static bool HasLimitObjects(List<List<ZDO>> zdoLists, Range<int> limit, Object[] objects, ZDO zdo, Parameters parameters)

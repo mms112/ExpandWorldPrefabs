@@ -142,20 +142,24 @@ If a filter is not specified, it's not checked and is always considered valid.
 
 ### Object filters
 
-- objectsLimit: How many of the filters must match (`min` or `min-max`).
-  - If not set, then each filter must be matched at least once. One object can match multiple filters.
-  - If set, that many filters must be matched. Each filter can be matched by multiple objects.
+- objectsLimit: How many of the `objects` must match (`min` or `min-max`).
+  - If not set, then each entry must be found at least once. One object can match multiple filters.
+  - If set, that many entries must be found. Each filter can be matched by multiple entries.
   - Note: When using max, all objects must be searched.
-- objects: List of object information. Format is `- id, distance, data, weight, height`:
-  - id: Object id. Keywords are supported ("all", "creature" and "<>").
-  - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
+- objects (P): List of required nearby objects.
+  - prefab: Target object id or value group.
+  - minDistance: Minimum distance to the object.
+  - maxDistance: Maximum distance to the object. Default is 100 meters.
     - Note: All objects are searched if the max distance is more than 10000 meters.
-  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
-  - weight: Optional. How much tis match counts towards the `objectsLimit`. Default is 1.
-  - height: Optional. Height difference to the object  (`max` or `min-max`).
-  - Note: If `objectsLimit` is set and multiple filters match, the first one is matched.
-- bannedObjectsLimit: How many of the filters must not match (`min` or `min-max`).
-- bannedObjects: List of object information.
+  - minHeight: Minimum height difference to the object.
+  - maxHeight: Maximum height difference to the object.
+  - weight: How much this object counts towards the `objectsLimit`. Default is 1.  
+  - data: Entry in the `data.yaml` that can be used as filter. All values must match.
+- bannedObjectsLimit: How many of the `bannedObjects` must not match (`min` or `min-max`).
+  - If not set, then all of the entries must not be found.
+  - If set, that many `bannedObjects` must not be found. Each filter can be matched by multiple entries.
+  - Note: When using max, all objects must be searched.
+- bannedObjects (P): List of banned nearby objects.
 
 See object filtering [examples](examples_object_filtering.md).
 
@@ -274,6 +278,17 @@ State works for following objects:
 ### Legacy
 
 Legacy ways will be supported but they may miss some features.
+
+Old way of object filtering. When using both old and new format, entries with the old format must be before the new format.
+
+- objects (P): List of required nearby objects. Format is `- id, distance, data, weight, height`:
+  - id: Object id.
+  - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
+    - Note: All objects are searched if the max distance is more than 10000 meters.
+  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
+  - weight: Optional. How much tis match counts towards the `objectsLimit`. Default is 1.
+  - height: Optional. Height difference to the object  (`max` or `min-max`).'
+- bannedObjects (P): List of banned nearby objects.
 
 Old way of poking.
 

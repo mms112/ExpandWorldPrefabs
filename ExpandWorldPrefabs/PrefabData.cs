@@ -82,13 +82,13 @@ public class Data
   public float pokeDelay = 0f;
 
   [DefaultValue(null)]
-  public string[]? objects;
+  public ObjectData[]? objects;
   [DefaultValue(null)]
   public string? objectsLimit;
   [DefaultValue(null)]
-  public string[]? bannedObjects;
-  [DefaultValue("")]
-  public string bannedObjectsLimit = "";
+  public ObjectData[]? bannedObjects;
+  [DefaultValue(null)]
+  public string? bannedObjectsLimit;
   [DefaultValue("")]
   public string locations = "";
   [DefaultValue(0f)]
@@ -165,10 +165,10 @@ public class Info
   public int PokeLimit = 0;
   public string PokeParameter = "";
   public float PokeDelay = 0f;
-  public Range<int>? ObjectsLimit = null;
-  public Object[] Objects = [];
-  public Range<int>? BannedObjectsLimit = null;
-  public Object[] BannedObjects = [];
+  public Range<int>? ObjectsLimit;
+  public Object[]? Objects;
+  public Range<int>? BannedObjectsLimit;
+  public Object[]? BannedObjects;
   public HashSet<string> Locations = [];
   public float LocationDistance = 0f;
   public DataEntry? Filter;
@@ -265,39 +265,41 @@ public class Spawn
 
 public class Poke(PokeData data)
 {
-  public Object Filter = new(data.prefab, data.minDistance, data.maxDistance, data.minHeight, data.maxHeight, data.data);
-  public IStringValue Parameter = DataValue.String(data.parameter);
-  public IIntValue Limit = DataValue.Int(data.limit);
-  public IFloatValue Delay = DataValue.Float(data.delay);
+  public Object Filter = new(data);
+  public IStringValue? Parameter = data.parameter == null ? null : DataValue.String(data.parameter);
+  public IIntValue? Limit = data.limit == null ? null : DataValue.Int(data.limit);
+  public IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
 }
 public class Object
 {
   private readonly IPrefabValue PrefabsValue;
-  private readonly IFloatValue MinDistanceValue;
+  private readonly IFloatValue? MinDistanceValue;
   private readonly IFloatValue MaxDistanceValue;
   private readonly IFloatValue? MinHeightValue;
   private readonly IFloatValue? MaxHeightValue;
   private readonly int Data = 0;
   private readonly IIntValue WeightValue = new SimpleIntValue(1);
 
-  public Object(string prefab, string minDistance, string maxDistance, string minHeight, string maxHeight, string data)
+  public Object(ObjectData data)
   {
-    PrefabsValue = DataValue.Prefab(prefab);
-    MinDistanceValue = DataValue.Float(minDistance);
-    if (maxDistance != "")
-      MaxDistanceValue = DataValue.Float(maxDistance);
+
+    PrefabsValue = DataValue.Prefab(data.prefab);
+    if (data.minDistance != null)
+      MinDistanceValue = DataValue.Float(data.minDistance);
+    if (data.maxDistance != null)
+      MaxDistanceValue = DataValue.Float(data.maxDistance);
     else
       MaxDistanceValue = new SimpleFloatValue(100);
-    if (minHeight != "")
-      MinHeightValue = DataValue.Float(minHeight);
-    if (maxHeight != "")
-      MaxHeightValue = DataValue.Float(maxHeight);
-    if (data != "")
+    if (data.minHeight != null)
+      MinHeightValue = DataValue.Float(data.minHeight);
+    if (data.maxHeight != null)
+      MaxHeightValue = DataValue.Float(data.maxHeight);
+    if (data.data != null)
     {
-      Data = data.GetStableHashCode();
+      Data = data.data.GetStableHashCode();
       if (!DataHelper.Exists(Data))
       {
-        Log.Error($"Invalid object filter data: {data}");
+        Log.Error($"Invalid object filter data: {data.data}");
         Data = 0;
       }
     }
@@ -306,7 +308,6 @@ public class Object
   {
     var split = Parse.ToList(line);
     PrefabsValue = DataValue.Prefab(split[0]);
-    MinDistanceValue = new SimpleFloatValue(0f);
     MaxDistanceValue = new SimpleFloatValue(100f);
 
     if (split.Count > 1)
@@ -345,7 +346,7 @@ public class Object
 
   public void Roll(Parameters pars)
   {
-    MinDistance = MinDistanceValue.Get(pars);
+    MinDistance = MinDistanceValue?.Get(pars);
     MaxDistance = MaxDistanceValue.Get(pars) ?? 100f;
     MinHeight = MinHeightValue?.Get(pars);
     MaxHeight = MaxHeightValue?.Get(pars);
@@ -354,6 +355,7 @@ public class Object
 
   public bool IsValid(ZDO zdo, Vector3 pos, Parameters pars)
   {
+    if (PrefabsValue.Match(pars, zdo.GetPrefab()) == false) return false;
     var d = Utils.DistanceXZ(pos, zdo.GetPosition());
     if (MinDistance != null && d < MinDistance) return false;
     if (d > MaxDistance) return false;
@@ -361,33 +363,36 @@ public class Object
     if (MinHeight != null && dy < MinHeight) return false;
     if (MaxHeight != null && dy > MaxHeight) return false;
 
-    if (PrefabsValue.Match(pars, zdo.GetPrefab()) == false) return false;
     if (Data == 0) return true;
     return DataHelper.Match(Data, zdo, pars);
   }
 }
 
-public class PokeData
+public class PokeData : ObjectData
+{
+  [DefaultValue(null)]
+  public string? delay;
+  [DefaultValue(null)]
+  public string? parameter;
+  [DefaultValue(null)]
+  public string? limit;
+}
+public class ObjectData
 {
   [DefaultValue("")]
   public string prefab = "";
-  [DefaultValue("0f")]
-  public string delay = "0f";
-  [DefaultValue("")]
-  public string parameter = "";
-  [DefaultValue("")]
-  public string maxDistance = "";
-  [DefaultValue("")]
-  public string minDistance = "";
-  [DefaultValue("")]
-  public string maxHeight = "";
-  [DefaultValue("")]
-  public string minHeight = "";
-  [DefaultValue("0")]
-  public string limit = "0";
-  [DefaultValue("")]
-  public string data = "";
+  [DefaultValue(null)]
+  public string? maxDistance;
+  [DefaultValue(null)]
+  public string? minDistance;
+  [DefaultValue(null)]
+  public string? maxHeight;
+  [DefaultValue(null)]
+  public string? minHeight;
+  [DefaultValue(null)]
+  public string? data;
 }
+
 
 public class InfoType
 {

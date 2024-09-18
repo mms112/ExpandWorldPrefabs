@@ -206,9 +206,9 @@ public class Manager
     }
     foreach (var poke in info.Pokes)
     {
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit.Get(pars) ?? 0, poke.Filter, zdo.m_position, pars);
-      var pokeParameter = pars.Replace(poke.Parameter.Get(pars) ?? "");
-      DelayedPoke.Add(poke.Delay.Get(pars) ?? 0f, zdos, pokeParameter);
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, zdo.m_position, pars);
+      var pokeParameter = pars.Replace(poke.Parameter?.Get(pars) ?? "");
+      DelayedPoke.Add(poke.Delay?.Get(pars) ?? 0f, zdos, pokeParameter);
 
     }
   }
@@ -222,9 +222,9 @@ public class Manager
     }
     foreach (var poke in info.Pokes)
     {
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit.Get(pars) ?? 0, poke.Filter, pos, pars);
-      var pokeParameter = pars.Replace(poke.Parameter.Get(pars) ?? "");
-      DelayedPoke.Add(poke.Delay.Get(pars) ?? 0f, zdos, pokeParameter);
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, pars);
+      var pokeParameter = pars.Replace(poke.Parameter?.Get(pars) ?? "");
+      DelayedPoke.Add(poke.Delay?.Get(pars) ?? 0f, zdos, pokeParameter);
 
     }
   }

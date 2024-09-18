@@ -51,8 +51,8 @@ public class InfoSelector
     linq = linq.ToArray();
     var checkEnvironments = linq.Any(d => d.Environments.Count > 0) || linq.Any(d => d.BannedEnvironments.Count > 0);
     var checkEvents = linq.Any(d => d.Events.Count > 0);
-    var checkObjects = linq.Any(d => d.Objects.Length > 0);
-    var checkBannedObjects = linq.Any(d => d.BannedObjects.Length > 0);
+    var checkObjects = linq.Any(d => d.Objects != null);
+    var checkBannedObjects = linq.Any(d => d.BannedObjects != null);
     var checkLocations = linq.Any(d => d.Locations.Count > 0);
     var checkFilters = linq.Any(d => d.Filter != null);
     var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
@@ -76,11 +76,11 @@ public class InfoSelector
     }
     if (checkObjects)
     {
-      linq = linq.Where(d => ObjectsFiltering.HasNearby(d.ObjectsLimit, d.Objects, zdo, parameters)).ToArray();
+      linq = linq.Where(d => d.Objects == null || ObjectsFiltering.HasNearby(d.ObjectsLimit, d.Objects, zdo, parameters)).ToArray();
     }
     if (checkBannedObjects)
     {
-      linq = linq.Where(d => ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, parameters)).ToArray();
+      linq = linq.Where(d => d.BannedObjects == null || ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, parameters)).ToArray();
     }
     if (checkLocations)
     {

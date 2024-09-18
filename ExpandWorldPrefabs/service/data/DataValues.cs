@@ -74,13 +74,10 @@ public class DataValue
   }
   public static IPrefabValue Prefab(string values)
   {
-    var split = SplitWithValues(values);
-    if (!HasParameters(split[0]))
-    {
-      var prefabs = PrefabHelper.GetPrefabs(split[0]);
-      return prefabs.Count == 1 ? new SimplePrefabValue(prefabs[0]) : new SimplePrefabsValue(prefabs);
-    }
-    return new PrefabValue(split);
+    if (HasParameters(values))
+      return new PrefabValue(SplitWithValues(values));
+    var prefabs = PrefabHelper.GetPrefabs(values);
+    return prefabs.Count == 1 ? new SimplePrefabValue(prefabs[0]) : new SimplePrefabsValue(prefabs);
   }
 
   public static IVector3Value Vector3(string values)

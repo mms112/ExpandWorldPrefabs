@@ -1,7 +1,9 @@
 - v1.19
   - Adds the file name to the error message when failing to load a file.
+  - Adds a new way of filtering with `objects` and `bannedObjects` fields.
   - Changes the default value of zdo field parameters to be acquired from the object.
   - Fixes multiple prefabs not working on the field `prefab`.
+  - Fixes the field `bannedObjects` not working.
 
 - v1.18
   - Adds a new way of spawning with `spawn` and `swap` fields.

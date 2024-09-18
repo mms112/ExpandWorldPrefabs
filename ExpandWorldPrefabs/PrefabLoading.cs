@@ -65,8 +65,8 @@ public class Loading
     HashSet<string> bannedEnvironments = [.. Parse.ToList(data.bannedEnvironments).Select(s => s.ToLower())];
     HashSet<string> locations = [.. Parse.ToList(data.locations)];
     var objectsLimit = ParseObjectsLimit(data.objectsLimit);
-    var objects = ParseObjects(data.objects ?? []);
-    var bannedObjects = ParseObjects(data.bannedObjects ?? []);
+    var objects = data.objects == null ? null : ParseObjects(data.objects);
+    var bannedObjects = data.bannedObjects == null ? null : ParseObjects(data.bannedObjects);
     var bannedObjectsLimit = ParseObjectsLimit(data.bannedObjectsLimit);
     var filters = ParseFilters(data.filters ?? (data.filter == null ? [] : [data.filter]));
     var bannedFilters = ParseFilters(data.bannedFilters ?? (data.bannedFilter == null ? [] : [data.bannedFilter]));
@@ -205,6 +205,7 @@ public class Loading
     Log.Error($"Invalid filter type: {type}");
   }
   private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
+  private static Object[] ParseObjects(ObjectData[] objects) => objects.Select(s => new Object(s)).ToArray();
   private static Poke[] ParsePokes(PokeData[] objects) => objects.Select(s => new Poke(s)).ToArray();
   private static ObjectRpcInfo[]? ParseObjectRpcs(Data data)
   {

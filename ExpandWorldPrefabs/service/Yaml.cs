@@ -30,7 +30,7 @@ public class Yaml
     {
       try
       {
-        var lines = migrate ? Migrate(File.ReadAllLines(file)) : File.ReadAllText(file);
+        var lines = migrate ? PreParse(File.ReadAllLines(file)) : File.ReadAllText(file);
         result.AddRange(Deserialize<T>(lines, file));
       }
       catch (Exception ex)
@@ -41,11 +41,21 @@ public class Yaml
     return result;
   }
 
-  private static string Migrate(string[] lines)
+  private static string PreParse(string[] lines)
   {
+    bool objectsMode = false;
     List<string> result = [];
     foreach (var line in lines)
     {
+      if (objectsMode)
+      {
+        if (line.StartsWith("  - ") && !line.Contains(":"))
+        {
+          HandleObjects(result, line);
+          continue;
+        }
+        objectsMode = false;
+      }
       if (line.StartsWith("  spawn: "))
       {
         // Convert to spawns list.
@@ -58,9 +68,39 @@ public class Yaml
         result.Add("  swaps:");
         result.Add("  - " + line.Substring(8));
       }
+      else if (line.StartsWith("  objects:") || line.StartsWith("  bannedObjects:"))
+      {
+        objectsMode = true;
+        result.Add(line);
+      }
       else result.Add(line);
     }
     return string.Join("\n", result);
+  }
+  private static void HandleObjects(List<string> result, string line)
+  {
+    var parts = line.Substring(4).Split(',');
+    result.Add("  - prefab: " + parts[0]);
+    if (parts.Length > 1)
+    {
+      var distance = Parse.StringRange(parts[1]);
+      if (distance.Min != distance.Max)
+        result.Add("    minDistance: " + distance.Min);
+      result.Add("    maxDistance: " + distance.Max);
+    }
+    if (parts.Length > 2)
+      result.Add("    data: " + parts[2]);
+
+    if (parts.Length > 3)
+      result.Add("    weight: " + parts[3]);
+    if (parts.Length > 4)
+    {
+      var height = Parse.StringRange(parts[4]);
+      if (height.Min != height.Max)
+        result.Add("    minHeight: " + height.Min);
+      result.Add("    maxHeight: " + height.Max);
+    }
+
   }
   public static Heightmap.Biome ToBiomes(string biomeStr)
   {
