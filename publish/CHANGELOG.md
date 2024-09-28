@@ -1,3 +1,7 @@
+- v1.20
+  - Fixes wrong default value for the field `triggerRules`.
+  - Fixes parameters with empty value not working.
+
 - v1.19
   - Adds the file name to the error message when failing to load a file.
   - Adds a new way of filtering with `objects` and `bannedObjects` fields.

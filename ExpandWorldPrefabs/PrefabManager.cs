@@ -123,7 +123,7 @@ public class Manager
     ZdoEntry zdoEntry = new(prefab, pos, rot, originalZdo);
     if (data != null)
       zdoEntry.Load(data, parameters);
-    DelayedSpawn.Add(spawn.Delay?.Get(parameters) ?? 0f, zdoEntry, spawn.TriggerRules?.GetBool(parameters) ?? true);
+    DelayedSpawn.Add(spawn.Delay?.Get(parameters) ?? 0f, zdoEntry, spawn.TriggerRules?.GetBool(parameters) ?? false);
   }
 
   public static ZDO? CreateObject(ZdoEntry entry, bool triggerRules)

@@ -53,7 +53,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     data.RollItems(pars);
     if (data.Floats?.Count > 0)
     {
-      Floats = [];
+      Floats ??= [];
       foreach (var pair in data.Floats)
       {
         var value = pair.Value.Get(pars);
@@ -63,7 +63,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     }
     if (data.Ints?.Count > 0)
     {
-      Ints = [];
+      Ints ??= [];
       foreach (var pair in data.Ints)
       {
         var value = pair.Value.Get(pars);
@@ -73,7 +73,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     }
     if (data.Longs?.Count > 0)
     {
-      Longs = [];
+      Longs ??= [];
       foreach (var pair in data.Longs)
       {
         var value = pair.Value.Get(pars);
@@ -83,7 +83,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     }
     if (data.Strings?.Count > 0)
     {
-      Strings = [];
+      Strings ??= [];
       foreach (var pair in data.Strings)
       {
         var value = pair.Value.Get(pars);
@@ -93,7 +93,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     }
     if (data.Vecs?.Count > 0)
     {
-      Vecs = [];
+      Vecs ??= [];
       foreach (var pair in data.Vecs)
       {
         var value = pair.Value.Get(pars);
@@ -103,7 +103,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     }
     if (data.Quats?.Count > 0)
     {
-      Quats = [];
+      Quats ??= [];
       foreach (var pair in data.Quats)
       {
         var value = pair.Value.Get(pars);
@@ -113,7 +113,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     }
     if (data.ByteArrays?.Count > 0)
     {
-      ByteArrays = [];
+      ByteArrays ??= [];
       foreach (var pair in data.ByteArrays)
       {
         var value = pair.Value;

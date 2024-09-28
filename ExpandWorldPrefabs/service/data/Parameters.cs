@@ -74,15 +74,15 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     }
     return str;
   }
-  private bool TryReplaceParameter(string key, out string resolved)
+  private bool TryReplaceParameter(string key, out string? resolved)
   {
     resolved = GetParameter(key);
-    if (resolved == "")
+    if (resolved == null)
       resolved = ResolveValue(key);
     return resolved != key;
   }
 
-  protected virtual string GetParameter(string key) =>
+  protected virtual string? GetParameter(string key) =>
     key switch
     {
       "<prefab>" => prefab,
@@ -104,7 +104,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
       "<y>" => Format(pos.y),
       "<z>" => Format(pos.z),
       "<snap>" => Format(WorldGenerator.instance.GetHeight(pos.x, pos.z)),
-      _ => "",
+      _ => null,
     };
 
   private string GetArg(int index)
@@ -145,12 +145,12 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
   private Inventory? inventory;
 
 
-  protected override string GetParameter(string key)
+  protected override string? GetParameter(string key)
   {
     var value = base.GetParameter(key);
-    if (value != "") return value;
+    if (value != null) return value;
     value = GetGeneralParameter(key);
-    if (value != "") return value;
+    if (value != null) return value;
     var kvp = Parse.Kvp(key, '_');
     if (kvp.Value != "")
     {
@@ -158,10 +158,10 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
       var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
       return GetZdoValue(zdoKey, zdoValue);
     }
-    return "";
+    return null;
   }
 
-  private string GetGeneralParameter(string key) =>
+  private string? GetGeneralParameter(string key) =>
     key switch
     {
       "<zdo>" => zdo.m_uid.ToString(),
@@ -173,7 +173,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
       "<pid>" => GetPid(zdo),
       "<pname>" => GetPname(zdo),
       "<pchar>" => GetPchar(zdo),
-      _ => "",
+      _ => null,
     };
 
   private static string GetPid(ZDO zdo)
