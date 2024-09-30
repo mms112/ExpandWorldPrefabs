@@ -70,8 +70,9 @@ public class Loading
     var bannedObjectsLimit = ParseObjectsLimit(data.bannedObjectsLimit);
     var filters = ParseFilters(data.filters ?? (data.filter == null ? [] : [data.filter]));
     var bannedFilters = ParseFilters(data.bannedFilters ?? (data.bannedFilter == null ? [] : [data.bannedFilter]));
-    var legacyPokes = ParseObjects(data.pokes ?? []);
-    var pokes = ParsePokes(data.poke ?? []);
+    var legacyPokes = data.pokes == null ? null : ParseObjects(data.pokes);
+    var pokes = data.poke == null ? null : ParsePokes(data.poke);
+    var terrains = data.terrain == null ? null : data.terrain.Select(s => new Terrain(s)).ToArray();
     var objectRpcs = ParseObjectRpcs(data);
     var clientRpcs = ParseClientRpcs(data);
     var minPaint = data.minPaint != "" ? Parse.Color(data.minPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
@@ -121,6 +122,7 @@ public class Loading
         PokeLimit = data.pokeLimit,
         PokeParameter = data.pokeParameter,
         Pokes = pokes,
+        Terrains = terrains,
         LegacyPokes = legacyPokes,
         PokeDelay = data.pokeDelay,
         ObjectsLimit = objectsLimit,

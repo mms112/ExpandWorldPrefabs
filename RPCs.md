@@ -905,7 +905,7 @@ By default, the RPC is sent to the owner of the object.
 # Performs a terrain operation.
   objectRpc:
   - name: ApplyOperation
-    packged: true
+    packaged: true
     1: vec, "position"
     2: float, "level offset"
     3: bool, "is level"

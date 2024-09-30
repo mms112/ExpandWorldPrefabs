@@ -83,18 +83,36 @@ public class DataValue
   public static IVector3Value Vector3(string values)
   {
     var split = SplitWithValues(values);
+    if (HasParameters(values) || split.Length > 3)
+    {
+      // Vectors are trickly to handle because the coordinate separator is same as value separator.
+      List<string> combined = [];
+      for (var i = 0; i < split.Length; i += 3)
+      {
+        // Last vector can be partial.
+        var v = i + 3 < split.Length ? split.Skip(i).Take(3).ToArray() : split.Skip(i).ToArray();
+        combined.Add(string.Join(",", v));
+      }
+      return new Vector3Value([.. combined]);
+    }
     var parsed = Parse.VectorXZYNull(split);
-    if (parsed.HasValue)
-      return new SimpleVector3Value(parsed.Value);
-    return new Vector3Value(split);
+    return new SimpleVector3Value(parsed.HasValue ? parsed.Value : UnityEngine.Vector3.zero);
   }
   public static IQuaternionValue Quaternion(string values)
   {
     var split = SplitWithValues(values);
+    if (HasParameters(values) || split.Length > 3)
+    {
+      List<string> combined = [];
+      for (var i = 0; i < split.Length; i += 3)
+      {
+        var v = i + 3 < split.Length ? split.Skip(i).Take(3).ToArray() : split.Skip(i).ToArray();
+        combined.Add(string.Join(",", v));
+      }
+      return new QuaternionValue([.. combined]);
+    }
     var parsed = Parse.AngleYXZNull(split);
-    if (parsed.HasValue)
-      return new SimpleQuaternionValue(parsed.Value);
-    return new QuaternionValue(split);
+    return new SimpleQuaternionValue(parsed.HasValue ? parsed.Value : UnityEngine.Quaternion.identity);
   }
 
   private static bool HasParameters(string value) => value.Contains("<") && value.Contains(">");

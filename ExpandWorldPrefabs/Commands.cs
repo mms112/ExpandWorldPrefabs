@@ -42,7 +42,9 @@ public class Commands
       var sub = expression.Substring(1);
       if (!sub.Contains('*') && !sub.Contains('/') && !sub.Contains('+') && !sub.Contains('-')) continue;
       var value = Calculator.EvaluateFloat(expression) ?? 0f;
-      command = command.Replace(expression, value.ToString("0.#####", NumberFormatInfo.InvariantInfo));
+      int pos = command.IndexOf(expression);
+      if (pos < 0) continue;
+      command = command.Substring(0, pos) + value.ToString("0.#####", NumberFormatInfo.InvariantInfo) + command.Substring(pos + expression.Length);
     }
     return command;
   }

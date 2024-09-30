@@ -6,7 +6,11 @@ namespace Data;
 
 public class QuaternionValue(string[] values) : AnyValue(values), IQuaternionValue
 {
-  public Quaternion? Get(Parameters pars) => Parse.AngleYXZNull(GetValue(pars));
+  public Quaternion? Get(Parameters pars)
+  {
+    var v = GetValue(pars);
+    return v == null ? null : Calculator.EvaluateQuaternion(v);
+  }
   public bool? Match(Parameters pars, Quaternion value)
   {
     var values = GetAllValues(pars);

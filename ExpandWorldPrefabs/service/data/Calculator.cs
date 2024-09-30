@@ -8,9 +8,9 @@ namespace Data;
 
 public class Calculator
 {
+
   public static Vector3 EvaluateVector3(string expression)
   {
-
     var vector = Vector3.zero;
     var s = Parse.Split(expression);
     vector.x = EvaluateFloat(s[0]) ?? 0f;

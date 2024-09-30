@@ -80,6 +80,8 @@ public class Data
   public string pokeParameter = "";
   [DefaultValue(0f)]
   public float pokeDelay = 0f;
+  [DefaultValue(null)]
+  public TerrainData[]? terrain;
 
   [DefaultValue(null)]
   public ObjectData[]? objects;
@@ -160,8 +162,9 @@ public class Info
   public HashSet<string> BannedEnvironments = [];
   public List<string> GlobalKeys = [];
   public List<string> BannedGlobalKeys = [];
-  public Object[] LegacyPokes = [];
-  public Poke[] Pokes = [];
+  public Object[]? LegacyPokes;
+  public Poke[]? Pokes;
+  public Terrain[]? Terrains;
   public int PokeLimit = 0;
   public string PokeParameter = "";
   public float PokeDelay = 0f;
@@ -188,9 +191,15 @@ public class SpawnData
   [DefaultValue(null)]
   public string? prefab;
   [DefaultValue(null)]
+  public string? snap;
+  [DefaultValue(null)]
   public string? pos;
   [DefaultValue(null)]
+  public string? position;
+  [DefaultValue(null)]
   public string? rot;
+  [DefaultValue(null)]
+  public string? rotation;
   [DefaultValue(null)]
   public string? data;
   [DefaultValue(null)]
@@ -212,9 +221,9 @@ public class Spawn
   public Spawn(SpawnData data, float? delay, bool? triggerRules)
   {
     Prefab = data.prefab == null ? new SimplePrefabValue(0) : DataValue.Prefab(data.prefab);
-    Pos = data.pos == null ? null : DataValue.Vector3(data.pos);
-    Snap = data.pos == null ? null : new SimpleBoolValue(false);
-    Rot = data.rot == null ? null : DataValue.Quaternion(data.rot);
+    Pos = data.pos != null ? DataValue.Vector3(data.pos) : data.position != null ? DataValue.Vector3(data.position) : null;
+    Snap = data.snap == null ? null : DataValue.Bool(data.snap);
+    Rot = data.rot != null ? DataValue.Quaternion(data.rot) : data.rotation != null ? DataValue.Quaternion(data.rotation) : null;
     Data = data.data == null ? null : DataValue.String(data.data);
     Delay = data.delay == null ? delay == null ? null : new SimpleFloatValue(delay.Value) : DataValue.Float(data.delay);
     TriggerRules = data.triggerRules == null ? triggerRules == null ? null : new SimpleBoolValue(triggerRules.Value) : DataValue.Bool(data.triggerRules);
@@ -269,6 +278,7 @@ public class Poke(PokeData data)
   public IStringValue? Parameter = data.parameter == null ? null : DataValue.String(data.parameter);
   public IIntValue? Limit = data.limit == null ? null : DataValue.Int(data.limit);
   public IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
+  public IBoolValue? Self = data.self == null ? null : DataValue.Bool(data.self);
 }
 public class Object
 {
@@ -373,6 +383,8 @@ public class PokeData : ObjectData
   [DefaultValue(null)]
   public string? delay;
   [DefaultValue(null)]
+  public string? self;
+  [DefaultValue(null)]
   public string? parameter;
   [DefaultValue(null)]
   public string? limit;
@@ -410,5 +422,87 @@ public class InfoType
       Type = ActionType.Create;
     }
     Parameters = types.Count > 1 ? types[1].Split(' ') : [];
+  }
+}
+
+
+public class TerrainData
+{
+
+  [DefaultValue(null)]
+  public string? delay;
+  [DefaultValue(null)]
+  public string? pos;
+  [DefaultValue(null)]
+  public string? position;
+  [DefaultValue(null)]
+  public string? isSquare;
+  [DefaultValue(null)]
+  public string? levelRadius;
+  [DefaultValue(null)]
+  public string? levelOffset;
+  [DefaultValue(null)]
+  public string? raiseRadius;
+  [DefaultValue(null)]
+  public string? raisePower;
+  [DefaultValue(null)]
+  public string? raiseDelta;
+  [DefaultValue(null)]
+  public string? smoothRadius;
+  [DefaultValue(null)]
+  public string? smoothPower;
+  [DefaultValue(null)]
+  public string? paintRadius;
+  [DefaultValue(null)]
+  public string? paintHeightCheck;
+  [DefaultValue(null)]
+  public string? paint;
+}
+
+public class Terrain(TerrainData data)
+{
+  public readonly IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
+  public readonly IVector3Value? Position = data.pos != null ? DataValue.Vector3(data.pos) : data.position != null ? DataValue.Vector3(data.position) : null;
+  public readonly IBoolValue? IsSquare = data.isSquare == null ? null : DataValue.Bool(data.isSquare);
+  public readonly IFloatValue? LevelRadius = data.levelRadius == null ? null : DataValue.Float(data.levelRadius);
+  public readonly IFloatValue? LevelOffset = data.levelOffset == null ? null : DataValue.Float(data.levelOffset);
+  public readonly IFloatValue? RaiseRadius = data.raiseRadius == null ? null : DataValue.Float(data.raiseRadius);
+  public readonly IFloatValue? RaisePower = data.raisePower == null ? null : DataValue.Float(data.raisePower);
+  public readonly IFloatValue? RaiseDelta = data.raiseDelta == null ? null : DataValue.Float(data.raiseDelta);
+  public readonly IFloatValue? SmoothRadius = data.smoothRadius == null ? null : DataValue.Float(data.smoothRadius);
+  public readonly IFloatValue? SmoothPower = data.smoothPower == null ? null : DataValue.Float(data.smoothPower);
+  public readonly IFloatValue? PaintRadius = data.paintRadius == null ? null : DataValue.Float(data.paintRadius);
+  public readonly IBoolValue? PaintHeightCheck = data.paintHeightCheck == null ? null : DataValue.Bool(data.paintHeightCheck);
+  public readonly IStringValue? Paint = data.paint == null ? null : DataValue.String(data.paint);
+
+  public void Get(Parameters pars, Vector3 basePosition, out Vector3 pos, out ZPackage pkg)
+  {
+    pos = Position?.Get(pars) ?? basePosition;
+    pkg = new ZPackage();
+    pkg.Write(pos);
+    pkg.Write(LevelOffset?.Get(pars) ?? 0f);
+    var levelRadius = LevelRadius?.Get(pars) ?? 0f;
+    pkg.Write(levelRadius > 0f);
+    pkg.Write(levelRadius);
+    pkg.Write(IsSquare?.GetBool(pars) == true);
+    var raiseRadius = RaiseRadius?.Get(pars) ?? 0f;
+    pkg.Write(raiseRadius > 0f);
+    pkg.Write(raiseRadius);
+    pkg.Write(RaisePower?.Get(pars) ?? 0f);
+    pkg.Write(RaiseDelta?.Get(pars) ?? 0f);
+    var smoothRadius = SmoothRadius?.Get(pars) ?? 0f;
+    pkg.Write(smoothRadius > 0f);
+    pkg.Write(smoothRadius);
+    pkg.Write(SmoothPower?.Get(pars) ?? 0f);
+    var paintRadius = PaintRadius?.Get(pars) ?? 0f;
+    pkg.Write(paintRadius > 0f);
+    pkg.Write(PaintHeightCheck?.GetBool(pars) == true);
+    var paint = Paint?.Get(pars) ?? "Reset";
+    var paintEnum =
+      Enum.TryParse(paint, true, out TerrainModifier.PaintType paintType) ? paintType :
+      int.TryParse(paint, out var paintInt) ? (TerrainModifier.PaintType)paintInt :
+      TerrainModifier.PaintType.Reset;
+    pkg.Write((int)paintEnum);
+    pkg.Write(paintRadius);
   }
 }

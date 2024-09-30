@@ -56,7 +56,7 @@ public abstract class RpcInfo
     Delay = 0f;
     if (lines.TryGetValue("delay", out var d))
       Delay = Parse.Float(d, 0f);
-    Parameters = lines.OrderBy(p => p.Key).Where(p => Parse.TryInt(p.Key, out var _)).Select(p => Parse.Kvp(p.Value)).ToArray();
+    Parameters = lines.OrderBy(p => int.TryParse(p.Key, out var k) ? k : 1000).Where(p => Parse.TryInt(p.Key, out var _)).Select(p => Parse.Kvp(p.Value)).ToArray();
   }
   public void Invoke(ZDO zdo, Parameters pars)
   {

@@ -1,9 +1,25 @@
 using System.Collections.Generic;
 namespace ExpandWorld.Prefab;
 
-public class DelayedPoke(float delay, ZDO[] zdos, string parameter)
+
+public interface IPokeable
 {
-  private static readonly List<DelayedPoke> Pokes = [];
+  public float Delay { get; set; }
+  void Execute();
+}
+public class DelayedSinglePoke(float delay, ZDO zdo, string parameter) : IPokeable
+{
+  private readonly ZDO Zdo = zdo;
+  private readonly string Parameter = parameter;
+
+  float IPokeable.Delay { get => delay; set => delay = value; }
+  public void Execute() => Manager.Poke(Zdo, Parameter);
+
+}
+
+public class DelayedPoke(float delay, ZDO[] zdos, string parameter) : IPokeable
+{
+  private static readonly List<IPokeable> Pokes = [];
   public static void Add(float delay, ZDO[] zdos, string parameter)
   {
     if (delay <= 0f)
@@ -11,7 +27,16 @@ public class DelayedPoke(float delay, ZDO[] zdos, string parameter)
       Manager.Poke(zdos, parameter);
       return;
     }
-    Pokes.Add(new(delay, zdos, parameter));
+    Pokes.Add(new DelayedPoke(delay, zdos, parameter));
+  }
+  public static void Add(float delay, ZDO zdo, string parameter)
+  {
+    if (delay <= 0f)
+    {
+      Manager.Poke(zdo, parameter);
+      return;
+    }
+    Pokes.Add(new DelayedSinglePoke(delay, zdo, parameter));
   }
   public static void Execute(float dt)
   {
@@ -29,12 +54,10 @@ public class DelayedPoke(float delay, ZDO[] zdos, string parameter)
       Pokes.RemoveAt(i);
     }
   }
-  public float Delay = delay;
   private readonly ZDO[] Zdos = zdos;
   private readonly string Parameter = parameter;
 
-  public void Execute()
-  {
-    Manager.Poke(Zdos, Parameter);
-  }
+  float IPokeable.Delay { get => delay; set => delay = value; }
+
+  public void Execute() => Manager.Poke(Zdos, Parameter);
 }

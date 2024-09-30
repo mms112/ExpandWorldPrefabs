@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Data;
 using Service;
 using UnityEngine;
@@ -43,6 +45,7 @@ public class Manager
     var dataStr = info.Data?.Get(parameters) ?? "";
     HandleSpawns(info, zdo, parameters, remove, regenerate, dataStr);
     Poke(info, zdo, parameters);
+    Terrain(info, zdo, parameters);
     if (info.Drops?.GetBool(parameters) == true)
       SpawnDrops(zdo);
     // Original object was regenerated to apply data.
@@ -198,40 +201,82 @@ public class Manager
 
   public static void Poke(Info info, ZDO zdo, Parameters pars)
   {
-    if (info.LegacyPokes.Length > 0)
+    if (info.LegacyPokes != null)
     {
       var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, zdo.m_position, pars);
-      var pokeParameter = pars.Replace(info.PokeParameter);
+      var pokeParameter = Evaluate(pars.Replace(info.PokeParameter));
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
+    if (info.Pokes == null) return;
     foreach (var poke in info.Pokes)
     {
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, zdo.m_position, pars);
-      var pokeParameter = pars.Replace(poke.Parameter?.Get(pars) ?? "");
-      DelayedPoke.Add(poke.Delay?.Get(pars) ?? 0f, zdos, pokeParameter);
+      var pokeParameter = Evaluate(pars.Replace(poke.Parameter?.Get(pars) ?? ""));
+      var delay = poke.Delay?.Get(pars) ?? 0f;
+      if (poke.Self?.GetBool(pars) == true)
+        DelayedPoke.Add(delay, zdo, pokeParameter);
+      else
+      {
+        var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, zdo.m_position, pars);
+        DelayedPoke.Add(delay, zdos, pokeParameter);
+      }
 
     }
   }
   public static void PokeGlobal(Info info, Parameters pars, Vector3 pos)
   {
-    if (info.LegacyPokes.Length > 0)
+    if (info.LegacyPokes != null)
     {
       var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, pars);
-      var pokeParameter = pars.Replace(info.PokeParameter);
+      var pokeParameter = Evaluate(pars.Replace(info.PokeParameter));
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
+    if (info.Pokes == null) return;
     foreach (var poke in info.Pokes)
     {
+      var pokeParameter = Evaluate(pars.Replace(poke.Parameter?.Get(pars) ?? ""));
       var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, pars);
-      var pokeParameter = pars.Replace(poke.Parameter?.Get(pars) ?? "");
       DelayedPoke.Add(poke.Delay?.Get(pars) ?? 0f, zdos, pokeParameter);
 
     }
+  }
+
+  private static string Evaluate(string str)
+  {
+    var expressions = str.Split(' ').ToArray();
+    bool changed = false;
+    for (var i = 0; i < expressions.Length; ++i)
+    {
+      var expression = expressions[i];
+      if (expression.Length == 0) continue;
+      // Single negative number would get handled as expression.
+      var sub = expression.Substring(1);
+      if (!sub.Contains('*') && !sub.Contains('/') && !sub.Contains('+') && !sub.Contains('-')) continue;
+      changed = true;
+      var value = Calculator.EvaluateFloat(expression) ?? 0f;
+      expressions[i] = value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
+    }
+    return changed ? string.Join(" ", expressions) : str;
   }
   public static void Poke(ZDO[] zdos, string parameter)
   {
     foreach (var z in zdos)
       Handle(ActionType.Poke, parameter, z);
+  }
+  public static void Poke(ZDO zdo, string parameter)
+  {
+    Handle(ActionType.Poke, parameter, zdo);
+  }
+  public static void Terrain(Info info, ZDO zdo, Parameters pars)
+  {
+    if (info.Terrains == null) return;
+    var pos = zdo.m_position;
+    var source = zdo.GetOwner();
+    foreach (var terrain in info.Terrains)
+    {
+      var delay = terrain.Delay?.Get(pars) ?? 0f;
+      terrain.Get(pars, pos, out var p, out var pkg);
+      DelayedTerrain.Add(delay, source, p, pkg, false);
+    }
   }
 
   public static void ObjectRpc(ObjectRpcInfo[] info, ZDO zdo, Parameters parameters)
@@ -248,6 +293,36 @@ public class Manager
   {
     foreach (var i in info)
       i.InvokeGlobal(parameters);
+  }
+  private static readonly int TerrainCompilerHash = "_TerrainCompiler".GetStableHashCode();
+  private static readonly int TerrainActionHash = "ApplyOperation".GetStableHashCode();
+  public static void ModifyTerrain(long source, Vector3 pos, ZPackage pkg, bool retry)
+  {
+    // Terrain operations requires a terrain compiler in the zone.
+    // These are only created when needed, so it might have to be added.
+    var zone = ZoneSystem.instance.GetZone(pos);
+    var index = ZDOMan.instance.SectorToIndex(zone);
+    var zdos = index < 0 || index >= ZDOMan.instance.m_objectsBySector.Length
+      ? ZDOMan.instance.m_objectsByOutsideSector.TryGetValue(zone, out var list) ? list : null
+      : ZDOMan.instance.m_objectsBySector[index];
+    var compiler = zdos?.FirstOrDefault(z => z.m_prefab == TerrainCompilerHash);
+    if (compiler != null && compiler.HasOwner())
+      Rpc(source, compiler.GetOwner(), compiler.m_uid, TerrainActionHash, [pkg]);
+    else
+    {
+      if (retry) return; // One retry is enough.
+      DelayedTerrain.Add(1f, source, pos, pkg, true);
+      if (compiler == null)
+      {
+        var zdo = ZDOMan.instance.CreateNewZDO(ZoneSystem.instance.GetZonePos(zone), TerrainCompilerHash);
+        var view = ZNetScene.instance.GetPrefab(TerrainCompilerHash).GetComponent<ZNetView>();
+        zdo.m_prefab = TerrainCompilerHash;
+        zdo.Persistent = view.m_persistent;
+        zdo.Type = view.m_type;
+        zdo.Distant = view.m_distant;
+        zdo.SetOwnerInternal(source);
+      }
+    }
   }
   public static void Rpc(long source, long target, ZDOID id, int hash, object[] parameters)
   {
