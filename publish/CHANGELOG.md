@@ -1,5 +1,6 @@
 - v1.21
   - Adds a new field `terrain` to more easily support the ApplyOperation RPC call.
+  - Adds a new parameter `self` to poke actions.
   - Fixes arithmetic operations sometimes working incorrectly.
   - Fixes arithmetic operations not working on some parameters.
   - Fixes some rare edge cases with some parameters.
