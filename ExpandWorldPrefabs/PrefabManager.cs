@@ -316,6 +316,7 @@ public class Manager
       for (var j = startJ; j <= endJ; j++)
       {
         var zone = new Vector2i(i, j);
+        if (!ZoneSystem.instance.IsZoneGenerated(zone)) continue;
         ModifyZoneTerrain(source, zone, pkg);
       }
     }
@@ -351,6 +352,7 @@ public class Manager
       for (var j = startJ; j <= endJ; j++)
       {
         var zone = new Vector2i(i, j);
+        if (!ZoneSystem.instance.IsZoneGenerated(zone)) continue;
         created |= GenerateZoneTerrainCompiler(source, zone);
       }
     }

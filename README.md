@@ -225,6 +225,7 @@ See object filtering [examples](examples_object_filtering.md).
 
 - poke (P): List of poke objects:
   - prefab: Target object id or value group.
+  - self: If true, the object itself is poked. Prefab is not checked.
   - parameter: Custom value used as the parameter for the `poke` type.
   - delay: Delay in seconds for poking.
   - limit: Maximum amount of poked objects. If not set, all matching objects are poked.
@@ -273,7 +274,9 @@ For this reason, terrrain changes have their own field.
 - terrain (P): List of terrain operations.
   - Automatically creates missing _TerrainCompiler objects.
   - When compiler object is created, the terrain change is delayed by 1 second.
-  - Automatically affects all compilers within the distance.
+  - Automatically affects all compilers within the radius.
+  - Only works for zones that are loaded by some client.
+    - For this reason, radius shouldn't exceed ~100 meters.
 
 Terrain operation:
 
