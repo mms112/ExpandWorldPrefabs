@@ -3,17 +3,20 @@ using UnityEngine;
 
 namespace ExpandWorld.Prefab;
 
-public class DelayedTerrain(float delay, long source, Vector3 pos, ZPackage pkg, bool retry)
+public class DelayedTerrain(float delay, long source, Vector3 pos, float size, ZPackage pkg)
 {
   private static readonly List<DelayedTerrain> Terrains = [];
-  public static void Add(float delay, long source, Vector3 pos, ZPackage pkg, bool retry)
+  public static void Add(float delay, long source, Vector3 pos, float size, ZPackage pkg)
   {
+    var created = Manager.GenerateTerrainCompilers(source, pos, size);
+    // One second should be enough to deliver the compiler to the client.
+    if (created) delay = Mathf.Max(delay, 1f);
     if (delay <= 0f)
     {
-      Manager.ModifyTerrain(source, pos, pkg, retry);
+      Manager.ModifyTerrain(source, pos, size, pkg);
       return;
     }
-    Terrains.Add(new(delay, source, pos, pkg, retry));
+    Terrains.Add(new(delay, source, pos, size, pkg));
   }
   public static void Execute(float dt)
   {
@@ -33,11 +36,11 @@ public class DelayedTerrain(float delay, long source, Vector3 pos, ZPackage pkg,
   }
   public float Delay = delay;
   private readonly Vector3 Pos = pos;
+  private readonly float Size = size;
   private readonly ZPackage Pkg = pkg;
-  private readonly bool Retry = retry;
   private readonly long Source = source;
   public void Execute()
   {
-    Manager.ModifyTerrain(Source, Pos, Pkg, Retry);
+    Manager.ModifyTerrain(Source, Pos, Size, Pkg);
   }
 }

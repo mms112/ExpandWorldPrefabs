@@ -1,3 +1,9 @@
+- v1.21
+  - Adds a new field `terrain` to more easily support the ApplyOperation RPC call.
+  - Fixes arithmetic operations sometimes working incorrectly.
+  - Fixes arithmetic operations not working on some parameters.
+  - Fixes some rare edge cases with some parameters.
+
 - v1.20
   - Fixes wrong default value for the field `triggerRules`.
   - Fixes parameters with empty value not working.

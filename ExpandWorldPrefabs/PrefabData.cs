@@ -428,7 +428,6 @@ public class InfoType
 
 public class TerrainData
 {
-
   [DefaultValue(null)]
   public string? delay;
   [DefaultValue(null)]
@@ -436,7 +435,7 @@ public class TerrainData
   [DefaultValue(null)]
   public string? position;
   [DefaultValue(null)]
-  public string? isSquare;
+  public string? square;
   [DefaultValue(null)]
   public string? levelRadius;
   [DefaultValue(null)]
@@ -463,7 +462,7 @@ public class Terrain(TerrainData data)
 {
   public readonly IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
   public readonly IVector3Value? Position = data.pos != null ? DataValue.Vector3(data.pos) : data.position != null ? DataValue.Vector3(data.position) : null;
-  public readonly IBoolValue? IsSquare = data.isSquare == null ? null : DataValue.Bool(data.isSquare);
+  public readonly IBoolValue? Square = data.square == null ? null : DataValue.Bool(data.square);
   public readonly IFloatValue? LevelRadius = data.levelRadius == null ? null : DataValue.Float(data.levelRadius);
   public readonly IFloatValue? LevelOffset = data.levelOffset == null ? null : DataValue.Float(data.levelOffset);
   public readonly IFloatValue? RaiseRadius = data.raiseRadius == null ? null : DataValue.Float(data.raiseRadius);
@@ -475,16 +474,17 @@ public class Terrain(TerrainData data)
   public readonly IBoolValue? PaintHeightCheck = data.paintHeightCheck == null ? null : DataValue.Bool(data.paintHeightCheck);
   public readonly IStringValue? Paint = data.paint == null ? null : DataValue.String(data.paint);
 
-  public void Get(Parameters pars, Vector3 basePosition, out Vector3 pos, out ZPackage pkg)
+  public void Get(Parameters pars, Vector3 basePosition, Quaternion baseRotation, out Vector3 pos, out float size, out ZPackage pkg)
   {
-    pos = Position?.Get(pars) ?? basePosition;
+    pos = basePosition;
+    pos += baseRotation * (Position?.Get(pars) ?? Vector3.zero);
     pkg = new ZPackage();
     pkg.Write(pos);
     pkg.Write(LevelOffset?.Get(pars) ?? 0f);
     var levelRadius = LevelRadius?.Get(pars) ?? 0f;
     pkg.Write(levelRadius > 0f);
     pkg.Write(levelRadius);
-    pkg.Write(IsSquare?.GetBool(pars) == true);
+    pkg.Write(Square?.GetBool(pars) == true);
     var raiseRadius = RaiseRadius?.Get(pars) ?? 0f;
     pkg.Write(raiseRadius > 0f);
     pkg.Write(raiseRadius);
@@ -504,5 +504,6 @@ public class Terrain(TerrainData data)
       TerrainModifier.PaintType.Reset;
     pkg.Write((int)paintEnum);
     pkg.Write(paintRadius);
+    size = Mathf.Max(levelRadius, raiseRadius, smoothRadius, paintRadius);
   }
 }

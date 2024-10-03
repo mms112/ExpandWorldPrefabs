@@ -104,6 +104,14 @@ If a filter is not specified, it's not checked and is always considered valid.
 - maxY (P): Maximum y coordinate.
 - minAltitude (P): Minimum altitude (y coordinate + 30).
 - maxAltitude (P): Maximum altitude (y coordinate + 30).
+- paint: Valid terrain paint color.
+  - Supports values cultivated, dirt, grass, grass_dark, patches, paved, paved_dark, paved_dirt and paved_moss.
+  - Supports numeric value r,g,b,a.
+  - The terrain must be exactly the same color.
+- minPaint: Minimum terrain paint color.
+  - Each terrain color component must be same or higher.
+- maxPaint: Maximum terrain paint color.
+  - Each terrain color component must be same or lower.
 - environments: List of valid environments.
 - bannedEnvironments: List of  invalid environments.
 - globalKeys (P): List of global keys that must be set.
@@ -181,6 +189,9 @@ See object filtering [examples](examples_object_filtering.md).
 - data (P): Changes data to the original object.
   - Name of the data entry (from `data.yaml`) or data code that is added to the object.
   - This is done by respawning the original object with the new data.
+- drops (P): If true, the object drops are spawned.
+  - These include creature drops, destructible drops and structure materials.
+  - Not supported for type `destroy`.
 - injectData (default: `false`): If true, the object is not respawned when adding data.
   - Note: This doesn't work in most cases because clients don't load the new data.
   - Some possible cases are:
@@ -250,6 +261,36 @@ RPC format:
 - 2: Second parameter.
 - 3: Third parameter.
 - ...: More parameters.
+
+### Terrain
+
+Terrain can be changed with RPC call ApplyOperation.
+
+However this is very difficult to use because of the underlyting terrain compiler system.
+
+For this reason, terrrain changes have their own field.
+
+- terrain (P): List of terrain operations.
+  - Automatically creates missing _TerrainCompiler objects.
+  - When compiler object is created, the terrain change is delayed by 1 second.
+  - Automatically affects all compilers within the distance.
+
+Terrain operation:
+
+- delay: Delay in seconds for the terrain change.
+- pos: Position offset in x,z,y from the original object.
+- square: If true, square shape is used.
+- levelRadius: Radius for the level change.
+- levelOffset: Offset for the level change.
+- raiseRadius: Radius for the raise change.
+- raisePower: Power for the raise change.
+- raiseDelta: Delta for the raise change.
+- smoothRadius: Radius for the smooth change.
+- smoothPower: Power for the smooth change.
+- paintRadius: Radius for the paint change.
+- paintHeightCheck: If true, checks something.
+- paint: Terrain paint color. Supports values ClearVegetation, Cultivate, Dirt, Paved and Reset.
+  - Note: Numeric values are not supported.
 
 ### States
 
