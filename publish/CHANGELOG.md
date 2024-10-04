@@ -4,6 +4,7 @@
   - Fixes arithmetic operations sometimes working incorrectly.
   - Fixes arithmetic operations not working on some parameters.
   - Fixes some rare edge cases with some parameters.
+  - Fixes data with an unknown numeric key duplicating on the object.
 
 - v1.20
   - Fixes wrong default value for the field `triggerRules`.
