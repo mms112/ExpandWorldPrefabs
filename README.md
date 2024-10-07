@@ -58,6 +58,8 @@ Following parameters are available to be used in the yaml file:
 - `<pchar>`: Character id of the client that controls the object.
 - `<owner>`: Id of the owner client (long number).
 
+Object attributes can be queried with the field system. For example `<float_WearNTear.m_health>` to get piece maximum health or `<float_ItemDrop.m_itemData.m_shared.m_maxDurability>` to get item maximum durability.
+
 ### expand_prefabs.yaml
 
 Most fields are put on a single line. List values are separated by `,`.
