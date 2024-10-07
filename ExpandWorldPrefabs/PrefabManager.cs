@@ -64,7 +64,10 @@ public class Manager
       }
       removeItems?.RemoveItems(parameters, zdo);
       addItems?.AddItems(parameters, zdo);
-      if (data != null || removeItems != null || addItems != null)
+      var owner = info.Owner?.Get(parameters);
+      if (owner.HasValue)
+        zdo.SetOwner(owner.Value);
+      if (data != null || removeItems != null || addItems != null || owner.HasValue)
       {
         zdo.DataRevision += 100;
         ZDOMan.instance.ForceSendZDO(zdo.m_uid);

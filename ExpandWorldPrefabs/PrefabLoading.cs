@@ -139,6 +139,7 @@ public class Loading
         AddItems = addItems,
         RemoveItems = removeItems,
         Cancel = data.cancel == null ? null : DataValue.Bool(data.cancel),
+        Owner = data.owner == null ? null : DataValue.Long(data.owner),
       };
     }).ToArray();
   }

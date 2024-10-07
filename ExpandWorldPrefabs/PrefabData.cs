@@ -122,6 +122,9 @@ public class Data
 
   [DefaultValue(false)]
   public bool injectData = false;
+
+  [DefaultValue(null)]
+  public string? owner;
   [DefaultValue("")]
   public string addItems = "";
   [DefaultValue("")]
@@ -183,6 +186,7 @@ public class Info
   public Color? MaxPaint;
   public DataEntry? AddItems;
   public DataEntry? RemoveItems;
+  public ILongValue? Owner;
   public IBoolValue? Cancel;
 }
 

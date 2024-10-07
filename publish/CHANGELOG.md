@@ -1,3 +1,8 @@
+- v1.22
+  - Adds a new field `owner` to set the object owner when using `injectData` field.
+  - Changes the zdo field default data value to work recursively.
+  - Fixes the default item variant being 1 which caused container data loading to fail.
+
 - v1.21
   - Adds a new field `terrain` to more easily support the ApplyOperation RPC call.
   - Adds a new parameter `self` to poke actions.

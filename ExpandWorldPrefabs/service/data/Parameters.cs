@@ -173,6 +173,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
       "<pid>" => GetPid(zdo),
       "<pname>" => GetPname(zdo),
       "<pchar>" => GetPchar(zdo),
+      "<owner>" => zdo.GetOwner().ToString(),
       _ => null,
     };
 
@@ -251,8 +252,16 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     // Reflection to get the component and field.
     var component = prefab.GetComponent(kvp.Key);
     if (component == null) return null;
-    var field = component.GetType().GetField(kvp.Value);
-    return field?.GetValue(component);
+    var fields = kvp.Value.Split('.');
+    object result = component;
+    foreach (var field in fields)
+    {
+      var fieldInfo = result.GetType().GetField(field);
+      if (fieldInfo == null) return null;
+      result = fieldInfo.GetValue(result);
+      if (result == null) return null;
+    }
+    return result;
   }
 
   private int GetAmountOfItems(string prefab)

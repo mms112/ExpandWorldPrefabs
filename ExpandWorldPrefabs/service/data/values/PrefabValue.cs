@@ -43,9 +43,9 @@ public class SimplePrefabsValue(List<int> value) : IPrefabValue
   public bool? Match(Parameters pars, int value) => Values.Contains(value);
   private int RollValue() => Values[Random.Range(0, Values.Count)];
 }
-public class SimplePrefabValue(int value) : IPrefabValue
+public class SimplePrefabValue(int? value) : IPrefabValue
 {
-  private readonly int Value = value;
+  private readonly int? Value = value;
 
   public int? Get(Parameters pars) => Value;
   public bool? Match(Parameters pars, int value) => Value == value;

@@ -56,6 +56,7 @@ Following parameters are available to be used in the yaml file:
   - Note: The client always controls its player object.
 - `<pname>`: Player name of the client that controls the object.
 - `<pchar>`: Character id of the client that controls the object.
+- `<owner>`: Id of the owner client (long number).
 
 ### expand_prefabs.yaml
 
@@ -197,6 +198,9 @@ See object filtering [examples](examples_object_filtering.md).
   - Some possible cases are:
     - When adding data that is only used by this mod. In this case, clients wouldn't use the data anyway.
     - When changing data that changes during the normal game play. For example creature health.
+- owner (P): Changes the object owner (number).
+  - Only works when using `injectData`.
+  - Number 0 removes the owner, but the server will reassign it after a few seconds.
 - remove (default: `false`, P): If true, the original object is removed.
 - removeDelay (P): Delay in seconds for remove.
 - removeItems: Data entry that is used to removes items from the container object.

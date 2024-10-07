@@ -77,7 +77,9 @@ public class DataValue
     if (HasParameters(values))
       return new PrefabValue(SplitWithValues(values));
     var prefabs = PrefabHelper.GetPrefabs(values);
-    return prefabs.Count == 1 ? new SimplePrefabValue(prefabs[0]) : new SimplePrefabsValue(prefabs);
+    if (prefabs.Count == 0) return new SimplePrefabValue(null);
+    if (prefabs.Count == 1) return new SimplePrefabValue(prefabs[0]);
+    return new SimplePrefabsValue(prefabs);
   }
 
   public static IVector3Value Vector3(string values)
@@ -305,7 +307,7 @@ public class ItemValue(ItemData data)
     return null;
   }
   // Prefab is saved as string, so hash can't be used.
-  public IStringValue Prefab = DataValue.String(data.prefab);
+  public IPrefabValue Prefab = DataValue.Prefab(data.prefab);
   public float Chance = data.chance;
   public IIntValue? Stack = data.stack == null ? null : DataValue.Int(data.stack);
   public IFloatValue? Durability = data.durability == null ? null : DataValue.Float(data.durability);
@@ -316,34 +318,47 @@ public class ItemValue(ItemData data)
   public IIntValue? Variant = data.variant == null ? null : DataValue.Int(data.variant);
   public ILongValue? CrafterID = data.crafterID == null ? null : DataValue.Long(data.crafterID);
   public IStringValue? CrafterName = data.crafterName == null ? null : DataValue.String(data.crafterName);
-  public Dictionary<string, IStringValue> CustomData = data.customData?.ToDictionary(kvp => kvp.Key, kvp => DataValue.String(kvp.Value)) ?? [];
+  public Dictionary<string, IStringValue>? CustomData = data.customData?.ToDictionary(kvp => kvp.Key, kvp => DataValue.String(kvp.Value));
   public IIntValue? WorldLevel = data.worldLevel == null ? null : DataValue.Int(data.worldLevel);
   public IBoolValue? PickedUp = data.pickedUp == null ? null : DataValue.Bool(data.pickedUp);
   // Must know before writing is the prefab good, so it has to be rolled first.
-  private string RolledPrefab = "";
+  private int RolledPrefab = 0;
   public bool RollPrefab(Parameters pars)
   {
-    RolledPrefab = Prefab.Get(pars) ?? "";
-    return RolledPrefab != "";
+    RolledPrefab = Prefab.Get(pars) ?? 0;
+    return RolledPrefab != 0;
   }
   public bool RollChance() => Chance >= 1f || Random.value <= Chance;
   public bool Roll(Parameters pars) => RollChance() && RollPrefab(pars);
   public void Write(Parameters pars, ZPackage pkg)
   {
-    pkg.Write(RolledPrefab);
+    var prefab = ObjectDB.instance.GetItemPrefab(RolledPrefab);
+    pkg.Write(prefab?.name ?? "");
+    var quality = Quality?.Get(pars) ?? 1;
+    var durability = Durability?.Get(pars);
+    if (!durability.HasValue)
+    {
+      if (prefab != null && prefab.TryGetComponent(out ItemDrop drop))
+        durability = drop.m_itemData.GetMaxDurability(quality);
+      else
+        durability = 100f;
+    };
     pkg.Write(Stack?.Get(pars) ?? 1);
-    pkg.Write(Durability?.Get(pars) ?? 100f);
+    pkg.Write(durability.Value);
     pkg.Write(RolledPosition);
     pkg.Write(Equipped?.GetBool(pars) ?? false);
-    pkg.Write(Quality?.Get(pars) ?? 1);
-    pkg.Write(Variant?.Get(pars) ?? 1);
-    pkg.Write(CrafterID?.Get(pars) ?? 0);
+    pkg.Write(quality);
+    pkg.Write(Variant?.Get(pars) ?? 0);
+    pkg.Write(CrafterID?.Get(pars) ?? 0L);
     pkg.Write(CrafterName?.Get(pars) ?? "");
     pkg.Write(CustomData?.Count ?? 0);
-    foreach (var kvp in CustomData ?? [])
+    if (CustomData != null)
     {
-      pkg.Write(kvp.Key);
-      pkg.Write(kvp.Value.Get(pars));
+      foreach (var kvp in CustomData)
+      {
+        pkg.Write(kvp.Key);
+        pkg.Write(kvp.Value.Get(pars));
+      }
     }
     pkg.Write(WorldLevel?.Get(pars) ?? 0);
     pkg.Write(PickedUp?.GetBool(pars) ?? false);
@@ -371,17 +386,17 @@ public class ItemValue(ItemData data)
   {
     while (stack > 0)
     {
-      var prefab = Prefab.Get(pars);
+      var prefab = Prefab.Get(pars) ?? 0;
       var item = ObjectDB.instance.GetItemPrefab(prefab);
-      if (item == null) return stack;
-      var itemData = item.GetComponent<ItemDrop>().m_itemData.Clone();
+      if (item == null || !item.TryGetComponent(out ItemDrop drop)) return stack;
+      var itemData = drop.m_itemData.Clone();
       itemData.m_dropPrefab = item;
       itemData.m_quality = Quality?.Get(pars) ?? 1;
       itemData.m_variant = Variant?.Get(pars) ?? 0;
       itemData.m_crafterID = CrafterID?.Get(pars) ?? 0L;
       itemData.m_crafterName = CrafterName?.Get(pars) ?? "";
       itemData.m_worldLevel = WorldLevel?.Get(pars) ?? 0;
-      itemData.m_durability = Durability?.Get(pars) ?? itemData.m_shared.m_maxDurability;
+      itemData.m_durability = Durability?.Get(pars) ?? itemData.GetMaxDurability(itemData.m_quality);
       itemData.m_equipped = Equipped?.GetBool(pars) ?? false;
       itemData.m_pickedUp = PickedUp?.GetBool(pars) ?? false;
       itemData.m_customData = CustomData.ToDictionary(x => x.Key, x => x.Value.Get(pars) ?? "");
@@ -447,7 +462,8 @@ public class ItemValue(ItemData data)
   }
   private bool MatchItem(Parameters pars, ItemDrop.ItemData item)
   {
-    if (Prefab.Match(pars, item.m_dropPrefab?.name ?? item.m_shared.m_name) == false) return false;
+    var name = item.m_dropPrefab?.name ?? item.m_shared.m_name;
+    if (Prefab.Match(pars, StringExtensionMethods.GetStableHashCode(name)) == false) return false;
     if (Durability?.Match(pars, item.m_durability) == false) return false;
     if (Equipped?.Match(pars, item.m_equipped) == false) return false;
     if (Quality?.Match(pars, item.m_quality) == false) return false;
@@ -456,6 +472,7 @@ public class ItemValue(ItemData data)
     if (CrafterName?.Match(pars, item.m_crafterName) == false) return false;
     if (WorldLevel?.Match(pars, item.m_worldLevel) == false) return false;
     if (PickedUp?.Match(pars, item.m_pickedUp) == false) return false;
+    if (CustomData == null) return true;
     foreach (var kvp in CustomData)
     {
       if (!item.m_customData.TryGetValue(kvp.Key, out var value)) return false;
