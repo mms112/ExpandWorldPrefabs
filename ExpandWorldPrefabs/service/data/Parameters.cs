@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Service;
@@ -166,8 +165,8 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     {
       "<zdo>" => zdo.m_uid.ToString(),
       "<pos>" => $"{Format(zdo.m_position.x)},{Format(zdo.m_position.z)},{Format(zdo.m_position.y)}",
-      "<i>" => ZoneSystem.instance.GetZone(zdo.m_position).x.ToString(),
-      "<j>" => ZoneSystem.instance.GetZone(zdo.m_position).y.ToString(),
+      "<i>" => ZoneSystem.GetZone(zdo.m_position).x.ToString(),
+      "<j>" => ZoneSystem.GetZone(zdo.m_position).y.ToString(),
       "<a>" => Format(zdo.m_rotation.y),
       "<rot>" => $"{Format(zdo.m_rotation.y)},{Format(zdo.m_rotation.x)},{Format(zdo.m_rotation.z)}",
       "<pid>" => GetPid(zdo),
@@ -222,6 +221,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
      "byte" => Convert.ToBase64String(zdo.GetByteArray(value)),
      "zdo" => zdo.GetZDOID(value).ToString(),
      "item" => GetAmountOfItems(value).ToString(),
+     "pos" => DataEntry.PrintVectorXZY(GetPos(value)),
      _ => "",
    };
 
@@ -283,5 +283,11 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     if (currentItems == "") return;
     inventory = new("", null, 4, 2);
     inventory.Load(new ZPackage(currentItems));
+  }
+
+  private Vector3 GetPos(string value)
+  {
+    var offset = Parse.VectorXZY(value);
+    return zdo.GetPosition() + zdo.GetRotation() * offset;
   }
 }

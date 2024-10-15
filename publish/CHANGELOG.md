@@ -1,3 +1,9 @@
+- v1.23
+  - Adds support for new state types (Feast eat and ItemDrop piece).
+  - Fixed for the new patch.
+  - Fixes iten drops being spawned when stack size was explicitly set to 0.
+  - Updates the RPC.md file.
+
 - v1.22
   - Adds a new field `owner` to set the object owner when using `injectData` field.
   - Changes the zdo field default data value to work recursively.

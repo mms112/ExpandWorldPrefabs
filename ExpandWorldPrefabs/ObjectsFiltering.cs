@@ -10,7 +10,7 @@ namespace ExpandWorld.Prefab;
 public class ObjectsFiltering
 {
   // Note: Can include the object itself.
-  public static ZDO[] GetNearby(int limit, Object[] objects, Vector3 pos, Parameters parameters)
+  public static ZDO[] GetNearby(int limit, Object[] objects, Vector3 pos, Quaternion rot, Parameters parameters)
   {
     if (objects.Length == 0) return [];
     foreach (var o in objects) o.Roll(parameters);
@@ -18,51 +18,51 @@ public class ObjectsFiltering
     if (maxRadius > 10000)
     {
       var zdos = ZDOMan.instance.m_objectsByID.Values;
-      return GetObjects(limit, zdos, objects, pos, parameters);
+      return GetObjects(limit, zdos, objects, pos, rot, parameters);
     }
     var zdoLists = GetSectorIndices(pos, maxRadius);
-    return GetObjects(limit, zdoLists, objects, pos, parameters);
+    return GetObjects(limit, zdoLists, objects, pos, rot, parameters);
   }
-  public static ZDO[] GetNearby(int limit, Object objects, Vector3 pos, Parameters parameters)
+  public static ZDO[] GetNearby(int limit, Object objects, Vector3 pos, Quaternion rot, Parameters parameters)
   {
     objects.Roll(parameters);
     var maxRadius = objects.MaxDistance;
     if (maxRadius > 10000)
     {
       var zdos = ZDOMan.instance.m_objectsByID.Values;
-      return GetObjects(limit, zdos, objects, pos, parameters);
+      return GetObjects(limit, zdos, objects, pos, rot, parameters);
     }
     var zdoLists = GetSectorIndices(pos, maxRadius);
-    return GetObjects(limit, zdoLists, objects, pos, parameters);
+    return GetObjects(limit, zdoLists, objects, pos, rot, parameters);
   }
-  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object objects, Vector3 pos, Parameters parameters)
+  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object objects, Vector3 pos, Quaternion rot, Parameters parameters)
   {
     var zm = ZDOMan.instance;
-    var query = zdoLists.SelectMany(z => z).Where(z => objects.IsValid(z, pos, parameters));
+    var query = zdoLists.SelectMany(z => z).Where(z => objects.IsValid(z, pos, rot, parameters));
     if (limit > 0)
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
   }
-  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object objects, Vector3 pos, Parameters parameters)
+  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object objects, Vector3 pos, Quaternion rot, Parameters parameters)
   {
     var zm = ZDOMan.instance;
-    var query = zdos.Where(z => objects.IsValid(z, pos, parameters));
+    var query = zdos.Where(z => objects.IsValid(z, pos, rot, parameters));
     if (limit > 0)
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
   }
-  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object[] objects, Vector3 pos, Parameters parameters)
+  private static ZDO[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object[] objects, Vector3 pos, Quaternion rot, Parameters parameters)
   {
     var zm = ZDOMan.instance;
-    var query = zdoLists.SelectMany(z => z).Where(z => objects.Any(o => o.IsValid(z, pos, parameters)));
+    var query = zdoLists.SelectMany(z => z).Where(z => objects.Any(o => o.IsValid(z, pos, rot, parameters)));
     if (limit > 0)
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
   }
-  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, Vector3 pos, Parameters parameters)
+  private static ZDO[] GetObjects(int limit, Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, Vector3 pos, Quaternion rot, Parameters parameters)
   {
     var zm = ZDOMan.instance;
-    var query = zdos.Where(z => objects.Any(o => o.IsValid(z, pos, parameters)));
+    var query = zdos.Where(z => objects.Any(o => o.IsValid(z, pos, rot, parameters)));
     if (limit > 0)
       query = query.OrderBy(z => Utils.DistanceXZ(z.m_position, pos)).Take(limit);
     return query.ToArray();
@@ -104,23 +104,26 @@ public class ObjectsFiltering
   private static bool HasAllObjects(List<List<ZDO>> zdoLists, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
-    return objects.All(o => zdoLists.Any(zdos => zdos.Any(z => o.IsValid(z, pos, parameters) && z != zdo)));
+    var rot = zdo.GetRotation();
+    return objects.All(o => zdoLists.Any(zdos => zdos.Any(z => o.IsValid(z, pos, rot, parameters) && z != zdo)));
   }
   private static bool HasAllObjects(Dictionary<ZDOID, ZDO>.ValueCollection zdos, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
-    return objects.All(o => zdos.Any(z => o.IsValid(z, pos, parameters) && z != zdo));
+    var rot = zdo.GetRotation();
+    return objects.All(o => zdos.Any(z => o.IsValid(z, pos, rot, parameters) && z != zdo));
   }
   private static bool HasLimitObjects(List<List<ZDO>> zdoLists, Range<int> limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
+    var rot = zdo.GetRotation();
     var counter = 0;
     var useMax = limit.Max > 0;
     foreach (var list in zdoLists)
     {
       foreach (var z in list)
       {
-        var valid = objects.FirstOrDefault(o => o.IsValid(z, pos, parameters) && z != zdo);
+        var valid = objects.FirstOrDefault(o => o.IsValid(z, pos, rot, parameters) && z != zdo);
         if (valid == null) continue;
         counter += valid.Weight;
         if (useMax && limit.Max < counter) return false;
@@ -133,11 +136,12 @@ public class ObjectsFiltering
   private static bool HasLimitObjects(Dictionary<ZDOID, ZDO>.ValueCollection zdos, Range<int> limit, Object[] objects, ZDO zdo, Parameters parameters)
   {
     var pos = zdo.m_position;
+    var rot = zdo.GetRotation();
     var counter = 0;
     var useMax = limit.Max > 0;
     foreach (var z in zdos)
     {
-      var valid = objects.FirstOrDefault(o => o.IsValid(z, pos, parameters) && z != zdo);
+      var valid = objects.FirstOrDefault(o => o.IsValid(z, pos, rot, parameters) && z != zdo);
       if (valid == null) continue;
       counter += valid.Weight;
       if (useMax && limit.Max < counter) return false;
@@ -149,8 +153,8 @@ public class ObjectsFiltering
   {
     List<List<ZDO>> zdoLists = [];
     HashSet<int> indices = [];
-    var corner1 = ZoneSystem.instance.GetZone(pos + new Vector3(-radius, 0, -radius));
-    var corner2 = ZoneSystem.instance.GetZone(pos + new Vector3(radius, 0, radius));
+    var corner1 = ZoneSystem.GetZone(pos + new Vector3(-radius, 0, -radius));
+    var corner2 = ZoneSystem.GetZone(pos + new Vector3(radius, 0, radius));
     var zm = ZDOMan.instance;
     for (var x = corner1.x; x <= corner2.x; x++)
     {

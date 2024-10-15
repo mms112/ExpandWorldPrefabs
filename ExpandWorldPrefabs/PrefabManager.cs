@@ -204,22 +204,24 @@ public class Manager
 
   public static void Poke(Info info, ZDO zdo, Parameters pars)
   {
+    var pos = zdo.m_position;
+    var rot = zdo.GetRotation();
     if (info.LegacyPokes != null)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, zdo.m_position, pars);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, rot, pars);
       var pokeParameter = Evaluate(pars.Replace(info.PokeParameter));
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
     if (info.Pokes == null) return;
     foreach (var poke in info.Pokes)
     {
-      var pokeParameter = Evaluate(pars.Replace(poke.Parameter?.Get(pars) ?? ""));
+      var pokeParameter = Evaluate(pars.Replace(poke.Parameter ?? ""));
       var delay = poke.Delay?.Get(pars) ?? 0f;
       if (poke.Self?.GetBool(pars) == true)
         DelayedPoke.Add(delay, zdo, pokeParameter);
       else
       {
-        var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, zdo.m_position, pars);
+        var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, rot, pars);
         DelayedPoke.Add(delay, zdos, pokeParameter);
       }
 
@@ -229,15 +231,15 @@ public class Manager
   {
     if (info.LegacyPokes != null)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, pars);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, Quaternion.identity, pars);
       var pokeParameter = Evaluate(pars.Replace(info.PokeParameter));
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
     if (info.Pokes == null) return;
     foreach (var poke in info.Pokes)
     {
-      var pokeParameter = Evaluate(pars.Replace(poke.Parameter?.Get(pars) ?? ""));
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, pars);
+      var pokeParameter = Evaluate(pars.Replace(poke.Parameter ?? ""));
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, Quaternion.identity, pars);
       DelayedPoke.Add(poke.Delay?.Get(pars) ?? 0f, zdos, pokeParameter);
 
     }
@@ -305,10 +307,10 @@ public class Manager
     var corner2 = pos + new Vector3(-radius, 0, -radius);
     var corner3 = pos + new Vector3(-radius, 0, radius);
     var corner4 = pos + new Vector3(radius, 0, -radius);
-    var zone1 = ZoneSystem.instance.GetZone(corner1);
-    var zone2 = ZoneSystem.instance.GetZone(corner2);
-    var zone3 = ZoneSystem.instance.GetZone(corner3);
-    var zone4 = ZoneSystem.instance.GetZone(corner4);
+    var zone1 = ZoneSystem.GetZone(corner1);
+    var zone2 = ZoneSystem.GetZone(corner2);
+    var zone3 = ZoneSystem.GetZone(corner3);
+    var zone4 = ZoneSystem.GetZone(corner4);
     var startI = Mathf.Min(zone1.x, zone2.x, zone3.x, zone4.x);
     var endI = Mathf.Max(zone1.x, zone2.x, zone3.x, zone4.x);
     var startJ = Mathf.Min(zone1.y, zone2.y, zone3.y, zone4.y);
@@ -340,10 +342,10 @@ public class Manager
     var corner2 = pos + new Vector3(-radius, 0, -radius);
     var corner3 = pos + new Vector3(-radius, 0, radius);
     var corner4 = pos + new Vector3(radius, 0, -radius);
-    var zone1 = ZoneSystem.instance.GetZone(corner1);
-    var zone2 = ZoneSystem.instance.GetZone(corner2);
-    var zone3 = ZoneSystem.instance.GetZone(corner3);
-    var zone4 = ZoneSystem.instance.GetZone(corner4);
+    var zone1 = ZoneSystem.GetZone(corner1);
+    var zone2 = ZoneSystem.GetZone(corner2);
+    var zone3 = ZoneSystem.GetZone(corner3);
+    var zone4 = ZoneSystem.GetZone(corner4);
     var startI = Mathf.Min(zone1.x, zone2.x, zone3.x, zone4.x);
     var endI = Mathf.Max(zone1.x, zone2.x, zone3.x, zone4.x);
     var startJ = Mathf.Min(zone1.y, zone2.y, zone3.y, zone4.y);
@@ -370,7 +372,7 @@ public class Manager
       return false;
     if (compiler == null)
     {
-      var zdo = ZDOMan.instance.CreateNewZDO(ZoneSystem.instance.GetZonePos(zone), TerrainCompilerHash);
+      var zdo = ZDOMan.instance.CreateNewZDO(ZoneSystem.GetZonePos(zone), TerrainCompilerHash);
       var view = ZNetScene.instance.GetPrefab(TerrainCompilerHash).GetComponent<ZNetView>();
       zdo.m_prefab = TerrainCompilerHash;
       zdo.Persistent = view.m_persistent;

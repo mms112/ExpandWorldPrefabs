@@ -79,6 +79,7 @@ public class Loading
     var maxPaint = data.maxPaint != "" ? Parse.Color(data.maxPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
     var addItems = HandleItems(data.addItems);
     var removeItems = HandleItems(data.removeItems);
+    var terrainHeight = data.terrainHeight == null ? null : DataValue.Float(data.terrainHeight);
     return types.Select(t =>
     {
       var d = t.Type != ActionType.Destroy ? data.data : "";
@@ -140,6 +141,7 @@ public class Loading
         RemoveItems = removeItems,
         Cancel = data.cancel == null ? null : DataValue.Bool(data.cancel),
         Owner = data.owner == null ? null : DataValue.Long(data.owner),
+        TerrainHeight = terrainHeight,
       };
     }).ToArray();
   }

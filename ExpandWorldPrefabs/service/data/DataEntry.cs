@@ -429,7 +429,7 @@ public class DataEntry
   private static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   public static string PrintVectorXZY(Vector3 vector)
   {
-    return vector.x.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.z.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.y.ToString("0.##", CultureInfo.InvariantCulture);
+    return vector.x.ToString("0.##", CultureInfo.InvariantCulture) + " " + vector.z.ToString("0.##", CultureInfo.InvariantCulture) + " " + vector.y.ToString("0.##", CultureInfo.InvariantCulture);
   }
   public static string PrintAngleYXZ(Quaternion quaternion)
   {
@@ -437,7 +437,7 @@ public class DataEntry
   }
   private static string PrintVectorYXZ(Vector3 vector)
   {
-    return vector.y.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.x.ToString("0.##", CultureInfo.InvariantCulture) + ", " + vector.z.ToString("0.##", CultureInfo.InvariantCulture);
+    return vector.y.ToString("0.##", CultureInfo.InvariantCulture) + " " + vector.x.ToString("0.##", CultureInfo.InvariantCulture) + " " + vector.z.ToString("0.##", CultureInfo.InvariantCulture);
   }
 
   private static T ToByteEnum<T>(List<string> list) where T : struct, Enum

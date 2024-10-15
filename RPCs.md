@@ -283,10 +283,11 @@ By default, the RPC is sent to the owner of the object.
 ```
 
 ```yaml
-# Removes cooked items and spawns them at specific position.
+# Removes one cooked item and spawns them at specific position.
   objectRpc:
   - name: RPC_RemoveDoneItem
     1: vec, "spawn position"
+    2: int, "multiplier to spawned items"
 ```
 
 ### Destructible
@@ -312,6 +313,29 @@ By default, the RPC is sent to the owner of the object.
   objectRpc:
   - name: UseDoor
     1: bool, "forward or backward"
+```
+
+### Feast
+
+```yaml
+# Makes the player eat the item.
+  objectRpc:
+  - name: RPC_EatConfirmation
+    target: <zdo>
+```
+
+```yaml
+# Shows the eat effect.
+  objectRpc:
+  - name: RPC_OnEat
+    target: all
+```
+
+```yaml
+# Tries to remove item from the feast. Sends RPC_OnEat to all clients.
+  objectRpc:
+  - name: RPC_TryEat
+    1: int, "index of the item slot"
 ```
 
 ### Fermenter
@@ -349,6 +373,12 @@ By default, the RPC is sent to the owner of the object.
   objectRpc:
   - name: RPC_SetFuelAmount
   - 1: float, "amount of fuel"
+```
+
+```yaml
+# Toggle the fire on or off.
+  objectRpc:
+  - name: RPC_ToggleOn
 ```
 
 ### Fish
@@ -420,6 +450,13 @@ By default, the RPC is sent to the owner of the object.
 ```
 
 ### ItemDrop
+
+```yaml
+# Turns the item into a piece.
+  objectRpc:
+  - name: RPC_MakePiece
+    target: all
+```
 
 ```yaml
 # Asks to become owner of the ZDO (not much use as the server).
@@ -563,6 +600,7 @@ By default, the RPC is sent to the owner of the object.
 # Spawns the picked item.
   objectRpc:
   - name: RPC_Pick
+    1: int, "extra amount"
 ```
 
 ```yaml
@@ -1084,11 +1122,11 @@ This list all RPC calls that are not related to any object.
 ```yaml
 # Shows a damage text.
   clientRpc:
-  - name: DamageText
+  - name: RPC_DamageText
     packaged: true
-    1: enum_damagetext, Normal/Resistant/Weak/Immune/Heal/TooHard/Blocked  # - int, 0/1/2/3/4/5/6
+    1: enum_damagetext, Normal/Resistant/Weak/Immune/Heal/TooHard/Blocked/Bonus  # - int, 0/1/2/3/4/5/6/7
     2: vec, "position"
-    3: float, "damage"
+    3: string, "text"
     4: bool, "self damage"
 ```
 

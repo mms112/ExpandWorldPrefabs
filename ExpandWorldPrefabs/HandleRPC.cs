@@ -60,6 +60,10 @@ public class HandleRPC
       cancel = SetArmorVisualItem(zdo, data);
     else if (data.m_methodHash == SetSlotVisualHash)
       cancel = SetSlotVisual(zdo, data);
+    else if (data.m_methodHash == MakePieceHash)
+      cancel = MakePiece(zdo, data);
+    else if (data.m_methodHash == OnEatHash)
+      cancel = OnEat(zdo, data);
     return !cancel;
   }
 
@@ -248,6 +252,21 @@ public class HandleRPC
     var item = (string)pars[2];
     var state = $"{slot} {(item == "" ? "none" : item)}";
     return Manager.Handle(ActionType.State, state, zdo, GetSource(data.m_senderPeerID));
+  }
+
+
+  static readonly int MakePieceHash = "RPC_MakePiece".GetStableHashCode();
+  static readonly ParameterInfo[] MakePieceHashPars = AccessTools.Method(typeof(ItemDrop), nameof(ItemDrop.RPC_MakePiece)).GetParameters();
+  private static bool MakePiece(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
+  {
+    return Manager.Handle(ActionType.State, "piece", zdo, GetSource(data.m_senderPeerID));
+  }
+
+  static readonly int OnEatHash = "RPC_OnEat".GetStableHashCode();
+  static readonly ParameterInfo[] OnEatPars = AccessTools.Method(typeof(Feast), nameof(Feast.RPC_OnEat)).GetParameters();
+  private static bool OnEat(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
+  {
+    return Manager.Handle(ActionType.State, "eat", zdo, GetSource(data.m_senderPeerID));
   }
 
 

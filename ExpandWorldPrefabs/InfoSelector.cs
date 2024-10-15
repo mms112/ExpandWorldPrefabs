@@ -57,6 +57,12 @@ public class InfoSelector
     var checkFilters = linq.Any(d => d.Filter != null);
     var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
     var checkPaint = linq.Any(d => d.MinPaint != null || d.MaxPaint != null);
+    var checkTerrainHeight = linq.Any(d => d.TerrainHeight != null);
+    if (checkTerrainHeight)
+    {
+      var height = WorldGenerator.instance.GetHeight(pos.x, pos.z);
+      linq = linq.Where(d => d.TerrainHeight == null || d.TerrainHeight.Match(parameters, height) == true).ToArray();
+    }
     if (checkEnvironments)
     {
       var environment = GetEnvironment(biome);
@@ -84,7 +90,7 @@ public class InfoSelector
     }
     if (checkLocations)
     {
-      var zone = ZoneSystem.instance.GetZone(pos);
+      var zone = ZoneSystem.GetZone(pos);
       linq = linq.Where(d =>
       {
         if (d.Locations.Count == 0) return true;

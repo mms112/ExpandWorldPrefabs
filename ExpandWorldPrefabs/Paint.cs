@@ -12,7 +12,7 @@ public static class Paint
     if (zdo == null) return paint;
     var data = zdo.GetByteArray(ZDOVars.s_TCData, null);
     if (data == null) return paint;
-    var zonePos = ZoneSystem.instance.GetZonePos(ZoneSystem.instance.GetZone(pos));
+    var zonePos = ZoneSystem.GetZonePos(ZoneSystem.GetZone(pos));
     Vector3 vector = pos - zonePos;
     var x = Mathf.FloorToInt(vector.x + 0.5f) + 32;
     var y = Mathf.FloorToInt(vector.z + 0.5f) + 32;
@@ -51,7 +51,7 @@ public static class Paint
   }
   private static ZDO? GetCompiler(Vector3 pos)
   {
-    var zone = ZoneSystem.instance.GetZone(pos);
+    var zone = ZoneSystem.GetZone(pos);
     var index = ZDOMan.instance.SectorToIndex(zone);
     if (index > -1)
     {

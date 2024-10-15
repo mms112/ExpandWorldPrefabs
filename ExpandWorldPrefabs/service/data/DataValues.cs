@@ -323,10 +323,12 @@ public class ItemValue(ItemData data)
   public IBoolValue? PickedUp = data.pickedUp == null ? null : DataValue.Bool(data.pickedUp);
   // Must know before writing is the prefab good, so it has to be rolled first.
   private int RolledPrefab = 0;
+  private int RolledStack = 0;
   public bool RollPrefab(Parameters pars)
   {
     RolledPrefab = Prefab.Get(pars) ?? 0;
-    return RolledPrefab != 0;
+    RolledStack = Stack?.Get(pars) ?? 1;
+    return RolledPrefab != 0 && RolledStack != 0;
   }
   public bool RollChance() => Chance >= 1f || Random.value <= Chance;
   public bool Roll(Parameters pars) => RollChance() && RollPrefab(pars);
@@ -343,7 +345,7 @@ public class ItemValue(ItemData data)
       else
         durability = 100f;
     };
-    pkg.Write(Stack?.Get(pars) ?? 1);
+    pkg.Write(RolledStack);
     pkg.Write(durability.Value);
     pkg.Write(RolledPosition);
     pkg.Write(Equipped?.GetBool(pars) ?? false);

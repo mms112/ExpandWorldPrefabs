@@ -119,6 +119,8 @@ public class Data
   public string maxPaint = "";
   [DefaultValue("")]
   public string paint = "";
+  [DefaultValue(null)]
+  public string? terrainHeight;
 
   [DefaultValue(false)]
   public bool injectData = false;
@@ -188,6 +190,7 @@ public class Info
   public DataEntry? RemoveItems;
   public ILongValue? Owner;
   public IBoolValue? Cancel;
+  public IFloatValue? TerrainHeight;
 }
 
 public class SpawnData
@@ -279,7 +282,7 @@ public class Spawn
 public class Poke(PokeData data)
 {
   public Object Filter = new(data);
-  public IStringValue? Parameter = data.parameter == null ? null : DataValue.String(data.parameter);
+  public string? Parameter = data.parameter;
   public IIntValue? Limit = data.limit == null ? null : DataValue.Int(data.limit);
   public IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
   public IBoolValue? Self = data.self == null ? null : DataValue.Bool(data.self);
@@ -291,6 +294,7 @@ public class Object
   private readonly IFloatValue MaxDistanceValue;
   private readonly IFloatValue? MinHeightValue;
   private readonly IFloatValue? MaxHeightValue;
+  private readonly IVector3Value? OffsetValue;
   private readonly int Data = 0;
   private readonly IIntValue WeightValue = new SimpleIntValue(1);
 
@@ -308,6 +312,8 @@ public class Object
       MinHeightValue = DataValue.Float(data.minHeight);
     if (data.maxHeight != null)
       MaxHeightValue = DataValue.Float(data.maxHeight);
+    if (data.offset != null)
+      OffsetValue = DataValue.Vector3(data.offset);
     if (data.data != null)
     {
       Data = data.data.GetStableHashCode();
@@ -356,6 +362,7 @@ public class Object
   public float MaxDistance;
   private float? MinHeight;
   private float? MaxHeight;
+  private Vector3? Offset;
   public int Weight;
 
   public void Roll(Parameters pars)
@@ -365,11 +372,13 @@ public class Object
     MinHeight = MinHeightValue?.Get(pars);
     MaxHeight = MaxHeightValue?.Get(pars);
     Weight = WeightValue.Get(pars) ?? 1;
+    Offset = OffsetValue?.Get(pars);
   }
 
-  public bool IsValid(ZDO zdo, Vector3 pos, Parameters pars)
+  public bool IsValid(ZDO zdo, Vector3 pos, Quaternion rot, Parameters pars)
   {
     if (PrefabsValue.Match(pars, zdo.GetPrefab()) == false) return false;
+    if (Offset.HasValue) pos += rot * Offset.Value;
     var d = Utils.DistanceXZ(pos, zdo.GetPosition());
     if (MinDistance != null && d < MinDistance) return false;
     if (d > MaxDistance) return false;
@@ -405,6 +414,8 @@ public class ObjectData
   public string? maxHeight;
   [DefaultValue(null)]
   public string? minHeight;
+  [DefaultValue(null)]
+  public string? offset;
   [DefaultValue(null)]
   public string? data;
 }

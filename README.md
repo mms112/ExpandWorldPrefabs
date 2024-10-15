@@ -319,6 +319,8 @@ State works for following objects:
 - Item stands: Setting item triggers state with `itemid variant quality` or `none 0 0`.
   - For specific item of any variant or quality, use `itemid`.
   - For any item of specific quality, use `* * quality`.
+- Feast: Eating triggers state `eat`.
+- ItemDrop: Turning a drop into a piece triggers `piece`.
 - MusicVolume: Entering the volume triggers state without parameter.
 - Obliterator: Using the lever triggers state `start` and `end`.
 - Pickables: Picking triggers state `picked` or `unpicked`.
