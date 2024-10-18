@@ -1,5 +1,6 @@
 - v1.23
   - Adds support for new state types (Feast eat and ItemDrop piece).
+  - Adds new parameter `<pos_x,z,y>` to get the offset position from the object position.
   - Fixed for the new patch.
   - Fixes iten drops being spawned when stack size was explicitly set to 0.
   - Updates the RPC.md file.
