@@ -401,7 +401,8 @@ public class ItemValue(ItemData data)
       itemData.m_durability = Durability?.Get(pars) ?? itemData.GetMaxDurability(itemData.m_quality);
       itemData.m_equipped = Equipped?.GetBool(pars) ?? false;
       itemData.m_pickedUp = PickedUp?.GetBool(pars) ?? false;
-      itemData.m_customData = CustomData.ToDictionary(x => x.Key, x => x.Value.Get(pars) ?? "");
+      if (CustomData != null)
+        itemData.m_customData = CustomData.ToDictionary(x => x.Key, x => x.Value.Get(pars) ?? "");
 
       var amount = Mathf.Min(itemData.m_shared.m_maxStackSize, stack);
       stack -= amount;
