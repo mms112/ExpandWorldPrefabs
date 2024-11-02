@@ -91,10 +91,16 @@ public class Data
   public ObjectData[]? bannedObjects;
   [DefaultValue(null)]
   public string? bannedObjectsLimit;
+  [DefaultValue(null)]
+  public string? locations;
   [DefaultValue("")]
-  public string locations = "";
+  public string? bannedLocations;
   [DefaultValue(0f)]
   public float locationDistance = 0f;
+  [DefaultValue(null)]
+  public string? playerEvents;
+  [DefaultValue(null)]
+  public string? bannedPlayerEvents;
   [DefaultValue(null)]
   public string? filter = null;
   [DefaultValue(null)]
@@ -177,8 +183,11 @@ public class Info
   public Object[]? Objects;
   public Range<int>? BannedObjectsLimit;
   public Object[]? BannedObjects;
-  public HashSet<string> Locations = [];
+  public HashSet<string>? Locations;
+  public HashSet<string>? BannedLocations;
   public float LocationDistance = 0f;
+  public HashSet<string>? PlayerEvents;
+  public HashSet<string>? BannedPlayerEvents;
   public DataEntry? Filter;
   public DataEntry? BannedFilter;
   public bool TriggerRules;

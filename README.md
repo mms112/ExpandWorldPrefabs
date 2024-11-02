@@ -52,6 +52,9 @@ Following parameters are available to be used in the yaml file:
 - `<byte_*>`: Byte value from the object converted to base64 text.
 - `<zdo_*>`: Object id value from the object.
 - `<item_*>`: Amount of specific item in the container.
+- `<pdata_*>`: Player data.
+  - `<pdata_baseValue>`: Amount of nearby player base structures.
+  - `<pdata_possibleEvents>`: List of possible events.
 - `<pid>`: Steam/Playfab of the client that controls the object.
   - Note: The client always controls its player object.
 - `<pname>`: Player name of the client that controls the object.
@@ -122,12 +125,18 @@ If a filter is not specified, it's not checked and is always considered valid.
 - bannedGlobalKeys (P): List of global keys that must not be set.
   - The values are converted to lower case because the game always uses lower case.
 - locations: List of location ids. At least one must be nearby.
+- bannedLocations: List of location ids. None must be nearby.
 - locationDistance (default: `0` meters): Search distance for nearby locations.
   - If 0, uses the location exterior radius.
 - events: List of event ids. At least one must be active nearby.
   - If set without `eventDistance`, the search distance is 100 meters.
 - eventDistance: Search distance for nearby events.
   - If set without `events`, any nearby event is valid.
+- playerEvents: List of event ids. At least one must be possible for the player.
+  - The list depends on the player progression (killed enemies, known items, taken Forsaken powers).
+  - The list is created even when player based events are not enabled.
+  - You can use the parameter `<pdata_possibleEvents>` to print them.
+- bannedPlayerEvents: List of event ids. None must be possible for the player.
 
 ### Data filters
 

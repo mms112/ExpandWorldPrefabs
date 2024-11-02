@@ -222,6 +222,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
      "zdo" => zdo.GetZDOID(value).ToString(),
      "item" => GetAmountOfItems(value).ToString(),
      "pos" => DataEntry.PrintVectorXZY(GetPos(value)),
+     "pdata" => GetPlayerData(zdo, value),
      _ => "",
    };
 
@@ -289,5 +290,15 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
   {
     var offset = Parse.VectorXZY(value);
     return zdo.GetPosition() + zdo.GetRotation() * offset;
+  }
+
+  public static string GetPlayerData(ZDO zdo, string key)
+  {
+    var peer = GetPeer(zdo);
+    if (peer != null)
+      return peer.m_serverSyncedPlayerData.TryGetValue(key, out var data) ? data : "";
+    else if (Player.m_localPlayer)
+      return ZNet.instance.m_serverSyncedPlayerData.TryGetValue(key, out var data) ? data : "";
+    return "";
   }
 }

@@ -63,7 +63,10 @@ public class Loading
     var commands = data.commands ?? (data.command == null ? [] : [data.command]);
     HashSet<string> environments = [.. Parse.ToList(data.environments).Select(s => s.ToLower())];
     HashSet<string> bannedEnvironments = [.. Parse.ToList(data.bannedEnvironments).Select(s => s.ToLower())];
-    HashSet<string> locations = [.. Parse.ToList(data.locations)];
+    HashSet<string>? locations = data.locations == null ? null : [.. Parse.ToList(data.locations)];
+    HashSet<string>? bannedLocations = data.bannedLocations == null ? null : [.. Parse.ToList(data.bannedLocations)];
+    HashSet<string>? playerEvents = data.playerEvents == null ? null : [.. Parse.ToList(data.playerEvents)];
+    HashSet<string>? bannedPlayerEvents = data.bannedPlayerEvents == null ? null : [.. Parse.ToList(data.bannedPlayerEvents)];
     var objectsLimit = ParseObjectsLimit(data.objectsLimit);
     var objects = data.objects == null ? null : ParseObjects(data.objects);
     var bannedObjects = data.bannedObjects == null ? null : ParseObjects(data.bannedObjects);
@@ -120,6 +123,9 @@ public class Loading
         EventDistance = data.eventDistance ?? (events.Count > 0 ? 100f : 0f),
         LocationDistance = data.locationDistance,
         Locations = locations,
+        BannedLocations = bannedLocations,
+        PlayerEvents = playerEvents,
+        BannedPlayerEvents = bannedPlayerEvents,
         PokeLimit = data.pokeLimit,
         PokeParameter = data.pokeParameter,
         Pokes = pokes,

@@ -53,7 +53,8 @@ public class InfoSelector
     var checkEvents = linq.Any(d => d.Events.Count > 0);
     var checkObjects = linq.Any(d => d.Objects != null);
     var checkBannedObjects = linq.Any(d => d.BannedObjects != null);
-    var checkLocations = linq.Any(d => d.Locations.Count > 0);
+    var checkLocations = linq.Any(d => d.Locations != null || d.BannedLocations != null);
+    var checkPlayerEvents = linq.Any(d => d.PlayerEvents != null || d.BannedPlayerEvents != null);
     var checkFilters = linq.Any(d => d.Filter != null);
     var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
     var checkPaint = linq.Any(d => d.MinPaint != null || d.MaxPaint != null);
@@ -93,7 +94,7 @@ public class InfoSelector
       var zone = ZoneSystem.GetZone(pos);
       linq = linq.Where(d =>
       {
-        if (d.Locations.Count == 0) return true;
+        if (d.Locations == null && d.BannedLocations == null) return true;
         // +1 because the location can be at zone edge, so any distance can be on the next zone.
         var di = (int)(d.LocationDistance / 64f) + 1;
         var dj = (int)(d.LocationDistance / 64f) + 1;
@@ -102,19 +103,46 @@ public class InfoSelector
         var minJ = zone.y - dj;
         var maxJ = zone.y + dj;
 
-        for (int i = minI; i <= maxI; i++)
+        if (d.BannedLocations != null)
         {
-          for (int j = minJ; j <= maxJ; j++)
+          for (int i = minI; i <= maxI; i++)
           {
-            var key = new Vector2i(i, j);
-            if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
-            if (!d.Locations.Contains(loc.m_location.m_prefabName)) continue;
-            var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
-            if (Utils.DistanceXZ(loc.m_position, pos) > dist) continue;
-            return true;
+            for (int j = minJ; j <= maxJ; j++)
+            {
+              var key = new Vector2i(i, j);
+              if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
+              if (!d.BannedLocations.Contains(loc.m_location.m_prefabName)) continue;
+              var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
+              if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return false;
+            }
+          }
+        }
+        if (d.Locations != null)
+        {
+          for (int i = minI; i <= maxI; i++)
+          {
+            for (int j = minJ; j <= maxJ; j++)
+            {
+              var key = new Vector2i(i, j);
+              if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
+              if (!d.Locations.Contains(loc.m_location.m_prefabName)) continue;
+              var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
+              if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return true;
+            }
           }
         }
         return false;
+      }).ToArray();
+    }
+    if (checkPlayerEvents)
+    {
+      var eventData = ObjectParameters.GetPlayerData(zdo, "possibleEvents");
+      var events = eventData.Split(',');
+      linq = linq.Where(d =>
+      {
+        if (d.BannedPlayerEvents != null && events.Any(ev => d.BannedPlayerEvents.Contains(ev))) return false;
+        if (d.PlayerEvents == null) return true;
+        return events.Any(ev => d.PlayerEvents.Contains(ev));
       }).ToArray();
     }
     if (checkFilters || checkBannedFilters)
