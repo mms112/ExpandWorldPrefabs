@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace ExpandWorld.Prefab;
 
-
 public class InfoSelector
 {
   public static Info? Select(ActionType type, ZDO zdo, string arg, Parameters parameters, ZDO? source)
@@ -117,18 +116,16 @@ public class InfoSelector
             }
           }
         }
-        if (d.Locations != null)
+        if (d.Locations == null) return true;
+        for (int i = minI; i <= maxI; i++)
         {
-          for (int i = minI; i <= maxI; i++)
+          for (int j = minJ; j <= maxJ; j++)
           {
-            for (int j = minJ; j <= maxJ; j++)
-            {
-              var key = new Vector2i(i, j);
-              if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
-              if (!d.Locations.Contains(loc.m_location.m_prefabName)) continue;
-              var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
-              if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return true;
-            }
+            var key = new Vector2i(i, j);
+            if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
+            if (!d.Locations.Contains(loc.m_location.m_prefabName)) continue;
+            var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
+            if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return true;
           }
         }
         return false;

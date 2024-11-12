@@ -1,7 +1,6 @@
-using System.Collections.Generic;
+using System;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Data;
 using Service;
 using UnityEngine;
@@ -280,8 +279,8 @@ public class Manager
     foreach (var terrain in info.Terrains)
     {
       var delay = terrain.Delay?.Get(pars) ?? 0f;
-      terrain.Get(pars, pos, rot, out var p, out var s, out var pkg);
-      DelayedTerrain.Add(delay, source, p, s, pkg);
+      terrain.Get(pars, pos, rot, out var p, out var s, out var resetRadius, out var pkg);
+      DelayedTerrain.Add(delay, source, p, s, pkg, resetRadius);
     }
   }
 
@@ -300,7 +299,7 @@ public class Manager
     foreach (var i in info)
       i.InvokeGlobal(parameters);
   }
-  public static void ModifyTerrain(long source, Vector3 pos, float radius, ZPackage pkg)
+  public static void ModifyTerrain(long source, Vector3 pos, float radius, ZPackage pkg, float resetRadius)
   {
     // Terrain may have to be modified in multiple zones.
     var corner1 = pos + new Vector3(radius, 0, radius);
@@ -322,16 +321,21 @@ public class Manager
       {
         var zone = new Vector2i(i, j);
         if (!ZoneSystem.instance.IsZoneGenerated(zone)) continue;
-        ModifyZoneTerrain(source, zone, pkg);
+        ModifyZoneTerrain(source, pos, zone, pkg, resetRadius);
       }
     }
   }
   private static readonly int TerrainActionHash = "ApplyOperation".GetStableHashCode();
-  private static void ModifyZoneTerrain(long source, Vector2i zone, ZPackage pkg)
+  private static void ModifyZoneTerrain(long source, Vector3 pos, Vector2i zone, ZPackage pkg, float resetRadius)
   {
     var compiler = FindTerrainCompiler(zone);
     if (compiler != null && compiler.HasOwner())
-      Rpc(source, compiler.GetOwner(), compiler.m_uid, TerrainActionHash, [pkg]);
+    {
+      if (resetRadius > 0f)
+        ResetTerrainInZdo(pos, resetRadius, zone, compiler);
+      else
+        Rpc(source, compiler.GetOwner(), compiler.m_uid, TerrainActionHash, [pkg]);
+    }
     // Compiler should be already there.
   }
 
@@ -363,7 +367,87 @@ public class Manager
     }
     return created;
   }
-
+  private static void ResetTerrainInZdo(Vector3 pos, float radius, Vector2i zone, ZDO zdo)
+  {
+    var byteArray = zdo.GetByteArray(ZDOVars.s_TCData);
+    if (byteArray == null) return;
+    var center = ZoneSystem.GetZonePos(zone);
+    var change = false;
+    var from = new ZPackage(Utils.Decompress(byteArray));
+    var to = new ZPackage();
+    to.Write(from.ReadInt());
+    to.Write(from.ReadInt() + 1);
+    from.ReadVector3();
+    to.Write(center);
+    from.ReadSingle();
+    to.Write(radius);
+    var size = from.ReadInt();
+    to.Write(size);
+    var width = (int)Math.Sqrt(size);
+    for (int index = 0; index < size; index++)
+    {
+      var wasModified = from.ReadBool();
+      var modified = wasModified;
+      var j = index / width;
+      var i = index % width;
+      if (j >= 0 && j <= width - 1 && i >= 0 && i <= width - 1)
+      {
+        var worldPos = VertexToWorld(center, j, i);
+        if (Utils.DistanceXZ(worldPos, pos) < radius)
+          modified = false;
+      }
+      to.Write(modified);
+      if (modified)
+      {
+        to.Write(from.ReadSingle());
+        to.Write(from.ReadSingle());
+      }
+      if (wasModified && !modified)
+      {
+        change = true;
+        from.ReadSingle();
+        from.ReadSingle();
+      }
+    }
+    size = from.ReadInt();
+    to.Write(size);
+    for (int index = 0; index < size; index++)
+    {
+      var wasModified = from.ReadBool();
+      var modified = wasModified;
+      var j = index / width;
+      var i = index % width;
+      var worldPos = VertexToWorld(center, j, i);
+      if (Utils.DistanceXZ(worldPos, pos) < radius)
+        modified = false;
+      to.Write(modified);
+      if (modified)
+      {
+        to.Write(from.ReadSingle());
+        to.Write(from.ReadSingle());
+        to.Write(from.ReadSingle());
+        to.Write(from.ReadSingle());
+      }
+      if (wasModified && !modified)
+      {
+        change = true;
+        from.ReadSingle();
+        from.ReadSingle();
+        from.ReadSingle();
+        from.ReadSingle();
+      }
+    }
+    if (!change) return;
+    var bytes = Utils.Compress(to.GetArray());
+    zdo.DataRevision += 100;
+    zdo.Set(ZDOVars.s_TCData, bytes);
+  }
+  private static Vector3 VertexToWorld(Vector3 pos, int j, int i)
+  {
+    pos.x += i - 32.5f;
+    pos.z += j - 32.5f;
+    return pos;
+  }
   private static readonly int TerrainCompilerHash = "_TerrainCompiler".GetStableHashCode();
   private static bool GenerateZoneTerrainCompiler(long source, Vector2i zone)
   {

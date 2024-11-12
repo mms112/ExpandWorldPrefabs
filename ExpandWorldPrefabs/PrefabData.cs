@@ -461,6 +461,8 @@ public class TerrainData
   [DefaultValue(null)]
   public string? square;
   [DefaultValue(null)]
+  public string? resetRadius;
+  [DefaultValue(null)]
   public string? levelRadius;
   [DefaultValue(null)]
   public string? levelOffset;
@@ -485,6 +487,7 @@ public class TerrainData
 public class Terrain(TerrainData data)
 {
   public readonly IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
+  public readonly IFloatValue? ResetRadius = data.resetRadius == null ? null : DataValue.Float(data.resetRadius);
   public readonly IVector3Value? Position = data.pos != null ? DataValue.Vector3(data.pos) : data.position != null ? DataValue.Vector3(data.position) : null;
   public readonly IBoolValue? Square = data.square == null ? null : DataValue.Bool(data.square);
   public readonly IFloatValue? LevelRadius = data.levelRadius == null ? null : DataValue.Float(data.levelRadius);
@@ -498,7 +501,7 @@ public class Terrain(TerrainData data)
   public readonly IBoolValue? PaintHeightCheck = data.paintHeightCheck == null ? null : DataValue.Bool(data.paintHeightCheck);
   public readonly IStringValue? Paint = data.paint == null ? null : DataValue.String(data.paint);
 
-  public void Get(Parameters pars, Vector3 basePosition, Quaternion baseRotation, out Vector3 pos, out float size, out ZPackage pkg)
+  public void Get(Parameters pars, Vector3 basePosition, Quaternion baseRotation, out Vector3 pos, out float size, out float resetRadius, out ZPackage pkg)
   {
     pos = basePosition;
     pos += baseRotation * (Position?.Get(pars) ?? Vector3.zero);
@@ -528,6 +531,7 @@ public class Terrain(TerrainData data)
       TerrainModifier.PaintType.Reset;
     pkg.Write((int)paintEnum);
     pkg.Write(paintRadius);
-    size = Mathf.Max(levelRadius, raiseRadius, smoothRadius, paintRadius);
+    resetRadius = ResetRadius?.Get(pars) ?? 0f;
+    size = Mathf.Max(levelRadius, raiseRadius, smoothRadius, paintRadius, resetRadius);
   }
 }

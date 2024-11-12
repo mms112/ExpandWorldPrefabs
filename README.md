@@ -63,6 +63,8 @@ Following parameters are available to be used in the yaml file:
 
 Object attributes can be queried with the field system. For example `<float_WearNTear.m_health>` to get piece maximum health or `<float_ItemDrop.m_itemData.m_shared.m_maxDurability>` to get item maximum durability.
 
+For missing object data, the default value can be set by adding `=value`. For example `<int_level=1>`.
+
 ### expand_prefabs.yaml
 
 Most fields are put on a single line. List values are separated by `,`.
@@ -297,6 +299,8 @@ Terrain operation:
 
 - delay: Delay in seconds for the terrain change.
 - pos: Position offset in x,z,y from the original object.
+- resetRadius: Radius for the terrain and paint reset.
+  - Note: This is purely done server side, so you can't use other operations with this.
 - square: If true, square shape is used.
 - levelRadius: Radius for the level change.
 - levelOffset: Offset for the level change.
