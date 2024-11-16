@@ -20,50 +20,9 @@ The file `expand_world/expand_prefabs.yaml` is created when loading a world.
 
 This mod uses the [data system](https://github.com/JereKuusela/valheim-world_edit_commands/blob/main/README_data.md) of World Edit Commands.
 
-### Parameterrs
-
 Most of the values can be parametrized. These are indicated by letter P in this document.
 
-Following parameters are available to be used in the yaml file:
-
-- `<prefab>`: Original prefab id.
-- `<zdo>`: Object id.
-- `<par>`: Triggered parameter.
-- `<par0>`, ..., `<par9>`: Part of the parameter (split by spaces).
-- `<x>`, `<y>` and `<z>`: Object center point.
-- `<pos>`: Object center point as x,z,y.
-- `<i>` and `<j>`: Object zone indices.
-- `<a>`: Object rotation.
-- `<rot>`: Object rotation as y,x,z.
-- `<day>`: Days since the world start (int type).
-- `<time>`: Seconds since the world start (float type).
-  - Each day is 1800 seconds.
-- `<ticks>`: Ticks since the world start (long type).
-  - Each second is 10000000 ticks.
-- `<key_*>`: Global key value.
-- `<int_*>`: Integer value from the object data.
-- `<float_*>`: Decimal value from the object data.
-- `<long_*>`: Big integer value from the object data.
-- `<string_*>`: Text value from the object data.
-- `<bool_*>`: Integer value from the object converted to true or false.
-- `<hash_*>`: Integer value from the object converted to prefab name.
-- `<vec_*>`: Vector3 value from the object converted to x,z,y.
-- `<quat_*>`: Quaternion value from the object converted to y,x,z.
-- `<byte_*>`: Byte value from the object converted to base64 text.
-- `<zdo_*>`: Object id value from the object.
-- `<item_*>`: Amount of specific item in the container.
-- `<pdata_*>`: Player data.
-  - `<pdata_baseValue>`: Amount of nearby player base structures.
-  - `<pdata_possibleEvents>`: List of possible events.
-- `<pid>`: Steam/Playfab of the client that controls the object.
-  - Note: The client always controls its player object.
-- `<pname>`: Player name of the client that controls the object.
-- `<pchar>`: Character id of the client that controls the object.
-- `<owner>`: Id of the owner client (long number).
-
-Object attributes can be queried with the field system. For example `<float_WearNTear.m_health>` to get piece maximum health or `<float_ItemDrop.m_itemData.m_shared.m_maxDurability>` to get item maximum durability.
-
-For missing object data, the default value can be set by adding `=value`. For example `<int_level=1>`.
+See section [Parameters](### Parameters) for more information.
 
 ### expand_prefabs.yaml
 
@@ -339,6 +298,87 @@ State works for following objects:
 - Pickables: Picking triggers state `picked` or `unpicked`.
 - Traps: Triggering the trap triggers state with the target id.
 - Ward: Triggering the ward triggers state `flash`.
+
+### Parameterrs
+
+Following parameters are available to be used in the yaml file:
+
+- `<prefab>`: Original prefab id.
+- `<zdo>`: Object id.
+- `<par>`: Triggered parameter.
+- `<par0>`, ..., `<par9>`: Part of the parameter (split by spaces).
+- `<x>`, `<y>` and `<z>`: Object center point.
+- `<pos>`: Object center point as x,z,y.
+- `<i>` and `<j>`: Object zone indices.
+- `<a>`: Object rotation.
+- `<rot>`: Object rotation as y,x,z.
+- `<day>`: Days since the world start (int type).
+- `<time>`: Seconds since the world start (float type).
+  - Each day is 1800 seconds.
+- `<ticks>`: Ticks since the world start (long type).
+  - Each second is 10000000 ticks.
+- `<key_*>`: Global key value.
+- `<int_*>`: Integer value from the object data.
+- `<float_*>`: Decimal value from the object data.
+- `<long_*>`: Big integer value from the object data.
+- `<string_*>`: Text value from the object data.
+- `<bool_*>`: Integer value from the object converted to true or false.
+- `<hash_*>`: Integer value from the object converted to prefab name.
+- `<vec_*>`: Vector3 value from the object converted to x,z,y.
+- `<quat_*>`: Quaternion value from the object converted to y,x,z.
+- `<byte_*>`: Byte value from the object converted to base64 text.
+- `<zdo_*>`: Object id value from the object.
+- `<item_*>`: Amount of specific item in the container.
+- `<pdata_*>`: Player data.
+  - `<pdata_baseValue>`: Amount of nearby player base structures.
+  - `<pdata_possibleEvents>`: List of possible events.
+- `<pid>`: Steam/Playfab of the client that controls the object.
+  - Note: The client always controls its player object.
+- `<pname>`: Player name of the client that controls the object.
+- `<pchar>`: Character id of the client that controls the object.
+- `<owner>`: Id of the owner client (long number).
+
+Object attributes can be queried with the field system. For example `<float_WearNTear.m_health>` to get piece maximum health or `<float_ItemDrop.m_itemData.m_shared.m_maxDurability>` to get item maximum durability.
+
+For missing object data, the default value can be set by adding `=value`. For example `<int_level=1>`.
+
+### Functions
+
+Text related functions:
+
+- `<len_X>`: Returns length of the text X.
+- `<lower_X>`: Returns lower case of the text X.
+- `<upper_X>`: Returns upper case of the text X.
+- `<trim_X>`: Returns text X without leading and trailing spaces.
+- `<hash_X>`: Returns hash of the text X.
+
+Number related functions:
+
+- `<abs_X>`: Returns absolute value of the number X.
+- `<add_X_Y>`: Returns sum of X and Y.
+- `<asin_X>`: Returns arcsine of X.
+- `<acos_X>`: Returns arccosine of X.
+- `<atan_X>`: Returns arctangent of X.
+- `<atan_X_Y>`: Returns arctangent of X/Y.
+- `<ceil_X>`: Returns smallest integer greater than or equal to X.
+- `<cos_X>`: Returns cosine of X.
+- `<div_X_Y>`: Returns quotient of X and Y.
+- `<exp_X>`: Returns e raised to the power of X.
+- `<floor_X>`: Returns largest integer less than or equal to X.
+- `<log_X>`: Returns natural logarithm of X.
+- `<log_X_Y>`: Returns logarithm of X with base Y.
+- `<max_X_Y>`: Returns maximum of X and Y.
+- `<min_X_Y>`: Returns minimum of X and Y.
+- `<mod_X_Y>`: Returns remainder of X divided by Y.
+- `<mul_X_Y>`: Returns product of X and Y.
+- `<pow_X_Y>`: Returns X raised to the power of Y.
+- `<randf_X_Y>`: Returns random decimal number between X and Y.
+- `<randi_X_Y>`: Returns random integer number between X and Y.
+- `<round_X>`: Returns nearest integer of X.
+- `<sin_X>`: Returns sine of X.
+- `<sqrt_X>`: Returns square root of X.
+- `<sub_X_Y>`: Returns difference of X and Y.
+- `<tan_X>`: Returns tangent of X.
 
 ### Legacy
 

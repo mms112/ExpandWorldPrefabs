@@ -1,3 +1,7 @@
+- v1.25
+  - Adds lots of text and number related functions as parameters.
+  - Fixes animation related data not working as parameters.
+
 - v1.24
   - Adds support for default values in the object data parameters.
   - Adds a new field `resetRadius` to the terrain operations.

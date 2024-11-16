@@ -81,7 +81,22 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     return resolved != key;
   }
 
-  protected virtual string? GetParameter(string key) =>
+  protected virtual string? GetParameter(string key)
+  {
+    var value = GetGeneralParameter(key);
+    if (value != null) return value;
+    var kvp = Parse.Kvp(key, '_');
+    if (kvp.Value == "") return null;
+    key = kvp.Key.Substring(1);
+    var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
+    var kvp2 = Parse.Kvp(keyValue, '=');
+    keyValue = kvp2.Key;
+    var defaultValue = kvp2.Value;
+
+    return GetValueParameter(key, keyValue, defaultValue);
+  }
+
+  private string? GetGeneralParameter(string key) =>
     key switch
     {
       "<prefab>" => prefab,
@@ -105,6 +120,58 @@ public class Parameters(string prefab, string arg, Vector3 pos)
       "<snap>" => Format(WorldGenerator.instance.GetHeight(pos.x, pos.z)),
       _ => null,
     };
+
+  protected virtual string? GetValueParameter(string key, string value, string defaultValue) =>
+   key switch
+   {
+     "sqrt" => Parse.TryFloat(value, out var f) ? Mathf.Sqrt(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "round" => Parse.TryFloat(value, out var f) ? Mathf.Round(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "ceil" => Parse.TryFloat(value, out var f) ? Mathf.Ceil(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "floor" => Parse.TryFloat(value, out var f) ? Mathf.Floor(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "abs" => Parse.TryFloat(value, out var f) ? Mathf.Abs(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "sin" => Parse.TryFloat(value, out var f) ? Mathf.Sin(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "cos" => Parse.TryFloat(value, out var f) ? Mathf.Cos(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "tan" => Parse.TryFloat(value, out var f) ? Mathf.Tan(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "asin" => Parse.TryFloat(value, out var f) ? Mathf.Asin(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "acos" => Parse.TryFloat(value, out var f) ? Mathf.Acos(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "atan" => Atan(value, defaultValue),
+     "pow" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Pow(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "log" => Log(value, defaultValue),
+     "exp" => Parse.TryFloat(value, out var f) ? Mathf.Exp(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "min" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Min(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "max" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Max(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "add" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 + f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "sub" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 - f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "mul" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 * f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "div" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 / f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "mod" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 % f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "randf" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? UnityEngine.Random.Range(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "randi" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryInt(kvp.Key, out var i1) && Parse.TryInt(kvp.Value, out var i2) ? UnityEngine.Random.Range(i1, i2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "hash" => DataEntry.Hash(value).ToString(),
+     "len" => value.Length.ToString(CultureInfo.InvariantCulture),
+     "lower" => value.ToLowerInvariant(),
+     "upper" => value.ToUpperInvariant(),
+     "trim" => value.Trim(),
+     _ => null,
+   };
+
+  private string Atan(string value, string defaultValue)
+  {
+    var kvp = Parse.Kvp(value, '_');
+    if (!Parse.TryFloat(kvp.Key, out var f1)) return defaultValue;
+    if (kvp.Value == "") return Mathf.Atan(f1).ToString(CultureInfo.InvariantCulture);
+    if (!Parse.TryFloat(kvp.Value, out var f2)) return defaultValue;
+    return Mathf.Atan2(f1, f2).ToString(CultureInfo.InvariantCulture);
+  }
+
+  private string Log(string value, string defaultValue)
+  {
+    var kvp = Parse.Kvp(value, '_');
+    if (!Parse.TryFloat(kvp.Key, out var f1)) return defaultValue;
+    if (kvp.Value == "") return Mathf.Log(f1).ToString(CultureInfo.InvariantCulture);
+    if (!Parse.TryFloat(kvp.Value, out var f2)) return defaultValue;
+    return Mathf.Log(f1, f2).ToString(CultureInfo.InvariantCulture);
+  }
 
   private string GetArg(int index)
   {
@@ -151,16 +218,16 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     value = GetGeneralParameter(key);
     if (value != null) return value;
     var kvp = Parse.Kvp(key, '_');
-    if (kvp.Value != "")
-    {
-      var zdoKey = kvp.Key.Substring(1);
-      var zdoValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
-      var kvp2 = Parse.Kvp(zdoValue, '=');
-      zdoValue = kvp2.Key;
-      var defaultValue = kvp2.Value;
-      return GetZdoValue(zdoKey, zdoValue, defaultValue);
-    }
-    return null;
+    if (kvp.Value == "") return null;
+    key = kvp.Key.Substring(1);
+    var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
+    var kvp2 = Parse.Kvp(keyValue, '=');
+    keyValue = kvp2.Key;
+    var defaultValue = kvp2.Value;
+
+    value = base.GetValueParameter(key, keyValue, defaultValue);
+    if (value != null) return value;
+    return GetValueParameter(key, keyValue, defaultValue);
   }
 
   private string? GetGeneralParameter(string key) =>
@@ -209,7 +276,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
   private static ZNetPeer? GetPeer(ZDO zdo) => zdo.GetOwner() != 0 ? ZNet.instance.GetPeer(zdo.GetOwner()) : null;
 
 
-  private string GetZdoValue(string key, string value, string defaultValue) =>
+  protected override string? GetValueParameter(string key, string value, string defaultValue) =>
    key switch
    {
      "key" => DataHelper.GetGlobalKey(value),
@@ -226,16 +293,16 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
      "item" => GetAmountOfItems(value).ToString(),
      "pos" => DataEntry.PrintVectorXZY(GetPos(value)),
      "pdata" => GetPlayerData(zdo, value),
-     _ => "",
+     _ => null,
    };
 
-  private string GetString(string value, string defaultValue) => ZDOExtraData.s_strings.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var str) ? str : GetStringField(value, defaultValue);
-  private float GetFloat(string value, string defaultValue) => ZDOExtraData.s_floats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var f) ? f : GetFloatField(value, defaultValue);
-  private int GetInt(string value, string defaultValue) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var i) ? i : GetIntField(value, defaultValue);
-  private long GetLong(string value, string defaultValue) => ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var l) ? l : GetLongField(value, defaultValue);
-  private bool GetBool(string value, string defaultValue) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var b) ? b > 0 : GetBoolField(value, defaultValue);
-  private Vector3 GetVec3(string value, string defaultValue) => ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var v) ? v : GetVecField(value, defaultValue);
-  private Quaternion GetQuaternion(string value, string defaultValue) => ZDOExtraData.s_quats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(StringExtensionMethods.GetStableHashCode(value), out var q) ? q : GetQuatField(value, defaultValue);
+  private string GetString(string value, string defaultValue) => ZDOExtraData.s_strings.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(DataEntry.Hash(value), out var str) ? str : GetStringField(value, defaultValue);
+  private float GetFloat(string value, string defaultValue) => ZDOExtraData.s_floats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(DataEntry.Hash(value), out var f) ? f : GetFloatField(value, defaultValue);
+  private int GetInt(string value, string defaultValue) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(DataEntry.Hash(value), out var i) ? i : GetIntField(value, defaultValue);
+  private long GetLong(string value, string defaultValue) => ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(DataEntry.Hash(value), out var l) ? l : GetLongField(value, defaultValue);
+  private bool GetBool(string value, string defaultValue) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(DataEntry.Hash(value), out var b) ? b > 0 : GetBoolField(value, defaultValue);
+  private Vector3 GetVec3(string value, string defaultValue) => ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(DataEntry.Hash(value), out var v) ? v : GetVecField(value, defaultValue);
+  private Quaternion GetQuaternion(string value, string defaultValue) => ZDOExtraData.s_quats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(DataEntry.Hash(value), out var q) ? q : GetQuatField(value, defaultValue);
 
 
 

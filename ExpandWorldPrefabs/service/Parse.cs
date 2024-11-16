@@ -116,6 +116,11 @@ public static class Parse
     if (split.Length < 2) return new(split[0], "");
     return new(split[0], split[1].Trim());
   }
+  public static bool TryKvp(string str, out KeyValuePair<string, string> kvp, char separator = ',')
+  {
+    kvp = Kvp(str, separator);
+    return kvp.Value != "";
+  }
   public static string[] SplitWithEmpty(string arg, char split = ',') => arg.Split(split).Select(s => s.Trim()).ToArray();
   public static string[] SplitWithEscape(string arg, char separator = ',')
   {
@@ -289,21 +294,21 @@ public static class Parse
       var kvp = Kvp(s, '=');
       var key = kvp.Key;
       var value = kvp.Value;
-      if (key == "damage") hit.m_damage.m_damage = Int(value);
-      if (key == "blunt") hit.m_damage.m_blunt = Int(value);
-      if (key == "slash") hit.m_damage.m_slash = Int(value);
-      if (key == "pierce") hit.m_damage.m_pierce = Int(value);
-      if (key == "chop") hit.m_damage.m_chop = Int(value);
-      if (key == "pickaxe") hit.m_damage.m_pickaxe = Int(value);
-      if (key == "fire") hit.m_damage.m_fire = Int(value);
-      if (key == "frost") hit.m_damage.m_frost = Int(value);
-      if (key == "lightning") hit.m_damage.m_lightning = Int(value);
-      if (key == "poison") hit.m_damage.m_poison = Int(value);
-      if (key == "spirit") hit.m_damage.m_spirit = Int(value);
+      if (key == "damage") hit.m_damage.m_damage = Float(value);
+      if (key == "blunt") hit.m_damage.m_blunt = Float(value);
+      if (key == "slash") hit.m_damage.m_slash = Float(value);
+      if (key == "pierce") hit.m_damage.m_pierce = Float(value);
+      if (key == "chop") hit.m_damage.m_chop = Float(value);
+      if (key == "pickaxe") hit.m_damage.m_pickaxe = Float(value);
+      if (key == "fire") hit.m_damage.m_fire = Float(value);
+      if (key == "frost") hit.m_damage.m_frost = Float(value);
+      if (key == "lightning") hit.m_damage.m_lightning = Float(value);
+      if (key == "poison") hit.m_damage.m_poison = Float(value);
+      if (key == "spirit") hit.m_damage.m_spirit = Float(value);
       if (key == "tier") hit.m_toolTier = (short)Int(value);
       if (key == "force") hit.m_pushForce = Float(value);
       if (key == "backstab") hit.m_backstabBonus = Float(value);
-      if (key == "stagger") hit.m_staggerMultiplier = Int(value);
+      if (key == "stagger") hit.m_staggerMultiplier = Float(value);
       if (key == "dodge") hit.m_dodgeable = Boolean(value);
       if (key == "block") hit.m_blockable = Boolean(value);
       if (key == "dir") hit.m_dir = VectorXZY(value);

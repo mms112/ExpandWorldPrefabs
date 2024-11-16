@@ -567,7 +567,7 @@ public class DataEntry
     }
   }
 
-  private static int Hash(string key)
+  public static int Hash(string key)
   {
     if (Parse.TryInt(key, out var result)) return result;
     if (key.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
