@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -83,7 +84,9 @@ public class Parameters(string prefab, string arg, Vector3 pos)
 
   protected virtual string? GetParameter(string key)
   {
-    var value = GetGeneralParameter(key);
+    var value = CodeLoading.Execute(key.Substring(1, key.Length - 2));
+    if (value != null) return value;
+    value = GetGeneralParameter(key);
     if (value != null) return value;
     var kvp = Parse.Kvp(key, '_');
     if (kvp.Value == "") return null;
@@ -93,6 +96,8 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     keyValue = kvp2.Key;
     var defaultValue = kvp2.Value;
 
+    value = CodeLoading.Execute(key, keyValue);
+    if (value != null) return value;
     return GetValueParameter(key, keyValue, defaultValue);
   }
 
@@ -225,6 +230,8 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     keyValue = kvp2.Key;
     var defaultValue = kvp2.Value;
 
+    value = CodeLoading.Execute(key, keyValue);
+    if (value != null) return value;
     value = base.GetValueParameter(key, keyValue, defaultValue);
     if (value != null) return value;
     return GetValueParameter(key, keyValue, defaultValue);

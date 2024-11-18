@@ -25,6 +25,7 @@ public class EWP : BaseUnityPlugin
     Yaml.Init();
     try
     {
+      CodeLoading.SetupWatcher();
       DataLoading.SetupWatcher();
       Loading.SetupWatcher();
     }
