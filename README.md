@@ -203,6 +203,9 @@ See object filtering [examples](examples_object_filtering.md).
   - prefab: Target object id or value group.
   - self: If true, the object itself is poked. Prefab is not checked.
   - parameter: Custom value used as the parameter for the `poke` type.
+  - evaluate: If false, math expressions are not calculated in the parameter. Default is true.
+    - For example if some text has math symbols, it might cause weird results.
+    - Note: Math expression are considered legacy, use [functions](Functions) instead.
   - delay: Delay in seconds for poking.
   - limit: Maximum amount of poked objects. If not set, all matching objects are poked.
   - minDistance: Minimum distance from the poker.
@@ -305,8 +308,6 @@ Following parameters are available to be used in the yaml file:
 
 - `<prefab>`: Original prefab id.
 - `<zdo>`: Object id.
-- `<par>`: Triggered parameter.
-- `<par0>`, ..., `<par9>`: Part of the parameter (split by spaces).
 - `<x>`, `<y>` and `<z>`: Object center point.
 - `<pos>`: Object center point as x,z,y.
 - `<i>` and `<j>`: Object zone indices.
@@ -348,7 +349,10 @@ Text related functions:
 
 - `<len_X>`: Returns length of the text X.
 - `<lower_X>`: Returns lower case of the text X.
+- `<par>`: Returns the whole parameter.
+- `<par_X`>: Returns parameter X.
 - `<upper_X>`: Returns upper case of the text X.
+- `<rest_X>`: Returns the rest of the text starting from par X.
 - `<trim_X>`: Returns text X without leading and trailing spaces.
 - `<hash_X>`: Returns hash of the text X.
 
@@ -360,6 +364,8 @@ Number related functions:
 - `<acos_X>`: Returns arccosine of X.
 - `<atan_X>`: Returns arctangent of X.
 - `<atan_X_Y>`: Returns arctangent of X/Y.
+- `<calcf_X>`: Evaluates the math expression X and returns a decimal number.
+- `<calci_X>`: Evaluates the math expression X and returns an integer number.
 - `<ceil_X>`: Returns smallest integer greater than or equal to X.
 - `<cos_X>`: Returns cosine of X.
 - `<div_X_Y>`: Returns quotient of X and Y.
@@ -379,6 +385,8 @@ Number related functions:
 - `<sqrt_X>`: Returns square root of X.
 - `<sub_X_Y>`: Returns difference of X and Y.
 - `<tan_X>`: Returns tangent of X.
+
+Custom functions: See [code.md](code.md).
 
 ### Legacy
 

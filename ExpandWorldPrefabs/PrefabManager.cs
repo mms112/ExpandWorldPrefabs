@@ -213,7 +213,9 @@ public class Manager
     if (info.Pokes == null) return;
     foreach (var poke in info.Pokes)
     {
-      var pokeParameter = Evaluate(pars.Replace(poke.Parameter ?? ""));
+      var pokeParameter = pars.Replace(poke.Parameter ?? "");
+      if (poke.Evaluate?.GetBool(pars) != false)
+        pokeParameter = Evaluate(pokeParameter);
       var delay = poke.Delay?.Get(pars) ?? 0f;
       if (poke.Self?.GetBool(pars) == true)
         DelayedPoke.Add(delay, zdo, pokeParameter);
@@ -236,7 +238,9 @@ public class Manager
     if (info.Pokes == null) return;
     foreach (var poke in info.Pokes)
     {
-      var pokeParameter = Evaluate(pars.Replace(poke.Parameter ?? ""));
+      var pokeParameter = pars.Replace(poke.Parameter ?? "");
+      if (poke.Evaluate?.GetBool(pars) != false)
+        pokeParameter = Evaluate(pokeParameter);
       var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, Quaternion.identity, pars);
       DelayedPoke.Add(poke.Delay?.Get(pars) ?? 0f, zdos, pokeParameter);
 
@@ -255,8 +259,9 @@ public class Manager
       var sub = expression.Substring(1);
       if (!sub.Contains('*') && !sub.Contains('/') && !sub.Contains('+') && !sub.Contains('-')) continue;
       changed = true;
-      var value = Calculator.EvaluateFloat(expression) ?? 0f;
-      expressions[i] = value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
+      var value = Calculator.EvaluateFloat(expression);
+      if (value.HasValue)
+        expressions[i] = value.Value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
     }
     return changed ? string.Join(" ", expressions) : str;
   }

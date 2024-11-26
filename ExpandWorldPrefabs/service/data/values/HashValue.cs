@@ -4,7 +4,12 @@ namespace Data;
 
 public class HashValue(string[] values) : AnyValue(values), IHashValue
 {
-  public int? Get(Parameters pars) => GetValue(pars)?.GetStableHashCode();
+  public int? Get(Parameters pars)
+  {
+    var value = GetValue(pars);
+    if (value == null || value == "") return null;
+    return value.GetStableHashCode();
+  }
   public bool? Match(Parameters pars, int value)
   {
     var values = GetAllValues(pars);

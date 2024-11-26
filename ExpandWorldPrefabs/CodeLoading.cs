@@ -109,7 +109,7 @@ public class CodeLoading
     {
       evaluatorType.GetMethod("ReferenceAssembly")?.Invoke(codeExecutor, [args.LoadedAssembly]);
     };
-    string[] usings = ["using System;", "using System.Collections.Generic;", "using System.Globalization;", "using System.IO;", "using System.Linq;", "using System.Text;", "using System.Reflection;", "using UnityEngine;", "using UnityEngine.UI;", "using HarmonyLib;"];
+    string[] usings = ["using System;", "using System.Collections.Generic;", "using System.Globalization;", "using System.IO;", "using System.Linq;", "using System.Text;", "using System.Reflection;", "using UnityEngine;", "using UnityEngine.UI;", "using HarmonyLib;", "using ExpandWorld.Prefab;"];
     foreach (string u in usings)
       evaluatorType.GetMethod("Run")?.Invoke(codeExecutor, [u]);
     return codeExecutor;
@@ -146,6 +146,8 @@ public class CodeLoading
   }
   private static string ConvertResult(object result)
   {
+    if (result is null)
+      return "";
     if (result is string s)
       return s;
     if (result is int i)
@@ -173,5 +175,66 @@ public class CodeLoading
     if (!Directory.Exists(Yaml.BaseDirectory))
       Directory.CreateDirectory(Yaml.BaseDirectory);
     Yaml.SetupWatcher(Pattern, FromFile);
+    Yaml.SetupWatcher(Yaml.BaseDirectory, "ewp_data.yaml", LoadSavedData);
+    LoadSavedData();
+  }
+
+  private static Dictionary<string, string> SavedData = [];
+
+  public static void LoadSavedData()
+  {
+    if (UnsavedChanges) return;
+    if (!Directory.Exists(Yaml.BaseDirectory))
+      Directory.CreateDirectory(Yaml.BaseDirectory);
+    if (!File.Exists(SavedDataFile)) return;
+    var data = File.ReadAllText(SavedDataFile);
+    SavedData = Yaml.DeserializeData(data);
+    Log.Info($"Reloaded saved data ({SavedData.Count} entries).");
+  }
+  private static bool UnsavedChanges = false;
+  private static long LastSave = 0;
+  private static readonly string SavedDataFile = Path.Combine(Yaml.BaseDirectory, "ewp_data.yaml");
+  public static void SaveSavedData()
+  {
+    if (!UnsavedChanges) return;
+    // Save every 10 seconds at most.
+    if (DateTime.Now.Ticks - LastSave < 10000000) return;
+    LastSave = DateTime.Now.Ticks;
+    if (!Directory.Exists(Yaml.BaseDirectory))
+      Directory.CreateDirectory(Yaml.BaseDirectory);
+    var yaml = Yaml.SerializeData(SavedData);
+    File.WriteAllText(SavedDataFile, yaml);
+    UnsavedChanges = false;
+  }
+
+  public static string GetString(string key, string defaultValue = "") => SavedData.TryGetValue(key, out var value) ? value : defaultValue;
+  public static int GetInt(string key, int defaultValue = 0) => SavedData.TryGetValue(key, out var value) ? Parse.Int(value) : defaultValue;
+  public static float GetFloat(string key, float defaultValue = 0f) => SavedData.TryGetValue(key, out var value) ? Parse.Float(value) : defaultValue;
+  public static bool GetBool(string key, bool defaultValue = false) => SavedData.TryGetValue(key, out var value) ? bool.Parse(value) : defaultValue;
+  public static long GetLong(string key, long defaultValue = 0) => SavedData.TryGetValue(key, out var value) ? Parse.Long(value) : defaultValue;
+  public static void SetInt(string key, int value)
+  {
+    SavedData[key] = value.ToString(CultureInfo.InvariantCulture);
+    UnsavedChanges = true;
+  }
+  public static void SetFloat(string key, float value)
+  {
+    SavedData[key] = value.ToString(CultureInfo.InvariantCulture);
+    UnsavedChanges = true;
+  }
+  public static void SetString(string key, string value)
+  {
+    SavedData[key] = value;
+    UnsavedChanges = true;
+  }
+  public static void SetBool(string key, bool value)
+  {
+    SavedData[key] = value.ToString();
+    UnsavedChanges = true;
+  }
+  public static void SetLong(string key, long value)
+  {
+    SavedData[key] = value.ToString(CultureInfo.InvariantCulture);
+    UnsavedChanges = true;
   }
 }

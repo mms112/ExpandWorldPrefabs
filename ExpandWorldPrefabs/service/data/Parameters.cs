@@ -157,8 +157,20 @@ public class Parameters(string prefab, string arg, Vector3 pos)
      "lower" => value.ToLowerInvariant(),
      "upper" => value.ToUpperInvariant(),
      "trim" => value.Trim(),
+     "calcf" => Calculator.EvaluateFloat(value)?.ToString(CultureInfo.InvariantCulture) ?? defaultValue,
+     "calci" => Calculator.EvaluateInt(value)?.ToString(CultureInfo.InvariantCulture) ?? defaultValue,
+     "par" => Parse.TryInt(value, out var i) ? GetArg(i, defaultValue) : defaultValue,
+     "rest" => Parse.TryInt(value, out var i) ? GetRest(i, defaultValue) : defaultValue,
      _ => null,
    };
+
+
+  private string GetRest(int index, string defaultValue = "")
+  {
+    args ??= arg.Split(' ');
+    if (index < 0 || index >= args.Length) return defaultValue;
+    return string.Join(" ", args, index, args.Length - index);
+  }
 
   private string Atan(string value, string defaultValue)
   {
@@ -178,10 +190,10 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     return Mathf.Log(f1, f2).ToString(CultureInfo.InvariantCulture);
   }
 
-  private string GetArg(int index)
+  private string GetArg(int index, string defaultValue = "")
   {
     args ??= arg.Split(' ');
-    return args.Length <= index ? "" : args[index];
+    return args.Length <= index ? defaultValue : args[index];
   }
   protected static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
   protected static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);

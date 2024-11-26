@@ -216,4 +216,28 @@ public class Yaml
       }
     }
   }
+
+  public static Dictionary<string, string> DeserializeData(string raw)
+  {
+    try
+    {
+      return Deserializer().Deserialize<Dictionary<string, string>>(raw) ?? [];
+    }
+    catch
+    {
+      try
+      {
+        return DeserializerUnSafe().Deserialize<Dictionary<string, string>>(raw) ?? [];
+      }
+      catch (Exception)
+      {
+        return [];
+      }
+    }
+  }
+  public static string SerializeData(Dictionary<string, string> data)
+  {
+    var serializer = new SerializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+    return serializer.Serialize(data);
+  }
 }

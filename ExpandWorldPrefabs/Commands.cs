@@ -19,7 +19,7 @@ public class Commands
 
   private static void Run(IEnumerable<string> commands)
   {
-    var parsed = commands.Select(c => Parse(c)).ToArray();
+    var parsed = commands.Select(Parse).ToArray();
     foreach (var cmd in parsed)
     {
       try
@@ -41,10 +41,11 @@ public class Commands
       // Single negative number would get handled as expression.
       var sub = expression.Substring(1);
       if (!sub.Contains('*') && !sub.Contains('/') && !sub.Contains('+') && !sub.Contains('-')) continue;
-      var value = Calculator.EvaluateFloat(expression) ?? 0f;
+      var value = Calculator.EvaluateFloat(expression);
+      if (value == null) continue;
       int pos = command.IndexOf(expression);
       if (pos < 0) continue;
-      command = command.Substring(0, pos) + value.ToString("0.#####", NumberFormatInfo.InvariantInfo) + command.Substring(pos + expression.Length);
+      command = command.Substring(0, pos) + value.Value.ToString("0.#####", NumberFormatInfo.InvariantInfo) + command.Substring(pos + expression.Length);
     }
     return command;
   }

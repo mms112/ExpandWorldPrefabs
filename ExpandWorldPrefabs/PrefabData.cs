@@ -295,6 +295,7 @@ public class Poke(PokeData data)
   public IIntValue? Limit = data.limit == null ? null : DataValue.Int(data.limit);
   public IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
   public IBoolValue? Self = data.self == null ? null : DataValue.Bool(data.self);
+  public IBoolValue? Evaluate = data.evaluate == null ? null : DataValue.Bool(data.evaluate);
 }
 public class Object
 {
@@ -410,6 +411,8 @@ public class PokeData : ObjectData
   public string? parameter;
   [DefaultValue(null)]
   public string? limit;
+  [DefaultValue(null)]
+  public string? evaluate;
 }
 public class ObjectData
 {
