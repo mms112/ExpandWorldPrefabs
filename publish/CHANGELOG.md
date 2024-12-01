@@ -1,3 +1,8 @@
+- v1.27
+  - Adds parameter support to the RPC field `delay`.
+  - Fixes types "globalkey" and "event" not triggering without the field `remove` being set to false.
+  - Removes support for custom C# functions (split to Expand World Code mod).
+
 - v1.26
   - Adds new functions `calcf`, `calci`, `par` and `rest`.
   - Adds a new poke field `evaluate` to allow turning off automatic math evaluation.

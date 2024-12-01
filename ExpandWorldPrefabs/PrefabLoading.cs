@@ -265,7 +265,6 @@ public class InitializeContent
   {
     if (Helper.IsServer())
     {
-      CodeLoading.FromFile();
       DataLoading.LoadEntries();
       Loading.FromFile();
     }

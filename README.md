@@ -227,13 +227,13 @@ RPC format:
 
 - name: Name of the RPC call. Must be exact match.
   - See list of supported calls: (RPCs.md)
-- target: Target of the RPC call. Default is `owner`.
+- target (P): Target of the RPC call. Default is `owner`.
   - `owner`: The RPC is sent to the owner of the object.
   - `all`: The is sent to all clients.
   - ZDO id: The RPC is sent to the owner of this ZDO.
     - Parameters are supported. For example `<zdo>` can be useful.
-- delay: Delay in seconds for the RPC call.
-- source: ZDO id. The RPC call is faked to be from owner of this ZDO.
+- delay (P): Delay in seconds for the RPC call.
+- source (P): ZDO id. The RPC call is faked to be from owner of this ZDO.
   - Parameters are supported. For example `<zdo>` can be useful.
 - packaged: If true, the parameters are sent as a package. Default is false.
   - This must be set to true for some RPC calls.
@@ -386,7 +386,7 @@ Number related functions:
 - `<sub_X_Y>`: Returns difference of X and Y.
 - `<tan_X>`: Returns tangent of X.
 
-Custom functions: See [code.md](code.md).
+Custom functions: See [Expand World Code](https://github.com/JereKuusela/valheim-expand_world_code).
 
 ### Legacy
 

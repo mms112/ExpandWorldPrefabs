@@ -12,6 +12,8 @@ namespace Data;
 // While also ensuring that all code is in one place.
 public class Parameters(string prefab, string arg, Vector3 pos)
 {
+  public static Func<string, string?> ExecuteCode = (string key) => null!;
+  public static Func<string, string, string?> ExecuteCodeWithValue = (string key, string value) => null!;
 
   protected string[]? args;
   private readonly double time = ZNet.instance.GetTimeSeconds();
@@ -84,7 +86,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
 
   protected virtual string? GetParameter(string key)
   {
-    var value = CodeLoading.Execute(key.Substring(1, key.Length - 2));
+    var value = ExecuteCode(key.Substring(1, key.Length - 2));
     if (value != null) return value;
     value = GetGeneralParameter(key);
     if (value != null) return value;
@@ -96,7 +98,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     keyValue = kvp2.Key;
     var defaultValue = kvp2.Value;
 
-    value = CodeLoading.Execute(key, keyValue);
+    value = ExecuteCodeWithValue(key, keyValue);
     if (value != null) return value;
     return GetValueParameter(key, keyValue, defaultValue);
   }
@@ -242,7 +244,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     keyValue = kvp2.Key;
     var defaultValue = kvp2.Value;
 
-    value = CodeLoading.Execute(key, keyValue);
+    value = ExecuteCodeWithValue(key, keyValue);
     if (value != null) return value;
     value = base.GetValueParameter(key, keyValue, defaultValue);
     if (value != null) return value;

@@ -212,7 +212,7 @@ public class InfoSelector
     var waterY = pos.y - ZoneSystem.instance.m_waterLevel;
     var linq = data
       .Where(d => CheckArgs(d, args))
-      .Where(d => remove == d.Remove?.GetBool(parameters))
+      .Where(d => remove == (d.Remove?.GetBool(parameters) == true))
       .Where(d => d.Day?.GetBool(parameters) != false || !day)
       .Where(d => d.Night?.GetBool(parameters) != false || day)
       .Where(d => d.MinDistance == null || distance >= d.MinDistance.Get(parameters))

@@ -20,10 +20,10 @@ public abstract class RpcInfo
   public static bool IsType(string line) => Types.Contains(Parse.Kvp(line).Key);
   private readonly int Hash;
   private readonly RpcTarget Target;
-  private readonly string? TargetParameter;
-  private readonly string? SourceParameter;
+  private readonly IStringValue? TargetParameter;
+  private readonly IStringValue? SourceParameter;
   private readonly KeyValuePair<string, string>[] Parameters;
-  private readonly float Delay;
+  private readonly IFloatValue? Delay;
   public bool IsTarget => Target == RpcTarget.Search;
   private readonly bool Packaged;
 
@@ -34,7 +34,7 @@ public abstract class RpcInfo
       Hash = name.GetStableHashCode();
 
     if (lines.TryGetValue("source", out var source))
-      SourceParameter = source;
+      SourceParameter = DataValue.String(source);
 
     if (lines.TryGetValue("packaged", out var packaged))
       Packaged = Parse.Boolean(packaged);
@@ -50,40 +50,46 @@ public abstract class RpcInfo
       else
       {
         Target = RpcTarget.ZDO;
-        TargetParameter = target;
+        TargetParameter = DataValue.String(target);
       }
     }
-    Delay = 0f;
     if (lines.TryGetValue("delay", out var d))
-      Delay = Parse.Float(d, 0f);
+      Delay = DataValue.Float(d);
     Parameters = lines.OrderBy(p => int.TryParse(p.Key, out var k) ? k : 1000).Where(p => Parse.TryInt(p.Key, out var _)).Select(p => Parse.Kvp(p.Value)).ToArray();
   }
   public void Invoke(ZDO zdo, Parameters pars)
   {
     var source = ZRoutedRpc.instance.m_id;
-    if (SourceParameter != null)
+    var sourceParameter = SourceParameter?.Get(pars);
+    if (sourceParameter != null && sourceParameter != "")
     {
-      var id = Parse.ZdoId(pars.Replace(SourceParameter));
+      var id = Parse.ZdoId(sourceParameter);
       source = ZDOMan.instance.GetZDO(id)?.GetOwner() ?? 0;
     }
+    var delay = Delay?.Get(pars) ?? 0f;
     var parameters = Packaged ? GetPackagedParameters(zdo, pars) : GetParameters(zdo, pars);
     if (Target == RpcTarget.Owner)
-      DelayedRpc.Add(Delay, source, zdo.GetOwner(), GetId(zdo), Hash, parameters);
+      DelayedRpc.Add(delay, source, zdo.GetOwner(), GetId(zdo), Hash, parameters);
     else if (Target == RpcTarget.All)
-      DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, GetId(zdo), Hash, parameters);
+      DelayedRpc.Add(delay, source, ZRoutedRpc.Everybody, GetId(zdo), Hash, parameters);
     else if (Target == RpcTarget.ZDO)
     {
-      var id = Parse.ZdoId(pars.Replace(TargetParameter ?? ""));
-      var peerId = ZDOMan.instance.GetZDO(id)?.GetOwner();
-      if (peerId.HasValue)
-        DelayedRpc.Add(Delay, source, peerId.Value, GetId(zdo), Hash, parameters);
+      var targetParameter = TargetParameter?.Get(pars);
+      if (targetParameter != null && targetParameter != "")
+      {
+        var id = Parse.ZdoId(targetParameter);
+        var peerId = ZDOMan.instance.GetZDO(id)?.GetOwner();
+        if (peerId.HasValue)
+          DelayedRpc.Add(delay, source, peerId.Value, GetId(zdo), Hash, parameters);
+      }
     }
   }
   public void InvokeGlobal(Parameters pars)
   {
     var source = ZRoutedRpc.instance.m_id;
     var parameters = Packaged ? PackagedGetParameters(pars) : GetParameters(pars);
-    DelayedRpc.Add(Delay, source, ZRoutedRpc.Everybody, ZDOID.None, Hash, parameters);
+    var delay = Delay?.Get(pars) ?? 0f;
+    DelayedRpc.Add(delay, source, ZRoutedRpc.Everybody, ZDOID.None, Hash, parameters);
   }
   private object[] GetParameters(ZDO? zdo, Parameters pars)
   {

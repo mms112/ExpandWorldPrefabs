@@ -12,7 +12,7 @@ public class EWP : BaseUnityPlugin
 {
   public const string GUID = "expand_world_prefabs";
   public const string NAME = "Expand World Prefabs";
-  public const string VERSION = "1.26";
+  public const string VERSION = "1.27";
 #nullable disable
   public static Harmony Harmony;
 #nullable enable
@@ -25,7 +25,6 @@ public class EWP : BaseUnityPlugin
     Yaml.Init();
     try
     {
-      CodeLoading.SetupWatcher();
       DataLoading.SetupWatcher();
       Loading.SetupWatcher();
     }
@@ -51,7 +50,6 @@ public class EWP : BaseUnityPlugin
     DelayedPoke.Execute(Time.deltaTime);
     DelayedRpc.Execute(Time.deltaTime);
     DelayedTerrain.Execute(Time.deltaTime);
-    CodeLoading.SaveSavedData();
   }
 
   public static RandomEvent GetCurrentEvent(Vector3 pos)

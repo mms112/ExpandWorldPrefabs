@@ -34,9 +34,6 @@
     <Reference Include="assembly_utils_publicized">
       <HintPath>..\..\Libs\assembly_utils_publicized.dll</HintPath>
     </Reference>
-    <Reference Include="assembly_guiutils_publicized">
-      <HintPath>..\..\Libs\assembly_guiutils_publicized.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34.2" />
