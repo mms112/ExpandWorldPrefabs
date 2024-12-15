@@ -1,3 +1,6 @@
+- v1.28
+  - Improves data connection support.
+
 - v1.27
   - Adds parameter support to the RPC field `delay`.
   - Fixes types "globalkey" and "event" not triggering without the field `remove` being set to false.

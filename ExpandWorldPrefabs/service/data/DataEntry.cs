@@ -40,7 +40,7 @@ public class DataEntry
   public Vector2i? ContainerSize;
   private Vector2i GetContainerSize() => ContainerSize ?? new(4, 2);
   public IIntValue? ItemAmount;
-  public ZDOExtraData.ConnectionType ConnectionType = ZDOExtraData.ConnectionType.None;
+  public ZDOExtraData.ConnectionType? ConnectionType;
   public int ConnectionHash = 0;
   public IZdoIdValue? OriginalId;
   public IZdoIdValue? TargetConnectionId;
@@ -160,7 +160,7 @@ public class DataEntry
     Items = null;
     ContainerSize = null;
     ItemAmount = null;
-    ConnectionType = ZDOExtraData.ConnectionType.None;
+    ConnectionType = null;
     ConnectionHash = 0;
     OriginalId = null;
     TargetConnectionId = null;
@@ -302,7 +302,11 @@ public class DataEntry
     if (!string.IsNullOrWhiteSpace(data.connection))
     {
       var split = Parse.SplitWithEmpty(data.connection!);
-      if (split.Length > 1)
+      if (split.Length == 1)
+      {
+        ConnectionType = ToByteEnum<ZDOExtraData.ConnectionType>([.. split]);
+      }
+      else
       {
         var types = split.Take(split.Length - 1).ToList();
         var hash = split[split.Length - 1];
@@ -395,11 +399,26 @@ public class DataEntry
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == false)) return false;
     if (Items != null) return ItemValue.Match(pars, Items, zdo, ItemAmount);
     else if (ItemAmount != null) return ItemValue.Match(pars, zdo, ItemAmount);
-    if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
+    if (ConnectionType.HasValue)
     {
-      var conn = zdo.GetConnectionZDOID(ConnectionType);
-      var target = TargetConnectionId.Get(pars);
-      if (target != null && conn != target) return false;
+      if (ConnectionType.Value == ZDOExtraData.ConnectionType.None)
+      {
+        var conn = zdo.GetConnection();
+        if (conn != null && conn.m_target != ZDOID.None) return false;
+      }
+      else
+      {
+        var conn = zdo.GetConnectionZDOID(ConnectionType.Value);
+        if (TargetConnectionId == null)
+        {
+          if (conn == ZDOID.None) return false;
+        }
+        else
+        {
+          var target = TargetConnectionId.Get(pars);
+          if (target != null && conn != target) return false;
+        }
+      }
     }
     return true;
   }
@@ -416,11 +435,26 @@ public class DataEntry
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == true)) return false;
     if (Items != null) return !ItemValue.Match(pars, Items, zdo, ItemAmount);
     else if (ItemAmount != null) return !ItemValue.Match(pars, zdo, ItemAmount);
-    if (ConnectionType != ZDOExtraData.ConnectionType.None && TargetConnectionId != null)
+    if (ConnectionType.HasValue)
     {
-      var conn = zdo.GetConnectionZDOID(ConnectionType);
-      var target = TargetConnectionId.Get(pars);
-      if (target != null && conn == target) return false;
+      if (ConnectionType.Value == ZDOExtraData.ConnectionType.None)
+      {
+        var conn = zdo.GetConnection();
+        if (conn == null || conn.m_target == ZDOID.None) return false;
+      }
+      else
+      {
+        var conn = zdo.GetConnectionZDOID(ConnectionType.Value);
+        if (TargetConnectionId == null)
+        {
+          if (conn != ZDOID.None) return false;
+        }
+        else
+        {
+          var target = TargetConnectionId.Get(pars);
+          if (target != null && conn == target) return false;
+        }
+      }
     }
     return true;
   }
@@ -499,6 +533,7 @@ public class DataEntry
   private void HandleConnection(ZDO ownZdo, Parameters pars)
   {
     if (OriginalId == null) return;
+    if (ConnectionType == null) return;
     var ownId = ownZdo.m_uid;
     if (TargetConnectionId != null)
     {
@@ -508,7 +543,7 @@ public class DataEntry
       var otherZdo = ZDOMan.instance.GetZDO(targetZdoId.Value);
       if (otherZdo == null) return;
 
-      ownZdo.SetConnection(ConnectionType, targetZdoId.Value);
+      ownZdo.SetConnection(ConnectionType.Value, targetZdoId.Value);
       // Portal is two way.
       if (ConnectionType == ZDOExtraData.ConnectionType.Portal)
         otherZdo.SetConnection(ZDOExtraData.ConnectionType.Portal, ownId);
@@ -529,37 +564,37 @@ public class DataEntry
   private void HandleHashConnection(ZDO ownZdo)
   {
     if (ConnectionHash == 0) return;
-    if (ConnectionType == ZDOExtraData.ConnectionType.None) return;
+    if (ConnectionType == null) return;
     var ownId = ownZdo.m_uid;
 
     // Hash data is regenerated on world save.
     // But in this case, it's manually set, so might be needed later.
-    ZDOExtraData.SetConnectionData(ownId, ConnectionType, ConnectionHash);
+    ZDOExtraData.SetConnectionData(ownId, ConnectionType.Value, ConnectionHash);
 
     // While actual connection can be one way, hash is always two way.
     // One of the hashes always has the target type.
-    var otherType = ConnectionType ^ ZDOExtraData.ConnectionType.Target;
-    var isOtherTarget = (ConnectionType & ZDOExtraData.ConnectionType.Target) == 0;
+    var otherType = ConnectionType.Value ^ ZDOExtraData.ConnectionType.Target;
+    var isOtherTarget = (ConnectionType.Value & ZDOExtraData.ConnectionType.Target) == 0;
     var zdos = ZDOExtraData.GetAllConnectionZDOIDs(otherType);
-    var otherId = zdos.FirstOrDefault(z => ZDOExtraData.GetConnectionHashData(z, ConnectionType)?.m_hash == ConnectionHash);
+    var otherId = zdos.FirstOrDefault(z => ZDOExtraData.GetConnectionHashData(z, ConnectionType.Value)?.m_hash == ConnectionHash);
     if (otherId == ZDOID.None) return;
     var otherZdo = ZDOMan.instance.GetZDO(otherId);
     if (otherZdo == null) return;
-    if ((ConnectionType & ZDOExtraData.ConnectionType.Spawned) > 0)
+    if ((ConnectionType.Value & ZDOExtraData.ConnectionType.Spawned) > 0)
     {
       // Spawn is one way.
       var connZDO = isOtherTarget ? ownZdo : otherZdo;
       var targetId = isOtherTarget ? otherId : ownId;
       connZDO.SetConnection(ZDOExtraData.ConnectionType.Spawned, targetId);
     }
-    if ((ConnectionType & ZDOExtraData.ConnectionType.SyncTransform) > 0)
+    if ((ConnectionType.Value & ZDOExtraData.ConnectionType.SyncTransform) > 0)
     {
       // Sync is one way.
       var connZDO = isOtherTarget ? ownZdo : otherZdo;
       var targetId = isOtherTarget ? otherId : ownId;
       connZDO.SetConnection(ZDOExtraData.ConnectionType.SyncTransform, targetId);
     }
-    if ((ConnectionType & ZDOExtraData.ConnectionType.Portal) > 0)
+    if ((ConnectionType.Value & ZDOExtraData.ConnectionType.Portal) > 0)
     {
       // Portal is two way.
       otherZdo.SetConnection(ZDOExtraData.ConnectionType.Portal, ownId);

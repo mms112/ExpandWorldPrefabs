@@ -113,6 +113,7 @@ public abstract class RpcInfo
       if (type == "enum_trap") parameters[i] = Parse.EnumTrap(arg);
       if (type == "enum_damagetext") parameters[i] = Parse.EnumDamageText(arg);
       if (type == "enum_terrainpaint") parameters[i] = Parse.EnumTerrainPaint(arg);
+      if (type == "userinfo") parameters[i] = arg == "" ? UserInfo.GetLocalUser() : new() { Gamertag = "", Name = arg, NetworkUserId = PrivilegeManager.GetNetworkUserId() };
     }
     return parameters;
   }
