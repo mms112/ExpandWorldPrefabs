@@ -445,7 +445,7 @@ public class InfoType
       if (line == "")
         Log.Warning($"Missing type for prefab {prefab}.");
       else
-        Log.Error($"Failed to parse type {prefab}.");
+        Log.Error($"Invalid type {types} for prefab {prefab}.");
       Type = ActionType.Create;
     }
     Parameters = types.Count > 1 ? types[1].Split(' ') : [];
