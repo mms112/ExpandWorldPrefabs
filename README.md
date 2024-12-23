@@ -302,7 +302,7 @@ State works for following objects:
 - Traps: Triggering the trap triggers state with the target id.
 - Ward: Triggering the ward triggers state `flash`.
 
-### Parameterr
+### Parameters
 
 Following parameters are available to be used in the yaml file:
 
