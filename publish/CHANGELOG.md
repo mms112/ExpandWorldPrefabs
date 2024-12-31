@@ -1,3 +1,6 @@
+- v1.30
+  - Fixes prefab names with underscores not working properly as function parameters.
+
 - v1.29
   - Fixes prefab names with underscores not working properly as function parameters.
   - Fixes data entries with duplicate keys not working (now gives a warning).
