@@ -183,6 +183,8 @@ public class Manager
       if (characterDrop.m_character)
         characterDrop.OnDeath();
     }
+    if (obj.TryGetComponent<Ragdoll>(out var ragdoll))
+      ragdoll.SpawnLoot(ragdoll.GetAverageBodyPosition());
     if (obj.TryGetComponent<Piece>(out var piece))
       piece.DropResources();
     if (obj.TryGetComponent<TreeBase>(out var tree))
