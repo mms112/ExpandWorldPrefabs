@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -12,6 +11,7 @@ namespace Data;
 // While also ensuring that all code is in one place.
 public class Parameters(string prefab, string arg, Vector3 pos)
 {
+  public const char Separator = '\u0000';
   public static Func<string, string?> ExecuteCode = (string key) => null!;
   public static Func<string, string, string?> ExecuteCodeWithValue = (string key, string value) => null!;
 
@@ -54,6 +54,9 @@ public class Parameters(string prefab, string arg, Vector3 pos)
   }
   private string ResolveParameters(string str)
   {
+    // Some prefab names contain underscores which would split them into multiple parameters.
+    // This is a workaround to allow using underscores in prefab names.
+    str = str.Replace('_', Separator);
     for (int i = 0; i < str.Length; i++)
     {
       var end = str.IndexOf(">", i);
@@ -90,7 +93,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     if (value != null) return value;
     value = GetGeneralParameter(key);
     if (value != null) return value;
-    var kvp = Parse.Kvp(key, '_');
+    var kvp = Parse.Kvp(key, Separator);
     if (kvp.Value == "") return null;
     key = kvp.Key.Substring(1);
     var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
@@ -142,18 +145,18 @@ public class Parameters(string prefab, string arg, Vector3 pos)
      "asin" => Parse.TryFloat(value, out var f) ? Mathf.Asin(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
      "acos" => Parse.TryFloat(value, out var f) ? Mathf.Acos(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
      "atan" => Atan(value, defaultValue),
-     "pow" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Pow(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "pow" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Pow(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
      "log" => Log(value, defaultValue),
      "exp" => Parse.TryFloat(value, out var f) ? Mathf.Exp(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "min" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Min(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "max" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Max(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "add" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 + f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "sub" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 - f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "mul" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 * f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "div" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 / f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "mod" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 % f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "randf" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? UnityEngine.Random.Range(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
-     "randi" => Parse.TryKvp(value, out var kvp, '_') && Parse.TryInt(kvp.Key, out var i1) && Parse.TryInt(kvp.Value, out var i2) ? UnityEngine.Random.Range(i1, i2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "min" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Min(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "max" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? Mathf.Max(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "add" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 + f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "sub" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 - f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "mul" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 * f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "div" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 / f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "mod" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? (f1 % f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "randf" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryFloat(kvp.Key, out var f1) && Parse.TryFloat(kvp.Value, out var f2) ? UnityEngine.Random.Range(f1, f2).ToString(CultureInfo.InvariantCulture) : defaultValue,
+     "randi" => Parse.TryKvp(value, out var kvp, Separator) && Parse.TryInt(kvp.Key, out var i1) && Parse.TryInt(kvp.Value, out var i2) ? UnityEngine.Random.Range(i1, i2).ToString(CultureInfo.InvariantCulture) : defaultValue,
      "hash" => DataEntry.Hash(value).ToString(),
      "len" => value.Length.ToString(CultureInfo.InvariantCulture),
      "lower" => value.ToLowerInvariant(),
@@ -176,7 +179,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
 
   private string Atan(string value, string defaultValue)
   {
-    var kvp = Parse.Kvp(value, '_');
+    var kvp = Parse.Kvp(value, Separator);
     if (!Parse.TryFloat(kvp.Key, out var f1)) return defaultValue;
     if (kvp.Value == "") return Mathf.Atan(f1).ToString(CultureInfo.InvariantCulture);
     if (!Parse.TryFloat(kvp.Value, out var f2)) return defaultValue;
@@ -185,7 +188,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
 
   private string Log(string value, string defaultValue)
   {
-    var kvp = Parse.Kvp(value, '_');
+    var kvp = Parse.Kvp(value, Separator);
     if (!Parse.TryFloat(kvp.Key, out var f1)) return defaultValue;
     if (kvp.Value == "") return Mathf.Log(f1).ToString(CultureInfo.InvariantCulture);
     if (!Parse.TryFloat(kvp.Value, out var f2)) return defaultValue;
@@ -236,7 +239,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     if (value != null) return value;
     value = GetGeneralParameter(key);
     if (value != null) return value;
-    var kvp = Parse.Kvp(key, '_');
+    var kvp = Parse.Kvp(key, Separator);
     if (kvp.Value == "") return null;
     key = kvp.Key.Substring(1);
     var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
