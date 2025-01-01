@@ -98,7 +98,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     key = kvp.Key.Substring(1);
     var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
     var kvp2 = Parse.Kvp(keyValue, '=');
-    keyValue = kvp2.Key;
+    keyValue = kvp2.Key.Replace(Separator, '_');
     var defaultValue = kvp2.Value;
 
     value = ExecuteCodeWithValue(key, keyValue);
@@ -244,7 +244,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     key = kvp.Key.Substring(1);
     var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
     var kvp2 = Parse.Kvp(keyValue, '=');
-    keyValue = kvp2.Key;
+    keyValue = kvp2.Key.Replace(Separator, '_');
     var defaultValue = kvp2.Value;
 
     value = ExecuteCodeWithValue(key, keyValue);

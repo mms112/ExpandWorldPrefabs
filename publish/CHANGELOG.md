@@ -1,3 +1,6 @@
+- v1.31
+  - Fixes data parameters with underscores like "max_health" not working.
+
 - v1.30
   - Fixes prefab names with underscores not working properly as function parameters.
 
