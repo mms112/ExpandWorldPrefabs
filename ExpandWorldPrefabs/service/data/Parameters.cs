@@ -11,7 +11,7 @@ namespace Data;
 // While also ensuring that all code is in one place.
 public class Parameters(string prefab, string arg, Vector3 pos)
 {
-  public const char Separator = '\u0000';
+  protected const char Separator = '_';
   public static Func<string, string?> ExecuteCode = (string key) => null!;
   public static Func<string, string, string?> ExecuteCodeWithValue = (string key, string value) => null!;
 
@@ -54,9 +54,6 @@ public class Parameters(string prefab, string arg, Vector3 pos)
   }
   private string ResolveParameters(string str)
   {
-    // Some prefab names contain underscores which would split them into multiple parameters.
-    // This is a workaround to allow using underscores in prefab names.
-    str = str.Replace('_', Separator);
     for (int i = 0; i < str.Length; i++)
     {
       var end = str.IndexOf(">", i);
@@ -98,7 +95,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     key = kvp.Key.Substring(1);
     var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
     var kvp2 = Parse.Kvp(keyValue, '=');
-    keyValue = kvp2.Key.Replace(Separator, '_');
+    keyValue = kvp2.Key;
     var defaultValue = kvp2.Value;
 
     value = ExecuteCodeWithValue(key, keyValue);
@@ -110,6 +107,7 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     key switch
     {
       "<prefab>" => prefab,
+      "<safeprefab>" => prefab.Replace(Separator, '-'),
       "<par>" => arg,
       "<par0>" => GetArg(0),
       "<par1>" => GetArg(1),
@@ -244,7 +242,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     key = kvp.Key.Substring(1);
     var keyValue = kvp.Value.Substring(0, kvp.Value.Length - 1);
     var kvp2 = Parse.Kvp(keyValue, '=');
-    keyValue = kvp2.Key.Replace(Separator, '_');
+    keyValue = kvp2.Key;
     var defaultValue = kvp2.Value;
 
     value = ExecuteCodeWithValue(key, keyValue);
