@@ -1,3 +1,6 @@
+- v1.33
+  - Fixes global key resetting not triggering global key removed event.
+
 - v1.32
   - Adds a new parameter `safeprefab` to get prefab name with underscores replaced by dashes.
   - Reverts the underscore mess from v1.29-1.31.
