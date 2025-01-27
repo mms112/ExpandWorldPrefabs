@@ -1,5 +1,7 @@
 - v1.33
   - Fixes global key resetting not triggering global key removed event.
+  - Fixes custom paint values not working.
+  - Fixes alpha color not being checked for paint.
 
 - v1.32
   - Adds a new parameter `safeprefab` to get prefab name with underscores replaced by dashes.

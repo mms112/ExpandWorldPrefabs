@@ -157,8 +157,8 @@ public class InfoSelector
     {
       var paint = Paint.GetPaint(pos, biome);
       linq = linq.Where(d =>
-        (d.MinPaint == null || (d.MinPaint.Value.b <= paint.b && d.MinPaint.Value.g <= paint.g && d.MinPaint.Value.r <= paint.r)) &&
-        (d.MaxPaint == null || (d.MaxPaint.Value.b >= paint.b && d.MaxPaint.Value.g >= paint.g && d.MaxPaint.Value.r >= paint.r))).ToArray();
+        (d.MinPaint == null || (d.MinPaint.Value.b <= paint.b && d.MinPaint.Value.g <= paint.g && d.MinPaint.Value.r <= paint.r && d.MinPaint.Value.a <= paint.a)) &&
+        (d.MaxPaint == null || (d.MaxPaint.Value.b >= paint.b && d.MaxPaint.Value.g >= paint.g && d.MaxPaint.Value.r >= paint.r && d.MaxPaint.Value.a >= paint.a))).ToArray();
     }
     return Randomize(linq.ToArray(), parameters);
   }

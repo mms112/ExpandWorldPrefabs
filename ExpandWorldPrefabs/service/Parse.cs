@@ -356,12 +356,12 @@ public static class Parse
     {"paved_dirt", new(1f, 0f, 0.5f)},
     {"paved_dark", new(0f, 1f, 0.5f)},
   };
-  public static Color? Color(string arg)
+  public static Color? Color(string arg, float defaultAlpha)
   {
     var lower = arg.ToLowerInvariant();
     if (Paints.TryGetValue(lower, out var color)) return color;
-    var split = Split(arg, true, ' ');
+    var split = Split(arg);
     if (split.Length < 3) return null;
-    return new(Float(split[0]), Float(split[1]), Float(split[2]), split.Length > 3 ? Float(split[3]) : 1f);
+    return new(Float(split[0]), Float(split[1]), Float(split[2]), split.Length > 3 ? Float(split[3]) : defaultAlpha);
   }
 }

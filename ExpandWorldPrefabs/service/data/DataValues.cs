@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using Service;
 using UnityEngine;
 
@@ -148,12 +149,19 @@ public class DataValue
         }
       }
       if (parameters.Count == 0)
+      {
         result.Add(value);
+        // Early exit because preloading too many values wastes memory.
+        if (result.Count > 1000)
+          break;
+      }
       else
         SubstitueValues(result, value, parameters, hashes, 0);
 
     }
-    return [.. result];
+    if (result.Count > 1000)
+      Log.Warning("Too many values loaded for " + str);
+    return result.Count > 1000 ? [str] : [.. result];
   }
 
   // Recursion needed because there can be multiple value groups.
@@ -164,7 +172,12 @@ public class DataValue
     {
       var newFormat = format.Replace(parameters[index], group);
       if (index == parameters.Count - 1)
+      {
         result.Add(newFormat);
+        // Early exit because preloading too many values wastes memory.
+        if (result.Count > 1000)
+          break;
+      }
       else
         SubstitueValues(result, newFormat, parameters, hashes, index + 1);
     }

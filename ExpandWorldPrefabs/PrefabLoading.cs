@@ -78,8 +78,8 @@ public class Loading
     var terrains = data.terrain == null ? null : data.terrain.Select(s => new Terrain(s)).ToArray();
     var objectRpcs = ParseObjectRpcs(data);
     var clientRpcs = ParseClientRpcs(data);
-    var minPaint = data.minPaint != "" ? Parse.Color(data.minPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
-    var maxPaint = data.maxPaint != "" ? Parse.Color(data.maxPaint) : data.paint != "" ? Parse.Color(data.paint) : null;
+    var minPaint = data.minPaint != "" ? Parse.Color(data.minPaint, 0f) : data.paint != "" ? Parse.Color(data.paint, 0f) : null;
+    var maxPaint = data.maxPaint != "" ? Parse.Color(data.maxPaint, 1f) : data.paint != "" ? Parse.Color(data.paint, 0f) : null;
     var addItems = HandleItems(data.addItems);
     var removeItems = HandleItems(data.removeItems);
     var terrainHeight = data.terrainHeight == null ? null : DataValue.Float(data.terrainHeight);
