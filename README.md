@@ -48,6 +48,10 @@ Most fields are put on a single line. List values are separated by `,`.
     - `globalkey`: When a global key is set or removed. Parameter is the key name.
       - Use field `remove` to trigger on key removal.
       - Note: There is no prefab or position for this type, so most fields won't work.
+    - `key`: When a custom saved data is set or removed. Parameter is the data name.
+      - Use field `remove` to trigger on data removal.
+      - Note: This only triggers when the saved data actually changes.
+      - Note: There is no prefab or position for this type, so most fields won't work.
     - `event`: When an event starts or ends. Parameter is the event name.
       - Use field `end` to trigger on event end.
       - Note: There is no prefab for this type, so most fields won't work.
@@ -85,6 +89,10 @@ If a filter is not specified, it's not checked and is always considered valid.
   - The values are converted to lower case because the game always uses lower case.
 - bannedGlobalKeys (P): List of global keys that must not be set.
   - The values are converted to lower case because the game always uses lower case.
+- keys (P): List of saved custom data that must be set.
+  - The values are converted to lower case to match global keys behavior.
+- bannedKeys (P): List of saved custom data that must not be set.
+  - The values are converted to lower case to match global keys behavior.
 - locations: List of location ids. At least one must be nearby.
 - bannedLocations: List of location ids. None must be nearby.
 - locationDistance (default: `0` meters): Search distance for nearby locations.
@@ -347,6 +355,8 @@ For missing object data, the default value can be set by adding `=value`. For ex
 
 ### Functions
 
+Custom functions: See [Expand World Code](https://github.com/JereKuusela/valheim-expand_world_code).
+
 Text related functions:
 
 - `<len_X>`: Returns length of the text X.
@@ -388,7 +398,15 @@ Number related functions:
 - `<sub_X_Y>`: Returns difference of X and Y.
 - `<tan_X>`: Returns tangent of X.
 
-Custom functions: See [Expand World Code](https://github.com/JereKuusela/valheim-expand_world_code).
+Custom data related functions:
+
+- `<save_X_Y>`: Saves custom data with key X and value Y.
+  - Note: Wildcard * in the key name can be used to set multiple keys at once (these keys must already exist).
+- `<clear_X>`: Removes custom data with key X.
+  - Note: Wildcard * in the key name can be used to remove multiple keys at once.
+- `<load_X=default>`: Gets custom data with key X. If not found, returns the given default value.
+
+Custom data can be used to replace global keys. The biggest benefit is that custom data is not sent to clients, which reduces network traffic and keeps them hidden from players.
 
 ### Legacy
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Data;
+using Service;
 using UnityEngine;
 
 namespace ExpandWorld.Prefab;
@@ -45,7 +46,9 @@ public class InfoSelector
       .Where(d => d.MinAltitude == null || !d.MinAltitude.TryGet(parameters, out var v) || v < waterY)
       .Where(d => d.MaxAltitude == null || !d.MaxAltitude.TryGet(parameters, out var v) || v >= waterY)
       .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
-      .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters));
+      .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters))
+      .Where(d => DataStorage.HasEveryKey(d.Keys, parameters))
+      .Where(d => !DataStorage.HasAnyKey(d.BannedKeys, parameters));
     // Minor optimization to resolve simpler checks first (not measured).
     linq = linq.ToArray();
     var checkEnvironments = linq.Any(d => d.Environments.Count > 0) || linq.Any(d => d.BannedEnvironments.Count > 0);

@@ -57,7 +57,7 @@ public class Loading
     var swaps = data.swap == null ? data.swaps == null ? null : ParseSpawns(data.swaps, spawnDelay, triggerRules) : ParseSpawns(data.swap, spawnDelay, triggerRules);
     var spawns = data.spawn == null ? data.spawns == null ? null : ParseSpawns(data.spawns, spawnDelay, triggerRules) : ParseSpawns(data.spawn, spawnDelay, triggerRules);
     var types = (data.types ?? [data.type]).Select(s => new InfoType(data.prefab, s)).ToArray();
-    if (data.prefab == "" && types.Any(t => t.Type != ActionType.GlobalKey && t.Type != ActionType.Event))
+    if (data.prefab == "" && types.Any(t => t.Type != ActionType.GlobalKey && t.Type != ActionType.Key && t.Type != ActionType.Event))
       Log.Warning($"Prefab missing for type {data.type}");
     HashSet<string> events = [.. Parse.ToList(data.events)];
     var commands = data.commands ?? (data.command == null ? [] : [data.command]);
@@ -114,8 +114,10 @@ public class Loading
         Biomes = Yaml.ToBiomes(data.biomes),
         Environments = environments,
         BannedEnvironments = bannedEnvironments,
-        GlobalKeys = Parse.ToList(data.globalKeys).Select(s => s.ToLowerInvariant()).ToList(),
-        BannedGlobalKeys = Parse.ToList(data.bannedGlobalKeys).Select(s => s.ToLowerInvariant()).ToList(),
+        GlobalKeys = [.. Parse.ToList(data.globalKeys).Select(s => s.ToLowerInvariant())],
+        BannedGlobalKeys = [.. Parse.ToList(data.bannedGlobalKeys).Select(s => s.ToLowerInvariant())],
+        Keys = [.. Parse.ToList(data.keys).Select(s => s.ToLowerInvariant())],
+        BannedKeys = [.. Parse.ToList(data.bannedKeys).Select(s => s.ToLowerInvariant())],
         Events = events,
         // Distance can be set without events for any event.
         // However if event is set, there must be a distance (the default value).

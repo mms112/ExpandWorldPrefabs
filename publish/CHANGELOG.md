@@ -1,3 +1,8 @@
+- v1.34
+  - Adds new parameters `save`, `load` and `clear` to save and load server side data (moved from Expand World Code mod).
+  - Adds a new type `key` to trigger on save and clear events.
+  - Adds new filters `keys` and `bannedKeys` to filter based on saved data.
+
 - v1.33
   - Fixes global key resetting not triggering global key removed event.
   - Fixes custom paint values not working.
@@ -17,6 +22,3 @@
   - Fixes prefab names with underscores not working properly as function parameters.
   - Fixes data entries with duplicate keys not working (now gives a warning).
   - Fixes the field `drops` not working with the Ragdoll component.
-
-- v1.28
-  - Improves data connection support.

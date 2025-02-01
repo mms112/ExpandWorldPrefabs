@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Data;
 using Service;
+using UnityEngine;
 
 namespace ExpandWorld.Prefab;
 
@@ -18,7 +19,8 @@ public enum ActionType
   Poke,
   GlobalKey,
   Event,
-  Change
+  Change,
+  Key
 }
 public class InfoManager
 {
@@ -31,6 +33,7 @@ public class InfoManager
   public static readonly PrefabInfo SayDatas = new();
   public static readonly PrefabInfo PokeDatas = new();
   public static readonly GlobalInfo GlobalKeyDatas = new();
+  public static readonly GlobalInfo KeyDatas = new();
   public static readonly GlobalInfo EventDatas = new();
   public static readonly PrefabInfo ChangeDatas = new();
 
@@ -45,6 +48,7 @@ public class InfoManager
     SayDatas.Clear();
     PokeDatas.Clear();
     GlobalKeyDatas.Clear();
+    KeyDatas.Clear();
     EventDatas.Clear();
     ChangeDatas.Clear();
   }
@@ -53,6 +57,11 @@ public class InfoManager
     if (info.Type == ActionType.GlobalKey)
     {
       GlobalKeyDatas.Add(info);
+      return;
+    }
+    if (info.Type == ActionType.Key)
+    {
+      KeyDatas.Add(info);
       return;
     }
     if (info.Type == ActionType.Event)
@@ -80,9 +89,13 @@ public class InfoManager
       HandleEvent.Patch(EWP.Harmony);
     if (ChangeDatas.Exists)
       HandleChanged.Patch(EWP.Harmony);
+    DataStorage.OnSet = KeyDatas.Exists ? OnKeySet : null;
   }
 
-
+  private static void OnKeySet(string key, string value)
+  {
+    Manager.HandleGlobal(ActionType.Key, key + " " + value, Vector3.zero, value == "");
+  }
   public static PrefabInfo Select(ActionType type) => type switch
   {
     ActionType.Destroy => RemoveDatas,
@@ -104,6 +117,7 @@ public class InfoManager
   public static GlobalInfo SelectGlobal(ActionType type) => type switch
   {
     ActionType.GlobalKey => GlobalKeyDatas,
+    ActionType.Key => KeyDatas,
     ActionType.Event => EventDatas,
     _ => ErrorGlobal(type),
   };

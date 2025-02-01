@@ -67,6 +67,10 @@ public class Data
   [DefaultValue("")]
   public string bannedGlobalKeys = "";
   [DefaultValue("")]
+  public string keys = "";
+  [DefaultValue("")]
+  public string bannedKeys = "";
+  [DefaultValue("")]
   public string events = "";
   [DefaultValue(null)]
   public float? eventDistance;
@@ -173,6 +177,8 @@ public class Info
   public HashSet<string> BannedEnvironments = [];
   public List<string> GlobalKeys = [];
   public List<string> BannedGlobalKeys = [];
+  public List<string> Keys = [];
+  public List<string> BannedKeys = [];
   public Object[]? LegacyPokes;
   public Poke[]? Pokes;
   public Terrain[]? Terrains;

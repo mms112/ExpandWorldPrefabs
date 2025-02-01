@@ -164,10 +164,24 @@ public class Parameters(string prefab, string arg, Vector3 pos)
      "calci" => Calculator.EvaluateInt(value)?.ToString(CultureInfo.InvariantCulture) ?? defaultValue,
      "par" => Parse.TryInt(value, out var i) ? GetArg(i, defaultValue) : defaultValue,
      "rest" => Parse.TryInt(value, out var i) ? GetRest(i, defaultValue) : defaultValue,
+     "load" => DataStorage.GetValue(value, defaultValue),
+     "save" => SetValue(value),
+     "clear" => RemoveValue(value),
      _ => null,
    };
 
-
+  private string SetValue(string value)
+  {
+    var kvp = Parse.Kvp(value, Separator);
+    if (kvp.Value == "") return "";
+    DataStorage.SetValue(kvp.Key, kvp.Value);
+    return kvp.Value;
+  }
+  private string RemoveValue(string value)
+  {
+    DataStorage.SetValue(value, "");
+    return "";
+  }
   private string GetRest(int index, string defaultValue = "")
   {
     args ??= arg.Split(' ');
