@@ -93,7 +93,7 @@ public class DataValue
       for (var i = 0; i < split.Length; i += 3)
       {
         // Last vector can be partial.
-        var v = i + 3 < split.Length ? split.Skip(i).Take(3).ToArray() : split.Skip(i).ToArray();
+        var v = i + 3 < split.Length ? split.Skip(i).Take(3).ToArray() : [.. split.Skip(i)];
         combined.Add(string.Join(",", v));
       }
       return new Vector3Value([.. combined]);
@@ -109,7 +109,7 @@ public class DataValue
       List<string> combined = [];
       for (var i = 0; i < split.Length; i += 3)
       {
-        var v = i + 3 < split.Length ? split.Skip(i).Take(3).ToArray() : split.Skip(i).ToArray();
+        var v = i + 3 < split.Length ? split.Skip(i).Take(3).ToArray() : [.. split.Skip(i)];
         combined.Add(string.Join(",", v));
       }
       return new QuaternionValue([.. combined]);
@@ -209,7 +209,7 @@ public class AnyValue(string[] values)
   }
   protected List<string> GetAllValues(Parameters pars)
   {
-    return Values.Select(pars.Replace).Where(v => v != null && v != "<none").ToList();
+    return [.. Values.Select(pars.Replace).Where(v => v != null && v != "<none")];
   }
 }
 public class ItemValue(ItemData data)

@@ -346,6 +346,7 @@ Following parameters are available to be used in the yaml file:
 - `<byte_*>`: Byte value from the object converted to base64 text.
 - `<zdo_*>`: Object id value from the object.
 - `<item_*>`: Amount of specific item in the container.
+- `<item_X_Y>`: Item name at slot X,Y.
 - `<pdata_*>`: Player data.
   - `<pdata_baseValue>`: Amount of nearby player base structures.
   - `<pdata_possibleEvents>`: List of possible events.

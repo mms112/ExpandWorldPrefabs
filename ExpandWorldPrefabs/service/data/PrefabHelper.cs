@@ -67,23 +67,23 @@ public class PrefabHelper
     if (p[0] == '*' && p[p.Length - 1] == '*')
     {
       p = p.Substring(1, p.Length - 2);
-      return PrefabCache.Where(pair => pair.Key.ToLowerInvariant().Contains(p)).Select(pair => pair.Value).ToList();
+      return [.. PrefabCache.Where(pair => pair.Key.ToLowerInvariant().Contains(p)).Select(pair => pair.Value)];
     }
     if (p[0] == '*')
     {
       p = p.Substring(1);
-      return PrefabCache.Where(pair => pair.Key.EndsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value).ToList();
+      return [.. PrefabCache.Where(pair => pair.Key.EndsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value)];
     }
     if (p[p.Length - 1] == '*')
     {
       p = p.Substring(0, p.Length - 1);
-      return PrefabCache.Where(pair => pair.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value).ToList();
+      return [.. PrefabCache.Where(pair => pair.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase)).Select(pair => pair.Value)];
     }
     if (PrefabCache.ContainsKey(prefab))
       return [PrefabCache[prefab]];
     var group = DataHelper.GetValuesFromGroup(prefab);
     if (group != null)
-      return group.Select(s => s.GetStableHashCode()).ToList();
+      return [.. group.Select(s => s.GetStableHashCode())];
     Log.Warning($"Failed to resolve prefab: {prefab}");
     return null;
   }

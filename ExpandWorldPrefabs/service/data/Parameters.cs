@@ -326,7 +326,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
      "quat" => DataEntry.PrintAngleYXZ(GetQuaternion(value, defaultValue)),
      "byte" => Convert.ToBase64String(zdo.GetByteArray(value)),
      "zdo" => zdo.GetZDOID(value).ToString(),
-     "item" => GetAmountOfItems(value).ToString(),
+     "item" => GetItem(value),
      "pos" => DataEntry.PrintVectorXZY(GetPos(value)),
      "pdata" => GetPlayerData(zdo, value),
      _ => null,
@@ -371,6 +371,14 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     return result;
   }
 
+  private string GetItem(string value)
+  {
+    var kvp = Parse.Kvp(value, Separator);
+    // Coordinates requires two numbers, otherwise it's an item name.
+    if (kvp.Value == "") return GetAmountOfItems(value).ToString();
+    if (!Parse.TryInt(kvp.Key, out var x) || !Parse.TryInt(kvp.Value, out var y)) return GetAmountOfItems(value).ToString();
+    return GetItemAt(x, y);
+  }
   private int GetAmountOfItems(string prefab)
   {
     LoadInventory();
@@ -381,6 +389,14 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
       if ((item.m_dropPrefab?.name ?? item.m_shared.m_name) == prefab) count += item.m_stack;
     }
     return count;
+  }
+  private string GetItemAt(int x, int y)
+  {
+    LoadInventory();
+    if (inventory == null) return "";
+    if (x < 0 || x >= inventory.m_width || y < 0 || y >= inventory.m_height) return "";
+    var item = inventory.GetItemAt(x, y);
+    return item?.m_dropPrefab?.name ?? item?.m_shared.m_name ?? "";
   }
 
   private void LoadInventory()

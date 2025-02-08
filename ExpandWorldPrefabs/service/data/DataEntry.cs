@@ -309,7 +309,7 @@ public class DataEntry
     }
     if (data.items != null)
     {
-      Items = data.items.Select(item => new ItemValue(item)).ToList();
+      Items = [.. data.items.Select(item => new ItemValue(item))];
     }
     if (!string.IsNullOrWhiteSpace(data.containerSize))
       ContainerSize = Parse.Vector2Int(data.containerSize!);

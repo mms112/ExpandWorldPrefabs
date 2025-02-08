@@ -109,7 +109,7 @@ public static class Parse
     return Quaternion.Euler(vector);
   }
 
-  public static string[] Split(string arg, bool removeEmpty = true, char split = ',') => arg.Split(split).Select(s => s.Trim()).Where(s => !removeEmpty || s != "").ToArray();
+  public static string[] Split(string arg, bool removeEmpty = true, char split = ',') => [.. arg.Split(split).Select(s => s.Trim()).Where(s => !removeEmpty || s != "")];
   public static KeyValuePair<string, string> Kvp(string str, char separator = ',')
   {
     var split = str.Split([separator], 2);
@@ -121,7 +121,7 @@ public static class Parse
     kvp = Kvp(str, separator);
     return kvp.Value != "";
   }
-  public static string[] SplitWithEmpty(string arg, char split = ',') => arg.Split(split).Select(s => s.Trim()).ToArray();
+  public static string[] SplitWithEmpty(string arg, char split = ',') => [.. arg.Split(split).Select(s => s.Trim())];
   public static string[] SplitWithEscape(string arg, char separator = ',')
   {
     var parts = new List<string>();

@@ -1,6 +1,7 @@
 - v1.35
   - Adds new filters `minTerrainHeight` and `maxTerrainHeight` to filter based on terrain height.
   - Adds new filters `minX`, `maxX`, `minZ` and `maxZ` to filter based on position.
+  - Adds a new parameter `item_X_Y` to get the item name at specific inventory slot.
 
 - v1.34
   - Adds new parameters `save`, `load` and `clear` to save and load server side data (moved from Expand World Code mod).
