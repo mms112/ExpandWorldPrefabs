@@ -82,8 +82,24 @@ public class Loading
     var maxPaint = data.maxPaint != "" ? Parse.Color(data.maxPaint, 1f) : data.paint != "" ? Parse.Color(data.paint, 0f) : null;
     var addItems = HandleItems(data.addItems);
     var removeItems = HandleItems(data.removeItems);
-    var terrainHeight = data.terrainHeight == null ? null : DataValue.Float(data.terrainHeight);
-    return types.Select(t =>
+    var minTerrainHeight = data.minTerrainHeight == null ? null : DataValue.Float(data.minTerrainHeight);
+    var maxTerrainHeight = data.maxTerrainHeight == null ? null : DataValue.Float(data.maxTerrainHeight);
+    if (data.terrainHeight != null)
+    {
+      // Expected format is either single value or min;max.
+      var split = Parse.Kvp(data.terrainHeight, ';');
+      if (split.Value == "")
+      {
+        minTerrainHeight = DataValue.Float(split.Key);
+        maxTerrainHeight = DataValue.Float(split.Key);
+      }
+      else
+      {
+        minTerrainHeight = DataValue.Float(split.Key);
+        maxTerrainHeight = DataValue.Float(split.Value);
+      }
+    }
+    return [.. types.Select(t =>
     {
       var d = t.Type != ActionType.Destroy ? data.data : "";
       bool? remove = t.Type == ActionType.Destroy ? false : swaps != null ? true : data.remove == "" ? false : null;
@@ -109,6 +125,10 @@ public class Loading
         MaxDistance = data.maxDistance == null ? null : Parse.TryFloat(data.maxDistance, out var maxDistance) ? maxDistance < 1f ? new SimpleFloatValue(maxDistance * 10000f) : new SimpleFloatValue(maxDistance) : DataValue.Float(data.maxDistance),
         MinY = data.minY == null ? null : DataValue.Float(data.minY),
         MaxY = data.maxY == null ? null : DataValue.Float(data.maxY),
+        MinX = data.minX == null ? null : DataValue.Float(data.minX),
+        MaxX = data.maxX == null ? null : DataValue.Float(data.maxX),
+        MinZ = data.minZ == null ? null : DataValue.Float(data.minZ),
+        MaxZ = data.maxZ == null ? null : DataValue.Float(data.maxZ),
         MinAltitude = data.minAltitude == null ? null : DataValue.Float(data.minAltitude),
         MaxAltitude = data.maxAltitude == null ? null : DataValue.Float(data.maxAltitude),
         Biomes = Yaml.ToBiomes(data.biomes),
@@ -149,13 +169,14 @@ public class Loading
         RemoveItems = removeItems,
         Cancel = data.cancel == null ? null : DataValue.Bool(data.cancel),
         Owner = data.owner == null ? null : DataValue.Long(data.owner),
-        TerrainHeight = terrainHeight,
+        MinTerrainHeight = minTerrainHeight,
+        MaxTerrainHeight = maxTerrainHeight,
       };
-    }).ToArray();
+    })];
   }
 
-  private static Spawn[] ParseSpawns(string[] spawns, float? delay, bool? triggerRules) => spawns.Select(s => new Spawn(s, delay, triggerRules)).ToArray();
-  private static Spawn[] ParseSpawns(SpawnData[] spawns, float? delay, bool? triggerRules) => spawns.Select(s => new Spawn(s, delay, triggerRules)).ToArray();
+  private static Spawn[] ParseSpawns(string[] spawns, float? delay, bool? triggerRules) => [.. spawns.Select(s => new Spawn(s, delay, triggerRules))];
+  private static Spawn[] ParseSpawns(SpawnData[] spawns, float? delay, bool? triggerRules) => [.. spawns.Select(s => new Spawn(s, delay, triggerRules))];
 
   private static DataEntry? ParseFilters(string[] filters)
   {
@@ -217,17 +238,17 @@ public class Loading
     }
     Log.Error($"Invalid filter type: {type}");
   }
-  private static Object[] ParseObjects(string[] objects) => objects.Select(s => new Object(s)).ToArray();
-  private static Object[] ParseObjects(ObjectData[] objects) => objects.Select(s => new Object(s)).ToArray();
-  private static Poke[] ParsePokes(PokeData[] objects) => objects.Select(s => new Poke(s)).ToArray();
+  private static Object[] ParseObjects(string[] objects) => [.. objects.Select(s => new Object(s))];
+  private static Object[] ParseObjects(ObjectData[] objects) => [.. objects.Select(s => new Object(s))];
+  private static Poke[] ParsePokes(PokeData[] objects) => [.. objects.Select(s => new Poke(s))];
   private static ObjectRpcInfo[]? ParseObjectRpcs(Data data)
   {
-    if (data.objectRpc != null && data.objectRpc.Length > 0) return data.objectRpc.Select(s => new ObjectRpcInfo(s)).ToArray();
+    if (data.objectRpc != null && data.objectRpc.Length > 0) return [.. data.objectRpc.Select(s => new ObjectRpcInfo(s))];
     return null;
   }
   private static ClientRpcInfo[]? ParseClientRpcs(Data data)
   {
-    if (data.clientRpc != null && data.clientRpc.Length > 0) return data.clientRpc.Select(s => new ClientRpcInfo(s)).ToArray();
+    if (data.clientRpc != null && data.clientRpc.Length > 0) return [.. data.clientRpc.Select(s => new ClientRpcInfo(s))];
     return null;
   }
 

@@ -58,6 +58,14 @@ public class Data
   public string? minY;
   [DefaultValue(null)]
   public string? maxY;
+  [DefaultValue(null)]
+  public string? minX;
+  [DefaultValue(null)]
+  public string? maxX;
+  [DefaultValue(null)]
+  public string? minZ;
+  [DefaultValue(null)]
+  public string? maxZ;
   [DefaultValue("")]
   public string environments = "";
   [DefaultValue("")]
@@ -131,6 +139,10 @@ public class Data
   public string paint = "";
   [DefaultValue(null)]
   public string? terrainHeight;
+  [DefaultValue(null)]
+  public string? minTerrainHeight;
+  [DefaultValue(null)]
+  public string? maxTerrainHeight;
 
   [DefaultValue(false)]
   public bool injectData = false;
@@ -168,6 +180,10 @@ public class Info
   public IFloatValue? MaxDistance;
   public IFloatValue? MinY;
   public IFloatValue? MaxY;
+  public IFloatValue? MinX;
+  public IFloatValue? MaxX;
+  public IFloatValue? MinZ;
+  public IFloatValue? MaxZ;
   public IFloatValue? MinAltitude;
   public IFloatValue? MaxAltitude;
   public Heightmap.Biome Biomes = Heightmap.Biome.None;
@@ -201,11 +217,12 @@ public class Info
   public ClientRpcInfo[]? ClientRpcs;
   public Color? MinPaint;
   public Color? MaxPaint;
+  public IFloatValue? MinTerrainHeight;
+  public IFloatValue? MaxTerrainHeight;
   public DataEntry? AddItems;
   public DataEntry? RemoveItems;
   public ILongValue? Owner;
   public IBoolValue? Cancel;
-  public IFloatValue? TerrainHeight;
 }
 
 public class SpawnData

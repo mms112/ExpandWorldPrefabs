@@ -1,3 +1,7 @@
+- v1.35
+  - Adds new filters `minTerrainHeight` and `maxTerrainHeight` to filter based on terrain height.
+  - Adds new filters `minX`, `maxX`, `minZ` and `maxZ` to filter based on position.
+
 - v1.34
   - Adds new parameters `save`, `load` and `clear` to save and load server side data (moved from Expand World Code mod).
   - Adds a new type `key` to trigger on save and clear events.

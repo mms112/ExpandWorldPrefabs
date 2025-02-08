@@ -43,6 +43,10 @@ public class InfoSelector
       .Where(d => d.MaxDistance == null || !d.MaxDistance.TryGet(parameters, out var v) || v >= distance)
       .Where(d => d.MinY == null || !d.MinY.TryGet(parameters, out var v) || v < pos.y)
       .Where(d => d.MaxY == null || !d.MaxY.TryGet(parameters, out var v) || v >= pos.y)
+      .Where(d => d.MinX == null || !d.MinX.TryGet(parameters, out var v) || v < pos.x)
+      .Where(d => d.MaxX == null || !d.MaxX.TryGet(parameters, out var v) || v >= pos.x)
+      .Where(d => d.MinZ == null || !d.MinZ.TryGet(parameters, out var v) || v < pos.z)
+      .Where(d => d.MaxZ == null || !d.MaxZ.TryGet(parameters, out var v) || v >= pos.z)
       .Where(d => d.MinAltitude == null || !d.MinAltitude.TryGet(parameters, out var v) || v < waterY)
       .Where(d => d.MaxAltitude == null || !d.MaxAltitude.TryGet(parameters, out var v) || v >= waterY)
       .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
@@ -50,7 +54,7 @@ public class InfoSelector
       .Where(d => DataStorage.HasEveryKey(d.Keys, parameters))
       .Where(d => !DataStorage.HasAnyKey(d.BannedKeys, parameters));
     // Minor optimization to resolve simpler checks first (not measured).
-    linq = linq.ToArray();
+    linq = [.. linq];
     var checkEnvironments = linq.Any(d => d.Environments.Count > 0) || linq.Any(d => d.BannedEnvironments.Count > 0);
     var checkEvents = linq.Any(d => d.Events.Count > 0);
     var checkObjects = linq.Any(d => d.Objects != null);
@@ -60,18 +64,21 @@ public class InfoSelector
     var checkFilters = linq.Any(d => d.Filter != null);
     var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
     var checkPaint = linq.Any(d => d.MinPaint != null || d.MaxPaint != null);
-    var checkTerrainHeight = linq.Any(d => d.TerrainHeight != null);
+    var checkTerrainHeight = linq.Any(d => d.MinTerrainHeight != null || d.MaxTerrainHeight != null);
     if (checkTerrainHeight)
     {
       var height = WorldGenerator.instance.GetHeight(pos.x, pos.z);
-      linq = linq.Where(d => d.TerrainHeight == null || d.TerrainHeight.Match(parameters, height) == true).ToArray();
+      linq = [.. linq.Where(d =>
+        (d.MinTerrainHeight == null && d.MaxTerrainHeight == null)
+        || Helper.ApproxBetween(height, d.MinTerrainHeight?.Get(parameters) ?? -1000000, d.MaxTerrainHeight?.Get(parameters) ?? 1000000)
+      )];
     }
     if (checkEnvironments)
     {
       var environment = GetEnvironment(biome);
-      linq = linq
+      linq = [.. linq
         .Where(d => d.Environments.Count == 0 || d.Environments.Contains(environment))
-        .Where(d => !d.BannedEnvironments.Contains(environment)).ToArray();
+        .Where(d => !d.BannedEnvironments.Contains(environment))];
     }
     if (checkEvents)
     {
@@ -81,20 +88,20 @@ public class InfoSelector
       // 2. Only event distance set, any event is fine.
       // 3. Event name set, only that event is fine.
       // Event distance is zero only if nothing is set.
-      linq = linq.Where(d => d.EventDistance == 0f || (ev != null && (d.Events.Contains(ev.m_name) || d.Events.Count == 0) && d.EventDistance >= Utils.DistanceXZ(pos, ev.m_pos))).ToArray();
+      linq = [.. linq.Where(d => d.EventDistance == 0f || (ev != null && (d.Events.Contains(ev.m_name) || d.Events.Count == 0) && d.EventDistance >= Utils.DistanceXZ(pos, ev.m_pos)))];
     }
     if (checkObjects)
     {
-      linq = linq.Where(d => d.Objects == null || ObjectsFiltering.HasNearby(d.ObjectsLimit, d.Objects, zdo, parameters)).ToArray();
+      linq = [.. linq.Where(d => d.Objects == null || ObjectsFiltering.HasNearby(d.ObjectsLimit, d.Objects, zdo, parameters))];
     }
     if (checkBannedObjects)
     {
-      linq = linq.Where(d => d.BannedObjects == null || ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, parameters)).ToArray();
+      linq = [.. linq.Where(d => d.BannedObjects == null || ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, parameters))];
     }
     if (checkLocations)
     {
       var zone = ZoneSystem.GetZone(pos);
-      linq = linq.Where(d =>
+      linq = [.. linq.Where(d =>
       {
         if (d.Locations == null && d.BannedLocations == null) return true;
         // +1 because the location can be at zone edge, so any distance can be on the next zone.
@@ -132,38 +139,38 @@ public class InfoSelector
           }
         }
         return false;
-      }).ToArray();
+      })];
     }
     if (checkPlayerEvents)
     {
       var eventData = ObjectParameters.GetPlayerData(zdo, "possibleEvents");
       var events = eventData.Split(',');
-      linq = linq.Where(d =>
+      linq = [.. linq.Where(d =>
       {
         if (d.BannedPlayerEvents != null && events.Any(ev => d.BannedPlayerEvents.Contains(ev))) return false;
         if (d.PlayerEvents == null) return true;
         return events.Any(ev => d.PlayerEvents.Contains(ev));
-      }).ToArray();
+      })];
     }
     if (checkFilters || checkBannedFilters)
     {
       if (checkFilters)
       {
-        linq = linq.Where(d => d.Filter == null || d.Filter.Match(parameters, zdo) || (source != null && d.Filter.Match(parameters, source))).ToArray();
+        linq = [.. linq.Where(d => d.Filter == null || d.Filter.Match(parameters, zdo) || (source != null && d.Filter.Match(parameters, source)))];
       }
       if (checkBannedFilters)
       {
-        linq = linq.Where(d => d.BannedFilter == null || d.BannedFilter.Unmatch(parameters, zdo) || (source != null && d.BannedFilter.Unmatch(parameters, source))).ToArray();
+        linq = [.. linq.Where(d => d.BannedFilter == null || d.BannedFilter.Unmatch(parameters, zdo) || (source != null && d.BannedFilter.Unmatch(parameters, source)))];
       }
     }
     if (checkPaint)
     {
       var paint = Paint.GetPaint(pos, biome);
-      linq = linq.Where(d =>
+      linq = [.. linq.Where(d =>
         (d.MinPaint == null || (d.MinPaint.Value.b <= paint.b && d.MinPaint.Value.g <= paint.g && d.MinPaint.Value.r <= paint.r && d.MinPaint.Value.a <= paint.a)) &&
-        (d.MaxPaint == null || (d.MaxPaint.Value.b >= paint.b && d.MaxPaint.Value.g >= paint.g && d.MaxPaint.Value.r >= paint.r && d.MaxPaint.Value.a >= paint.a))).ToArray();
+        (d.MaxPaint == null || (d.MaxPaint.Value.b >= paint.b && d.MaxPaint.Value.g >= paint.g && d.MaxPaint.Value.r >= paint.r && d.MaxPaint.Value.a >= paint.a)))];
     }
-    return Randomize(linq.ToArray(), parameters);
+    return Randomize([.. linq], parameters);
   }
   private static Info? Randomize(Info[] valid, Parameters parameters)
   {
@@ -227,6 +234,6 @@ public class InfoSelector
       .Where(d => Helper.HasEveryGlobalKey(d.GlobalKeys, parameters))
       .Where(d => !Helper.HasAnyGlobalKey(d.BannedGlobalKeys, parameters));
 
-    return Randomize(linq.ToArray(), parameters);
+    return Randomize([.. linq], parameters);
   }
 }

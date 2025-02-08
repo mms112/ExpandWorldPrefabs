@@ -71,10 +71,16 @@ If a filter is not specified, it's not checked and is always considered valid.
 - night (P): Valid during the night.
 - minDistance (P): Minimum distance from the world center.
 - maxDistance (P): Maximum distance from the world center.
+- minX (P): Minimum x coordinate.
+- maxX (P): Maximum x coordinate.
+- minZ (P): Minimum z coordinate.
+- maxZ (P): Maximum z coordinate.
 - minY (P): Minimum y coordinate.
 - maxY (P): Maximum y coordinate.
 - minAltitude (P): Minimum altitude (y coordinate + 30).
 - maxAltitude (P): Maximum altitude (y coordinate + 30).
+- minTerrainHeight (P): Minimum terrain height (y coordinate).
+- maxTerrainHeight (P): Maximum terrain height (y coordinate).
 - paint: Valid terrain paint color.
   - Supports values cultivated, dirt, grass, grass_dark, patches, paved, paved_dark, paved_dirt and paved_moss.
   - Supports numeric value r,g,b,a.
