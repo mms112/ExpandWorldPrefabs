@@ -876,9 +876,8 @@ By default, the RPC is sent to the owner of the object.
   - name: Say
     target: all
     1: int, 0/1/2 # Whisper, normal, shout
-    2: userinfo, "unusable"
+    2: userinfo, "sender name"
     3: string, "message"
-    4: string, "sender network id"
 ```
 
 ### Tameable
@@ -1114,9 +1113,8 @@ This list all RPC calls that are not related to any object.
   - name: ChatMessage
     1: vec, "text position"
     2: int, type
-    3: userinfo, "unusable"
+    3: userinfo, "sender name"
     4: string, "message"
-    5: string, "sender network id"
 ```
 
 ```yaml

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Data;
 using Service;
+using Splatform;
 
 namespace ExpandWorld.Prefab;
 
@@ -113,10 +114,17 @@ public abstract class RpcInfo
       if (type == "enum_trap") parameters[i] = Parse.EnumTrap(arg);
       if (type == "enum_damagetext") parameters[i] = Parse.EnumDamageText(arg);
       if (type == "enum_terrainpaint") parameters[i] = Parse.EnumTerrainPaint(arg);
-      if (type == "userinfo") parameters[i] = arg == "" ? UserInfo.GetLocalUser() : new() { Gamertag = "", Name = arg, NetworkUserId = PrivilegeManager.GetNetworkUserId() };
+      if (type == "userinfo") parameters[i] = GetInfo(arg);
     }
     return parameters;
   }
+
+  private UserInfo GetInfo(string arg) => new()
+  {
+    Name = arg == "" ? Game.instance.GetPlayerProfile().GetName() : arg,
+    UserId = PlatformManager.DistributionPlatform.LocalUser.PlatformUserID
+  };
+
   private object[] GetPackagedParameters(ZDO? zdo, Parameters pars)
   {
     ZPackage pkg = new();

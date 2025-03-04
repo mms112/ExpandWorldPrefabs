@@ -36,7 +36,8 @@ public class HandleRPC
       cancel = OnStateChanged(zdo, data);
     else if (data.m_methodHash == SetSaddleHash)
       cancel = SetSaddle(zdo, data);
-    else if (data.m_methodHash == SayHash)
+    // Disabled for now because doesn't work after network change.s
+    else if (false && data.m_methodHash == SayHash)
       cancel = Say(zdo, data);
     else if (data.m_methodHash == FlashShieldHash)
       cancel = FlashShield(zdo);
@@ -146,10 +147,10 @@ public class HandleRPC
   {
     var pars = ZNetView.Deserialize(data.m_senderPeerID, SayPars, data.m_parameters);
     data.m_parameters.SetPos(0);
-    if (pars.Length < 2) return false;
+    if (pars.Length < 4) return false;
+    var user = (UserInfo)pars[2];
     var text = (string)pars[3];
-    var userId = (string)pars[4];
-    if (ZNet.instance.IsAdmin(userId))
+    if (ZNet.instance.IsAdmin(user.UserId.ToString()))
       return Manager.Handle(ActionType.Command, text, zdo);
     else
       return Manager.Handle(ActionType.Say, text, zdo);

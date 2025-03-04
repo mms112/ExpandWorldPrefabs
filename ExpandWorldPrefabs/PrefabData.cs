@@ -46,6 +46,8 @@ public class Data
   public string? night;
   [DefaultValue("")]
   public string biomes = "";
+  [DefaultValue("")]
+  public string bannedBiomes = "";
   [DefaultValue(null)]
   public string? minDistance;
   [DefaultValue(null)]
@@ -187,6 +189,7 @@ public class Info
   public IFloatValue? MinAltitude;
   public IFloatValue? MaxAltitude;
   public Heightmap.Biome Biomes = Heightmap.Biome.None;
+  public Heightmap.Biome BannedBiomes = Heightmap.Biome.None;
   public float EventDistance = 0f;
   public HashSet<string> Events = [];
   public HashSet<string> Environments = [];

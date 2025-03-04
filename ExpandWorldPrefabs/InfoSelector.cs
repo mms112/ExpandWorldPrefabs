@@ -37,6 +37,7 @@ public class InfoSelector
     var linq = data
       .Where(d => CheckArgs(d, args))
       .Where(d => (d.Biomes & biome) == biome)
+      .Where(d => (d.BannedBiomes & biome) == 0)
       .Where(d => d.Day?.GetBool(parameters) != false || !day)
       .Where(d => d.Night?.GetBool(parameters) != false || day)
       .Where(d => d.MinDistance == null || !d.MinDistance.TryGet(parameters, out var v) || v < distance)

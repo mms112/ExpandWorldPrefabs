@@ -357,7 +357,8 @@ public class ItemValue(ItemData data)
         durability = drop.m_itemData.GetMaxDurability(quality);
       else
         durability = 100f;
-    };
+    }
+    ;
     pkg.Write(RolledStack);
     pkg.Write(durability.Value);
     pkg.Write(RolledPosition);

@@ -25,14 +25,16 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
   public ZDOID? TargetConnectionId;
   public Vector3 Rotation = rotation;
   public long Owner = zdo.GetOwner();
+  public bool Persistent = zdo.Persistent;
+  public bool Distant = zdo.Distant;
+  public ZDO.ObjectType Type = zdo.Type;
 
   public ZdoEntry(ZDO zdo) : this(zdo.m_prefab, zdo.m_position, zdo.m_rotation, zdo) { }
 
   public ZDO? Create()
   {
     if (Prefab == 0) return null;
-    var obj = ZNetScene.instance.GetPrefab(Prefab);
-    if (!obj || !obj.TryGetComponent<ZNetView>(out var view))
+    if (!ZNetScene.instance.HasPrefab(Prefab))
     {
       Log.Error($"Can't spawn missing prefab: {Prefab}");
       return null;
@@ -40,9 +42,9 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     // Prefab hash is used to check whether to trigger rules.
     var zdo = ZDOMan.instance.CreateNewZDO(Position, Prefab);
     zdo.m_prefab = Prefab;
-    zdo.Persistent = view.m_persistent;
-    zdo.Type = view.m_type;
-    zdo.Distant = view.m_distant;
+    zdo.Persistent = Persistent;
+    zdo.Type = Type;
+    zdo.Distant = Distant;
     zdo.SetOwnerInternal(Owner);
     Write(zdo);
     return zdo;
@@ -147,6 +149,9 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
       OriginalId = data.OriginalId.Get(pars);
     if (data.TargetConnectionId != null)
       TargetConnectionId = data.TargetConnectionId.Get(pars);
+    Distant = data.Distant?.GetBool(pars) ?? Distant;
+    Persistent = data.Persistent?.GetBool(pars) ?? Persistent;
+    Type = data.Priority ?? Type;
     Position = data.Position?.Get(pars) ?? Position;
     Rotation = data.Rotation?.Get(pars)?.eulerAngles ?? Rotation;
   }
@@ -199,6 +204,9 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     zdo.m_position = Position;
     zdo.SetSector(ZoneSystem.GetZone(Position));
     zdo.m_rotation = Rotation;
+    zdo.Persistent = Persistent;
+    zdo.Distant = Distant;
+    zdo.Type = Type;
     HandleConnection(zdo);
     HandleHashConnection(zdo);
   }

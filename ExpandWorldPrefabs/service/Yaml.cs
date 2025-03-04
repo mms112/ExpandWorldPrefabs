@@ -102,13 +102,12 @@ public class Yaml
     }
 
   }
-  public static Heightmap.Biome ToBiomes(string biomeStr)
+  public static Heightmap.Biome ToBiomes(string biomeStr, bool defaultAll)
   {
     Heightmap.Biome result = 0;
     if (biomeStr == "")
     {
-      foreach (var biome in Enum.GetValues(typeof(Heightmap.Biome)))
-        result |= (Heightmap.Biome)biome;
+      return defaultAll ? (Heightmap.Biome)(-1) : 0;
     }
     else
     {
