@@ -1,0 +1,81 @@
+using System.Collections.Generic;
+using System.Reflection.Emit;
+using HarmonyLib;
+using Splatform;
+using UnityEngine;
+
+namespace Service;
+public class ServerClient
+{
+  public static void Patch(Harmony harmony)
+  {
+    var method = AccessTools.Method(typeof(ZNet), nameof(ZNet.TryGetPlayerByPlatformUserID));
+    var patch = AccessTools.Method(typeof(ServerClient), nameof(RecognizeServerClient));
+    harmony.Patch(method, postfix: new HarmonyMethod(patch));
+    method = AccessTools.Method(typeof(ZNet), nameof(ZNet.SendPlayerList));
+    patch = AccessTools.Method(typeof(ServerClient), nameof(AddServerClient));
+    harmony.Patch(method, transpiler: new HarmonyMethod(patch));
+  }
+  // Server client is only sent to clients, so this is needed for the server to recognize it.
+  static bool RecognizeServerClient(bool result, PlatformUserID platformUserID, ref ZNet.PlayerInfo playerInfo)
+  {
+    if (result) return result;
+    if (platformUserID.ToString() != "Steam_0") return result;
+
+    playerInfo = Client;
+    return true;
+  }
+
+  static IEnumerable<CodeInstruction> AddServerClient(IEnumerable<CodeInstruction> instructions)
+  {
+    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), nameof(ZPackage.Write), [typeof(int)])))
+      .Advance(1)
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+      .InsertAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ServerClient), nameof(AddServer))))
+      .InstructionEnumeration();
+  }
+
+  static void AddServer(ZNet net, ZPackage pkg)
+  {
+    // This is needed in case multiple mods are adding extra players.
+    var prev = pkg.GetPos();
+    pkg.SetPos(0);
+    if (IsExtraPlayerAdded(net, pkg.ReadInt()))
+    {
+      pkg.SetPos(prev);
+    }
+    else
+    {
+      pkg.SetPos(0);
+      pkg.Write(net.m_players.Count + 1);
+      Write(pkg);
+    }
+  }
+  static bool IsExtraPlayerAdded(ZNet net, int count) => count >= net.m_players.Count + 1;
+
+
+  public static ZNet.PlayerInfo Client => client ??= CreatePlayerInfo();
+  private static ZNet.PlayerInfo? client;
+
+  private static ZNet.PlayerInfo CreatePlayerInfo() => new()
+  {
+    m_name = "Server",
+    // Receiving chat messages requires a valid character ID.
+    m_characterID = new ZDOID(ZDOMan.GetSessionID(), uint.MaxValue),
+    m_userInfo = new() { m_id = new("Steam_0"), m_displayName = "Server" },
+    m_serverAssignedDisplayName = "Server",
+    m_publicPosition = false,
+    m_position = Vector3.zero,
+  };
+  public static void Write(ZPackage pkg)
+  {
+    pkg.Write(Client.m_name);
+    pkg.Write(Client.m_characterID);
+    pkg.Write(Client.m_userInfo.m_id.ToString());
+    pkg.Write(Client.m_userInfo.m_displayName);
+    pkg.Write(Client.m_serverAssignedDisplayName);
+    // Server position is never public.
+    pkg.Write(false);
+  }
+}

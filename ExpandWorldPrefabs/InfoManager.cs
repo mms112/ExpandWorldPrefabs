@@ -76,6 +76,8 @@ public class InfoManager
   public static void Patch()
   {
     EWP.Harmony.UnpatchSelf();
+    if (Helper.IsClient())
+      return;
     EWP.Harmony.PatchAll();
     if (CreateDatas.Exists)
       HandleCreated.Patch(EWP.Harmony);
@@ -83,6 +85,8 @@ public class InfoManager
       HandleDestroyed.Patch(EWP.Harmony);
     if (RepairDatas.Exists || DamageDatas.Exists || StateDatas.Exists || CommandDatas.Exists || SayDatas.Exists)
       HandleRPC.Patch(EWP.Harmony);
+    if (CommandDatas.Exists || SayDatas.Exists)
+      ServerClient.Patch(EWP.Harmony);
     if (GlobalKeyDatas.Exists)
       HandleGlobalKey.Patch(EWP.Harmony);
     if (EventDatas.Exists)

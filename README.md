@@ -12,7 +12,7 @@ Install on the server (modding [guide](https://youtu.be/L9ljm2eKLrk)).
 - Swap destroyed creatures, structures and objects.
 - And a lot more...
 
-Note: When swapping creature spawns, the spawn limit still checks the amount of original creature. This can lead to very high amount of creatures.
+When swapping creature spawns, the spawn limit still checks the amount of original creature. This can lead to very high amount of creatures.
 
 ## Configuration
 
@@ -33,7 +33,7 @@ Most fields are put on a single line. List values are separated by `,`.
   - Value groups can be used ([data system](https://github.com/JereKuusela/valheim-world_edit_commands/blob/main/README_data.md#multiple-parameter-values)).
     - By default, each object component has its own value group. For example `Tameable` or `Piece`.
     - By default, keywords `creature` (Humanoid) and `structure` (WearNTear) have their own value group.
-    - Note: Values from groups are cached, so the prefab yaml must be manually saved when changing an already used value group.
+    - Values from groups are cached, so the prefab yaml must be manually saved when changing an already used value group.
 - type: Type of the trigger and parameter (`type, parameter`).
   - Parameter is optional and can be used to specify the trigger.
   - Supported types are:
@@ -43,18 +43,22 @@ Most fields are put on a single line. List values are separated by `,`.
     - `damage`: When structures or trees are damaged. No parameter.
     - `state`: When objects change state. Parameter is the state name.
     - `say`: When objects or players say something. Parameter is the text.
+      - Using this type automatically adds Server client to the player list.
+      - Server client is needed to intercept chat messages.
+      - Server client counts as an extra player for boss kills, increasing the amount of loot.
     - `command`: When admins say something. Parameter is the text.
+      - Using this type automatically adds Server client to the player list.
     - `poke`: When `pokes` field is used.
     - `globalkey`: When a global key is set or removed. Parameter is the key name.
       - Use field `remove` to trigger on key removal.
-      - Note: There is no prefab or position for this type, so most fields won't work.
+      - There is no prefab or position for this type, so most fields won't work.
     - `key`: When a custom saved data is set or removed. Parameter is the data name.
       - Use field `remove` to trigger on data removal.
-      - Note: This only triggers when the saved data actually changes.
-      - Note: There is no prefab or position for this type, so most fields won't work.
+      - This only triggers when the saved data actually changes.
+      - There is no prefab or position for this type, so most fields won't work.
     - `event`: When an event starts or ends. Parameter is the event name.
       - Use field `end` to trigger on event end.
-      - Note: There is no prefab for this type, so most fields won't work.
+      - There is no prefab for this type, so most fields won't work.
   - Objects spawned or removed by this mod won't trigger `create` or `destroy`.
 - types: List of types.
 - weight (default: `1`, P): Chance to be selected if multiple entries match.
@@ -140,12 +144,12 @@ If a filter is not specified, it's not checked and is always considered valid.
 - objectsLimit: How many of the `objects` must match (`min` or `min-max`).
   - If not set, then each entry must be found at least once. One object can match multiple filters.
   - If set, that many entries must be found. Each filter can be matched by multiple entries.
-  - Note: When using max, all objects must be searched.
+  - When using max, all objects must be searched.
 - objects (P): List of required nearby objects.
   - prefab: Target object id or value group.
   - minDistance: Minimum distance to the object.
   - maxDistance: Maximum distance to the object. Default is 100 meters.
-    - Note: All objects are searched if the max distance is more than 10000 meters.
+    - All objects are searched if the max distance is more than 10000 meters.
   - minHeight: Minimum height difference to the object.
   - maxHeight: Maximum height difference to the object.
   - weight: How much this object counts towards the `objectsLimit`. Default is 1.  
@@ -153,7 +157,7 @@ If a filter is not specified, it's not checked and is always considered valid.
 - bannedObjectsLimit: How many of the `bannedObjects` must not match (`min` or `min-max`).
   - If not set, then all of the entries must not be found.
   - If set, that many `bannedObjects` must not be found. Each filter can be matched by multiple entries.
-  - Note: When using max, all objects must be searched.
+  - When using max, all objects must be searched.
 - bannedObjects (P): List of banned nearby objects.
 
 See object filtering [examples](examples_object_filtering.md).
@@ -180,7 +184,7 @@ See object filtering [examples](examples_object_filtering.md).
   - These include creature drops, destructible drops and structure materials.
   - Not supported for type `destroy`.
 - injectData (default: `false`): If true, the object is not respawned when adding data.
-  - Note: This doesn't work in most cases because clients don't load the new data.
+  - This doesn't work in most cases because clients don't load the new data.
   - Some possible cases are:
     - When adding data that is only used by this mod. In this case, clients wouldn't use the data anyway.
     - When changing data that changes during the normal game play. For example creature health.
@@ -209,7 +213,7 @@ See object filtering [examples](examples_object_filtering.md).
   - The initial data is copied from the original object.
   - Swap is done by removing the original object and spawning the swapped object.
   - If the swapped object is not valid, the original object is still removed.
-  - Note: Swapping can break ZDO connection, so spawn points may respawn even when the creature is alive.
+  - Swapping can break ZDO connection, so spawn points may respawn even when the creature is alive.
 
 ### Pokes
 
@@ -219,7 +223,7 @@ See object filtering [examples](examples_object_filtering.md).
   - parameter: Custom value used as the parameter for the `poke` type.
   - evaluate: If false, math expressions are not calculated in the parameter. Default is true.
     - For example if some text has math symbols, it might cause weird results.
-    - Note: Math expression are considered legacy, use [functions](Functions) instead.
+    - Math expression are considered legacy, use [functions](Functions) instead.
   - delay: Delay in seconds for poking.
   - limit: Maximum amount of poked objects. If not set, all matching objects are poked.
   - minDistance: Minimum distance from the poker.
@@ -276,7 +280,7 @@ Terrain operation:
 - delay: Delay in seconds for the terrain change.
 - pos: Position offset in x,z,y from the original object.
 - resetRadius: Radius for the terrain and paint reset.
-  - Note: This is purely done server side, so you can't use other operations with this.
+  - This is purely done server side, so you can't use other operations with this.
 - square: If true, square shape is used.
 - levelRadius: Radius for the level change.
 - levelOffset: Offset for the level change.
@@ -288,7 +292,7 @@ Terrain operation:
 - paintRadius: Radius for the paint change.
 - paintHeightCheck: If true, checks something.
 - paint: Terrain paint color. Supports values ClearVegetation, Cultivate, Dirt, Paved and Reset.
-  - Note: Numeric values are not supported.
+  - Numeric values are not supported.
 
 ### States
 
@@ -351,7 +355,7 @@ Following parameters are available to be used in the yaml file:
   - `<pdata_baseValue>`: Amount of nearby player base structures.
   - `<pdata_possibleEvents>`: List of possible events.
 - `<pid>`: Steam/Playfab of the client that controls the object.
-  - Note: The client always controls its player object.
+  - The client always controls its player object.
 - `<pname>`: Player name of the client that controls the object.
 - `<pchar>`: Character id of the client that controls the object.
 - `<owner>`: Id of the owner client (long number).
@@ -408,9 +412,9 @@ Number related functions:
 Custom data related functions:
 
 - `<save_X_Y>`: Saves custom data with key X and value Y.
-  - Note: Wildcard * in the key name can be used to set multiple keys at once (these keys must already exist).
+  - Wildcard * in the key name can be used to set multiple keys at once (these keys must already exist).
 - `<clear_X>`: Removes custom data with key X.
-  - Note: Wildcard * in the key name can be used to remove multiple keys at once.
+  - Wildcard * in the key name can be used to remove multiple keys at once.
 - `<load_X=default>`: Gets custom data with key X. If not found, returns the given default value.
 
 Custom data can be used to replace global keys. The biggest benefit is that custom data is not sent to clients, which reduces network traffic and keeps them hidden from players.
@@ -424,7 +428,7 @@ Old way of object filtering. When using both old and new format, entries with th
 - objects (P): List of required nearby objects. Format is `- id, distance, data, weight, height`:
   - id: Object id.
   - distance: Distance to the object (`max` or `min-max`). Default is up to 100 meters.
-    - Note: All objects are searched if the max distance is more than 10000 meters.
+    - All objects are searched if the max distance is more than 10000 meters.
   - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
   - weight: Optional. How much tis match counts towards the `objectsLimit`. Default is 1.
   - height: Optional. Height difference to the object  (`max` or `min-max`).'

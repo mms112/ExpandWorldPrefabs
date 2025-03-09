@@ -1,3 +1,7 @@
+- v1.37
+  - Adds dependency to YamlDotNet.
+  - Enables type `say`.
+
 - v1.36
   - Disables type `say` until it is properly fixed.
   - Fixed for the new update.
@@ -16,7 +20,3 @@
   - Fixes global key resetting not triggering global key removed event.
   - Fixes custom paint values not working.
   - Fixes alpha color not being checked for paint.
-
-- v1.32
-  - Adds a new parameter `safeprefab` to get prefab name with underscores replaced by dashes.
-  - Reverts the underscore mess from v1.29-1.31.

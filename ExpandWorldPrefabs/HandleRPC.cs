@@ -36,8 +36,7 @@ public class HandleRPC
       cancel = OnStateChanged(zdo, data);
     else if (data.m_methodHash == SetSaddleHash)
       cancel = SetSaddle(zdo, data);
-    // Disabled for now because doesn't work after network change.s
-    else if (false && data.m_methodHash == SayHash)
+    else if (data.m_methodHash == SayHash)
       cancel = Say(zdo, data);
     else if (data.m_methodHash == FlashShieldHash)
       cancel = FlashShield(zdo);
