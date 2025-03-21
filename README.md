@@ -413,6 +413,8 @@ Custom data related functions:
 
 - `<save_X_Y>`: Saves custom data with key X and value Y.
   - Wildcard * in the key name can be used to set multiple keys at once (these keys must already exist).
+- `<save++_X>`: Shorthand for increasing the value of key X by 1. Missing keys are created with value 1.
+- `<save--_X>`: Shorthand for decreasing the value of key X by 1. Missing keys are created with value -1.
 - `<clear_X>`: Removes custom data with key X.
   - Wildcard * in the key name can be used to remove multiple keys at once.
 - `<load_X=default>`: Gets custom data with key X. If not found, returns the given default value.

@@ -1,3 +1,11 @@
+- v1.38
+  - Adds a new field `exec` for running parameters with side effects.
+  - Adds new parameters `save++` and `save--` to increment and decrement values.
+  - Fixes data storage keys being case sensitive (now properly lower cased).
+  - Fixes weight not working on filters.
+  - Fixes field default values not working on filters.
+  - Fixes the field `spawn` copying persistency from the original object (affects whether the object is saved).
+
 - v1.37
   - Adds dependency to YamlDotNet.
   - Enables type `say`.

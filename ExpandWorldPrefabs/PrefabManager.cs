@@ -30,6 +30,7 @@ public class Manager
     var info = InfoSelector.Select(type, zdo, args, parameters, source);
     if (info == null) return false;
 
+    info.Execute?.Get(parameters);
     if (info.Commands.Length > 0)
       Commands.Run(info, parameters);
 
@@ -72,6 +73,7 @@ public class Manager
       }
     }
     var cancel = info.Cancel?.GetBool(parameters) == true;
+
     return cancel;
   }
   private static void HandleSpawns(Info info, ZDO zdo, Parameters pars, bool remove, bool regenerate, string dataStr)

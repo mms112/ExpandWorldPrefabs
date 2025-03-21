@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Policy;
 using Service;
 using UnityEngine;
 
@@ -30,6 +31,8 @@ public class DataEntry
   public Dictionary<int, IStringValue>? Strings;
   public Dictionary<int, IFloatValue>? Floats;
   public Dictionary<int, IIntValue>? Ints;
+  // Separate from ints so that these don't get matched.
+  public Dictionary<int, IIntValue>? Components;
   public Dictionary<int, IBoolValue>? Bools;
   public Dictionary<int, IHashValue>? Hashes;
   public Dictionary<int, ILongValue>? Longs;
@@ -71,9 +74,10 @@ public class DataEntry
       TargetConnectionId = new SimpleZdoIdValue(zdoConn.m_target);
       ConnectionType = zdoConn.m_type;
     }
-    Persistent = new SimpleBoolValue(zdo.Persistent);
-    Distant = new SimpleBoolValue(zdo.Distant);
-    Priority = zdo.Type;
+    // Usually these don't want to be copied automatically.
+    Persistent = null;
+    Distant = null;
+    Priority = null;
   }
   public void Load(DataEntry data)
   {
@@ -131,6 +135,12 @@ public class DataEntry
       foreach (var pair in data.Hashes)
         Hashes[pair.Key] = pair.Value;
     }
+    if (data.Components != null)
+    {
+      Components ??= [];
+      foreach (var pair in data.Components)
+        Components[pair.Key] = pair.Value;
+    }
     if (data.Items != null)
     {
       Items ??= [];
@@ -170,6 +180,7 @@ public class DataEntry
     Bools = null;
     Hashes = null;
     Items = null;
+    Components = null;
     ContainerSize = null;
     ItemAmount = null;
     ConnectionType = null;
@@ -196,7 +207,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse float {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Floats.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate float key {kvp.Key}.");
         Floats[hash] = DataValue.Float(kvp.Value);
@@ -211,7 +222,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse int {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Ints.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate int key {kvp.Key}.");
         Ints[hash] = DataValue.Int(kvp.Value);
@@ -226,7 +237,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse bool {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Bools.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate bool key {kvp.Key}.");
         Bools[hash] = DataValue.Bool(kvp.Value);
@@ -241,7 +252,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse hash {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Hashes.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate hash key {kvp.Key}.");
         Hashes[hash] = DataValue.Hash(kvp.Value);
@@ -256,7 +267,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse long {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Longs.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate long key {kvp.Key}.");
         Longs[hash] = DataValue.Long(kvp.Value);
@@ -271,7 +282,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse string {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Strings.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate string key {kvp.Key}.");
         Strings[hash] = DataValue.String(kvp.Value);
@@ -286,7 +297,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse vector {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Vecs.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate vector key {kvp.Key}.");
         Vecs[hash] = DataValue.Vector3(kvp.Value);
@@ -301,7 +312,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse quaternion {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (Quats.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate quaternion key {kvp.Key}.");
         Quats[hash] = DataValue.Quaternion(kvp.Value);
@@ -316,7 +327,7 @@ public class DataEntry
         if (kvp.Key == "") throw new InvalidOperationException($"Failed to parse byte array {value}.");
         if (kvp.Key.Contains("."))
           componentsToAdd.Add(kvp.Key.Split('.')[0]);
-        var hash = Hash(kvp.Key);
+        var hash = ZdoHelper.Hash(kvp.Key);
         if (ByteArrays.ContainsKey(hash))
           Log.Warning($"Data {data.name}: Duplicate byte array key {kvp.Key}.");
         ByteArrays[hash] = Convert.FromBase64String(kvp.Value);
@@ -332,10 +343,10 @@ public class DataEntry
       ItemAmount = DataValue.Int(data.itemAmount!);
     if (componentsToAdd.Count > 0)
     {
-      Ints ??= [];
-      Ints[$"HasFields".GetStableHashCode()] = DataValue.Simple(1);
+      Components ??= [];
+      Components[ZdoHelper.Hash("HasFields")] = DataValue.Simple(1);
       foreach (var component in componentsToAdd)
-        Ints[$"HasFields{component}".GetStableHashCode()] = DataValue.Simple(1);
+        Components[ZdoHelper.Hash($"HasFields{component}")] = DataValue.Simple(1);
     }
     if (!string.IsNullOrWhiteSpace(data.position))
       Position = DataValue.Vector3(data.position!);
@@ -442,14 +453,14 @@ public class DataEntry
   }
   public bool Match(Parameters pars, ZDO zdo)
   {
-    if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, zdo.GetString(pair.Key)) == false)) return false;
-    if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, zdo.GetFloat(pair.Key)) == false)) return false;
-    if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == false)) return false;
-    if (Longs != null && Longs.Any(pair => pair.Value.Match(pars, zdo.GetLong(pair.Key)) == false)) return false;
-    if (Bools != null && Bools.Any(pair => pair.Value.Match(pars, zdo.GetBool(pair.Key)) == false)) return false;
-    if (Hashes != null && Hashes.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == false)) return false;
-    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == false)) return false;
-    if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == false)) return false;
+    if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, GetString(zdo, pair.Key)) == false)) return false;
+    if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, GetFloat(zdo, pair.Key)) == false)) return false;
+    if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, GetInt(zdo, pair.Key)) == false)) return false;
+    if (Longs != null && Longs.Any(pair => pair.Value.Match(pars, GetLong(zdo, pair.Key)) == false)) return false;
+    if (Bools != null && Bools.Any(pair => pair.Value.Match(pars, GetBool(zdo, pair.Key)) == false)) return false;
+    if (Hashes != null && Hashes.Any(pair => pair.Value.Match(pars, GetInt(zdo, pair.Key)) == false)) return false;
+    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, GetVec3(zdo, pair.Key)) == false)) return false;
+    if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, GetQuaternion(zdo, pair.Key)) == false)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == false)) return false;
     if (Persistent != null && Persistent.Match(pars, zdo.Persistent) == false) return false;
     if (Distant != null && Distant.Match(pars, zdo.Distant) == false) return false;
@@ -481,14 +492,14 @@ public class DataEntry
   }
   public bool Unmatch(Parameters pars, ZDO zdo)
   {
-    if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, zdo.GetString(pair.Key)) == true)) return false;
-    if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, zdo.GetFloat(pair.Key)) == true)) return false;
-    if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == true)) return false;
-    if (Longs != null && Longs.Any(pair => pair.Value.Match(pars, zdo.GetLong(pair.Key)) == true)) return false;
-    if (Bools != null && Bools.Any(pair => pair.Value.Match(pars, zdo.GetBool(pair.Key)) == true)) return false;
-    if (Hashes != null && Hashes.Any(pair => pair.Value.Match(pars, zdo.GetInt(pair.Key)) == true)) return false;
-    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, zdo.GetVec3(pair.Key, Vector3.zero)) == true)) return false;
-    if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, zdo.GetQuaternion(pair.Key, Quaternion.identity)) == true)) return false;
+    if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, GetString(zdo, pair.Key)) == true)) return false;
+    if (Floats != null && Floats.Any(pair => pair.Value.Match(pars, GetFloat(zdo, pair.Key)) == true)) return false;
+    if (Ints != null && Ints.Any(pair => pair.Value.Match(pars, GetInt(zdo, pair.Key)) == true)) return false;
+    if (Longs != null && Longs.Any(pair => pair.Value.Match(pars, GetLong(zdo, pair.Key)) == true)) return false;
+    if (Bools != null && Bools.Any(pair => pair.Value.Match(pars, GetBool(zdo, pair.Key)) == true)) return false;
+    if (Hashes != null && Hashes.Any(pair => pair.Value.Match(pars, GetInt(zdo, pair.Key)) == true)) return false;
+    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, GetVec3(zdo, pair.Key)) == true)) return false;
+    if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, GetQuaternion(zdo, pair.Key)) == true)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == true)) return false;
     if (Persistent != null && Persistent.Match(pars, zdo.Persistent) == true) return false;
     if (Distant != null && Distant.Match(pars, zdo.Distant) == true) return false;
@@ -518,6 +529,13 @@ public class DataEntry
     }
     return true;
   }
+  private string GetString(ZDO zdo, int key) => ZdoHelper.TryGetString(zdo, key) ?? "";
+  private float GetFloat(ZDO zdo, int key) => ZdoHelper.TryGetFloat(zdo, key) ?? 0f;
+  private int GetInt(ZDO zdo, int key) => ZdoHelper.TryGetInt(zdo, key) ?? 0;
+  private long GetLong(ZDO zdo, int key) => ZdoHelper.TryGetLong(zdo, key) ?? 0L;
+  private bool GetBool(ZDO zdo, int key) => ZdoHelper.TryGetBool(zdo, key) ?? false;
+  private Vector3 GetVec3(ZDO zdo, int key) => ZdoHelper.TryGetVec3(zdo, key) ?? Vector3.zero;
+  private Quaternion GetQuaternion(ZDO zdo, int key) => ZdoHelper.TryGetQuaternion(zdo, key) ?? Quaternion.identity;
 
   public static string PrintVectorXZY(Vector3 vector)
   {
@@ -586,17 +604,5 @@ public class DataEntry
   {
     if (Items == null) throw new ArgumentNullException(nameof(Items));
     return ItemValue.Generate(pars, Items, size, ItemAmount?.Get(pars) ?? 0);
-  }
-
-  public static int Hash(string key)
-  {
-    if (Parse.TryInt(key, out var result)) return result;
-    if (key.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
-    {
-      var hash = ZSyncAnimation.GetHash(key.Substring(1));
-      if (key == "$anim_speed") return hash;
-      return 438569 + hash;
-    }
-    return key.GetStableHashCode();
   }
 }

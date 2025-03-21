@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Data;
-using ExpandWorld.Prefab;
 
 namespace Service;
 
@@ -21,7 +20,11 @@ public class DataStorage
       Directory.CreateDirectory(Yaml.BaseDirectory);
     if (!File.Exists(SavedDataFile)) return;
     var data = File.ReadAllText(SavedDataFile);
-    Database = Yaml.DeserializeData(data);
+    var db = Yaml.DeserializeData(data);
+    foreach (var kvp in db)
+    {
+      Database[kvp.Key.ToLowerInvariant()] = kvp.Value;
+    }
     Log.Info($"Reloaded saved data ({Database.Count} entries).");
   }
   private static bool UnsavedChanges = false;
@@ -40,11 +43,12 @@ public class DataStorage
     UnsavedChanges = false;
   }
   public static Action<string, string>? OnSet;
-  public static string GetValue(string key, string defaultValue = "") => Database.TryGetValue(key, out var value) ? value : defaultValue;
-  public static bool TryGetValue(string key, out string value) => Database.TryGetValue(key, out value);
+  public static string GetValue(string key, string defaultValue = "") => Database.TryGetValue(key.ToLowerInvariant(), out var value) ? value : defaultValue;
+  public static bool TryGetValue(string key, out string value) => Database.TryGetValue(key.ToLowerInvariant(), out value);
   public static void SetValue(string key, string value)
   {
     if (key == "") return;
+    key = key.ToLowerInvariant();
     if (key[0] == '*' || key[key.Length - 1] == '*')
     {
       var keys = MatchKeys(key);
@@ -52,6 +56,30 @@ public class DataStorage
     }
     else SetValueSub(key, value);
   }
+  public static string IncrementValue(string key, int amount)
+  {
+    if (key == "") return "0";
+    key = key.ToLowerInvariant();
+    if (key[0] == '*' || key[key.Length - 1] == '*')
+    {
+      var keys = MatchKeys(key);
+      foreach (var k in keys)
+      {
+        if (Database.TryGetValue(k, out var value))
+        {
+          SetValueSub(k, (Parse.Int(value, 0) + amount).ToString());
+        }
+      }
+      return "0";
+    }
+    else
+    {
+      var newValue = Parse.Int(GetValue(key, "0"), 0) + amount;
+      SetValueSub(key, newValue.ToString());
+      return newValue.ToString();
+    }
+  }
+
   private static List<string> MatchKeys(string key)
   {
     if (key == "*")

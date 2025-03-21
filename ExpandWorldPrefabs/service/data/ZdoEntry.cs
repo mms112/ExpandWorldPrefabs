@@ -25,26 +25,28 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
   public ZDOID? TargetConnectionId;
   public Vector3 Rotation = rotation;
   public long Owner = zdo.GetOwner();
-  public bool Persistent = zdo.Persistent;
-  public bool Distant = zdo.Distant;
-  public ZDO.ObjectType Type = zdo.Type;
+  public bool? Persistent;
+  public bool? Distant;
+  public ZDO.ObjectType? Type;
 
   public ZdoEntry(ZDO zdo) : this(zdo.m_prefab, zdo.m_position, zdo.m_rotation, zdo) { }
 
   public ZDO? Create()
   {
     if (Prefab == 0) return null;
-    if (!ZNetScene.instance.HasPrefab(Prefab))
+    var prefab = ZNetScene.instance.GetPrefab(Prefab);
+    if (!prefab)
     {
       Log.Error($"Can't spawn missing prefab: {Prefab}");
       return null;
     }
     // Prefab hash is used to check whether to trigger rules.
     var zdo = ZDOMan.instance.CreateNewZDO(Position, Prefab);
+    var view = prefab.GetComponent<ZNetView>();
     zdo.m_prefab = Prefab;
-    zdo.Persistent = Persistent;
-    zdo.Type = Type;
-    zdo.Distant = Distant;
+    zdo.Persistent = view.m_persistent;
+    zdo.Distant = view.m_distant;
+    zdo.Type = view.m_type;
     zdo.SetOwnerInternal(Owner);
     Write(zdo);
     return zdo;
@@ -143,15 +145,25 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
           Ints[pair.Key] = value.Value;
       }
     }
+    if (data.Components != null)
+    {
+      Ints ??= [];
+      foreach (var pair in data.Components)
+      {
+        var value = pair.Value.Get(pars);
+        if (value.HasValue)
+          Ints[pair.Key] = value.Value;
+      }
+    }
     ConnectionHash = data.ConnectionHash;
     ConnectionType = data.ConnectionType;
     if (data.OriginalId != null)
       OriginalId = data.OriginalId.Get(pars);
     if (data.TargetConnectionId != null)
       TargetConnectionId = data.TargetConnectionId.Get(pars);
-    Distant = data.Distant?.GetBool(pars) ?? Distant;
-    Persistent = data.Persistent?.GetBool(pars) ?? Persistent;
-    Type = data.Priority ?? Type;
+    Distant = data.Distant?.GetBool(pars);
+    Persistent = data.Persistent?.GetBool(pars);
+    Type = data.Priority;
     Position = data.Position?.Get(pars) ?? Position;
     Rotation = data.Rotation?.Get(pars)?.eulerAngles ?? Rotation;
   }
@@ -204,9 +216,12 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
     zdo.m_position = Position;
     zdo.SetSector(ZoneSystem.GetZone(Position));
     zdo.m_rotation = Rotation;
-    zdo.Persistent = Persistent;
-    zdo.Distant = Distant;
-    zdo.Type = Type;
+    if (Persistent.HasValue)
+      zdo.Persistent = Persistent.Value;
+    if (Distant.HasValue)
+      zdo.Distant = Distant.Value;
+    if (Type.HasValue)
+      zdo.Type = Type.Value;
     HandleConnection(zdo);
     HandleHashConnection(zdo);
   }

@@ -172,6 +172,7 @@ public class Loading
         Owner = data.owner == null ? null : DataValue.Long(data.owner),
         MinTerrainHeight = minTerrainHeight,
         MaxTerrainHeight = maxTerrainHeight,
+        Execute = data.exec == null ? null : DataValue.String(data.exec),
       };
     })];
   }

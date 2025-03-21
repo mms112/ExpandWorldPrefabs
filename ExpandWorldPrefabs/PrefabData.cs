@@ -157,6 +157,8 @@ public class Data
   public string removeItems = "";
   [DefaultValue(null)]
   public string? cancel;
+  [DefaultValue(null)]
+  public string? exec;
 }
 
 
@@ -226,6 +228,7 @@ public class Info
   public DataEntry? RemoveItems;
   public ILongValue? Owner;
   public IBoolValue? Cancel;
+  public IStringValue? Execute;
 }
 
 public class SpawnData
@@ -350,6 +353,8 @@ public class Object
       MaxHeightValue = DataValue.Float(data.maxHeight);
     if (data.offset != null)
       OffsetValue = DataValue.Vector3(data.offset);
+    if (data.weight != null)
+      WeightValue = DataValue.Int(data.weight);
     if (data.data != null)
     {
       Data = data.data.GetStableHashCode();
@@ -456,6 +461,8 @@ public class ObjectData
   public string? offset;
   [DefaultValue(null)]
   public string? data;
+  [DefaultValue(null)]
+  public string? weight;
 }
 
 
