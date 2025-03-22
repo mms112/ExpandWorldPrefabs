@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Data;
+using Service;
 using UnityEngine;
 
 namespace ExpandWorld.Prefab;
@@ -12,12 +13,33 @@ public class Helper
   {
     if (wild == "*")
       return true;
+    // Could be optimized when data is parsed to see if it's array, wild or range.
+    var split = Parse.Split(wild);
+    if (split.Length > 1)
+    {
+      foreach (var s in split)
+      {
+        if (CheckWild(s, str))
+          return true;
+      }
+      return false;
+    }
     if (wild[0] == '*' && wild[wild.Length - 1] == '*')
       return str.ToLowerInvariant().Contains(wild.Substring(1, wild.Length - 2).ToLowerInvariant());
     if (wild[0] == '*')
       return str.EndsWith(wild.Substring(1), StringComparison.OrdinalIgnoreCase);
     else if (wild[wild.Length - 1] == '*')
       return str.StartsWith(wild.Substring(0, wild.Length - 1), StringComparison.OrdinalIgnoreCase);
+    /*else if (Parse.TryLong(str, out var l))
+    {
+      var range = Parse.LongRange(wild);
+      return range.Min <= l && l <= range.Max;
+    }*/
+    else if (Parse.TryFloat(str, out var f) && (Parse.TryFloat(wild, out var _) || wild.Contains(";")))
+    {
+      var range = Parse.FloatRange(wild);
+      return ApproxBetween(f, range.Min, range.Max);
+    }
     else
       return str.Equals(wild, StringComparison.OrdinalIgnoreCase);
   }

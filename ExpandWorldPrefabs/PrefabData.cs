@@ -472,8 +472,8 @@ public class InfoType
   public readonly string[] Parameters;
   public InfoType(string prefab, string line)
   {
-    var types = Parse.ToList(line);
-    if (types.Count == 0 || !Enum.TryParse(types[0], true, out Type))
+    var types = Parse.Kvp(line);
+    if (!Enum.TryParse(types.Key, true, out Type))
     {
       if (line == "")
         Log.Warning($"Missing type for prefab {prefab}.");
@@ -481,7 +481,7 @@ public class InfoType
         Log.Error($"Invalid type {types} for prefab {prefab}.");
       Type = ActionType.Create;
     }
-    Parameters = types.Count > 1 ? types[1].Split(' ') : [];
+    Parameters = types.Value != "" ? types.Value.Split(' ') : [];
   }
 }
 

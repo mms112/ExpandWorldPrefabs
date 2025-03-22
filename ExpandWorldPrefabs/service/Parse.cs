@@ -190,19 +190,9 @@ public static class Parse
 
   public static Range<string> StringRange(string arg)
   {
-    var range = arg.Split(['-', ';']).ToList();
-    if (range.Count > 1 && range[0] == "")
-    {
-      range[0] = "-" + range[1];
-      range.RemoveAt(1);
-    }
-    if (range.Count > 2 && range[1] == "")
-    {
-      range[1] = "-" + range[2];
-      range.RemoveAt(2);
-    }
-    if (range.Count == 1) return new(range[0]);
-    else return new(range[0], range[1]);
+    var range = Split(arg, true, ';');
+    if (range.Length > 1) return new(range[0], range[1]);
+    else return new(range[0], range[0]);
 
   }
   public static Range<int> IntRange(string arg)

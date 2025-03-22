@@ -92,7 +92,7 @@ public class InfoManager
     if (EventDatas.Exists)
       HandleEvent.Patch(EWP.Harmony);
     if (ChangeDatas.Exists)
-      HandleChanged.Patch(EWP.Harmony);
+      HandleChanged.Patch(EWP.Harmony, ChangeDatas);
     DataStorage.OnSet = KeyDatas.Exists ? OnKeySet : null;
   }
 

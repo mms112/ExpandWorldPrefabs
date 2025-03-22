@@ -1,3 +1,8 @@
+- v1.39
+  - Adds a new trigger type `change` to allow reacting to most data changes.
+  - Adds numeric range and multiple value support to the field `type` parameter.
+  - Fixes the parameter `<item_X_Y>` only working for first few inventory slots.
+
 - v1.38
   - Adds a new field `exec` for running parameters with side effects.
   - Adds new parameters `save++` and `save--` to increment and decrement values.
@@ -18,13 +23,3 @@
   - Adds new filters `minTerrainHeight` and `maxTerrainHeight` to filter based on terrain height.
   - Adds new filters `minX`, `maxX`, `minZ` and `maxZ` to filter based on position.
   - Adds a new parameter `item_X_Y` to get the item name at specific inventory slot.
-
-- v1.34
-  - Adds new parameters `save`, `load` and `clear` to save and load server side data (moved from Expand World Code mod).
-  - Adds a new type `key` to trigger on save and clear events.
-  - Adds new filters `keys` and `bannedKeys` to filter based on saved data.
-
-- v1.33
-  - Fixes global key resetting not triggering global key removed event.
-  - Fixes custom paint values not working.
-  - Fixes alpha color not being checked for paint.

@@ -392,7 +392,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     if (inventory != null) return;
     var currentItems = zdo.GetString(ZDOVars.s_items);
     if (currentItems == "") return;
-    inventory = new("", null, 4, 2);
+    inventory = new("", null, 9999, 9999);
     inventory.Load(new ZPackage(currentItems));
   }
 
