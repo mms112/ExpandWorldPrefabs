@@ -51,7 +51,7 @@ Most fields are put on a single line. List values are separated by `,`.
       - This is more performant than `change` but supports only specific situations.
       - Recommended to check ([states](### State)) and use this if possible.
     - `say`: When objects or players say something. Parameter is the text.
-      - Using this type automatically adds Server client to the player list.
+      - Using this type automatically adds a server client to the player list.
       - Server client is needed to intercept chat messages.
       - Server client counts as an extra player for boss kills, increasing the amount of loot.
     - `command`: When admins say something. Parameter is the text.
@@ -184,6 +184,7 @@ See object filtering [examples](examples_object_filtering.md).
 - command: Console command to run.
   - Parameters are supported.
   - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
+  - Using `say` command requires either Discord Control mod or Server Devcommands mod (with Server chat enabled).
 - commands: List of console commands to run.
 - data (P): Changes data to the original object.
   - Name of the data entry (from `data.yaml`) or data code that is added to the object.
