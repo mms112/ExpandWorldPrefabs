@@ -44,13 +44,28 @@ public class HandleChanged
   }
 
   private static readonly List<ChangedZdo> ChangedZDOs = [];
+  private static int Index = 0;
 
   public static void Execute()
   {
-    foreach (var changed in ChangedZDOs)
+    if (ChangedZDOs.Count > 10000)
     {
-      Manager.Handle(ActionType.Change, changed.Key + " " + changed.Value, changed.Zdo);
+      Log.Warning("Too many changes, possible infinite loop.");
+      Index = 0;
+      ChangedZDOs.Clear();
+      return;
     }
+    // Execution can trigger changes, so foreach can't be used.
+    // Handling new changes next frame ensures that the data is fully changed.
+    var count = ChangedZDOs.Count;
+    for (; Index < count; Index++)
+    {
+      var changed = ChangedZDOs[Index];
+      if (!changed.Zdo.Valid) continue;
+      Manager.Handle(ActionType.Change, changed.Key + " " + changed.Value + " " + changed.PreviousValue, changed.Zdo);
+    }
+    if (Index < ChangedZDOs.Count) return;
+    Index = 0;
     ChangedZDOs.Clear();
   }
   private static readonly Dictionary<int, HashSet<int>> TrackedHashes = [];
@@ -61,11 +76,12 @@ public class HandleChanged
     if (!tracked.Contains(zdo.m_prefab)) return;
     var prev = zdo.GetInt(hash);
     if (prev == value) return;
-    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString()));
-    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value != 0 ? "true" : "false"));
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString(), prev.ToString()));
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value != 0 ? "true" : "false", prev != 0 ? "true" : "false"));
     var prefab = ZNetScene.instance.GetPrefab(value);
-    if (prefab)
-      ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), prefab.name));
+    var prevPrefab = ZNetScene.instance.GetPrefab(prev);
+    if (prefab || prevPrefab)
+      ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), prefab?.name ?? "none", prevPrefab?.name ?? "none"));
   }
   private static void HandleFloat(ZDOID zid, int hash, float value)
   {
@@ -74,7 +90,7 @@ public class HandleChanged
     if (!tracked.Contains(zdo.m_prefab)) return;
     var prev = zdo.GetFloat(hash);
     if (prev == value) return;
-    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString(NumberFormatInfo.InvariantInfo)));
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString(NumberFormatInfo.InvariantInfo), prev.ToString(NumberFormatInfo.InvariantInfo)));
   }
   private static void HandleString(ZDOID zid, int hash, string value)
   {
@@ -83,7 +99,7 @@ public class HandleChanged
     if (!tracked.Contains(zdo.m_prefab)) return;
     var prev = zdo.GetString(hash);
     if (prev == value) return;
-    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value == "" ? "none" : value));
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value == "" ? "none" : value, prev == "" ? "none" : prev));
   }
   private static void HandleLong(ZDOID zid, int hash, long value)
   {
@@ -92,13 +108,14 @@ public class HandleChanged
     if (!tracked.Contains(zdo.m_prefab)) return;
     var prev = zdo.GetLong(hash);
     if (prev == value) return;
-    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString()));
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString(), prev.ToString()));
   }
 }
 
-public class ChangedZdo(ZDO zdo, string key, string value)
+public class ChangedZdo(ZDO zdo, string key, string value, string previous)
 {
   public ZDO Zdo = zdo;
   public string Key = key;
   public string Value = value;
+  public string PreviousValue = previous;
 }

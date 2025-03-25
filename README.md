@@ -36,15 +36,18 @@ Most fields are put on a single line. List values are separated by `,`.
     - Values from groups are cached, so the prefab yaml must be manually saved when changing an already used value group.
 - type: Type of the trigger and parameter (`type, parameter1 parameter2`).
   - Parameters are optional and can be used to specify the trigger.
+  - Parameters supports numeric ranges (`min;max`) and multiple values (`value1,value2`).
   - Supported types are:
     - `create`: When objects are created. No parameter.
     - `destroy`: When objects are destroyed. No parameter.
     - `repair`: When structures are repaired. No parameter.
     - `damage`: When structures or trees are damaged. No parameter.
-    - `change`: When objects data changes. First parameter is the data name. Second parameter is the data value.
-      - Second parameter supports numeric ranges (`min;max`) and multiple values (`value1,value2`).
+    - `change`: When objects data changes.
+      - First parameter is the data name.
+      - Second parameter is the data value.
+      - Third parameter is the previous data value.
+      - If the data value has spaces, it will be split into multiple parameters.
     - `state`: When objects broadcast a state change with RPC. First parameter is the state name. Second parameter is the state value.
-      - Second parameter supports numeric ranges (`min;max`) and multiple values (`value1,value2`).
       - This is more performant than `change` but supports only specific situations.
       - Recommended to check ([states](### State)) and use this if possible.
     - `say`: When objects or players say something. Parameter is the text.

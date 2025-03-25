@@ -2,6 +2,8 @@
   - Adds a new trigger type `change` to allow reacting to most data changes.
   - Adds numeric range and multiple value support to the field `type` parameter.
   - Fixes the parameter `<item_X_Y>` only working for first few inventory slots.
+  - Fixes the field `cancel` not cancelling chat messages.
+  - Improves compatiblity with Discord Control mod.
 
 - v1.38
   - Adds a new field `exec` for running parameters with side effects.

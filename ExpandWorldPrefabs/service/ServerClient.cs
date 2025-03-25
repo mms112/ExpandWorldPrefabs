@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Splatform;
+using Steamworks;
 using UnityEngine;
 
 namespace Service;
@@ -20,7 +22,7 @@ public class ServerClient
   static bool RecognizeServerClient(bool result, PlatformUserID platformUserID, ref ZNet.PlayerInfo playerInfo)
   {
     if (result) return result;
-    if (platformUserID.ToString() != "Steam_0") return result;
+    if (platformUserID != Client.m_userInfo.m_id) return result;
 
     playerInfo = Client;
     return true;
@@ -63,11 +65,22 @@ public class ServerClient
     m_name = "Server",
     // Receiving chat messages requires a valid character ID.
     m_characterID = new ZDOID(ZDOMan.GetSessionID(), uint.MaxValue),
-    m_userInfo = new() { m_id = new("Steam_0"), m_displayName = "Server" },
+    m_userInfo = new() { m_id = new(ZNet.instance.m_steamPlatform, GetId()), m_displayName = "Server" },
     m_serverAssignedDisplayName = "Server",
     m_publicPosition = false,
     m_position = Vector3.zero,
   };
+  private static string GetId()
+  {
+    try
+    {
+      return SteamGameServer.GetSteamID().ToString();
+    }
+    catch (InvalidOperationException)
+    {
+      return "0";
+    }
+  }
   public static void Write(ZPackage pkg)
   {
     pkg.Write(Client.m_name);

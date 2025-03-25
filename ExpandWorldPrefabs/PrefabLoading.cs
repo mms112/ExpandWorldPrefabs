@@ -32,7 +32,7 @@ public class Loading
   private static void Load()
   {
     InfoManager.Clear();
-    if (Helper.IsClient()) return;
+    if (!Helper.IsClient()) return;
 
     var data = Yaml.Read<Data>(Pattern, true);
     if (data.Count == 0)
@@ -288,6 +288,7 @@ public class InitializeContent
 {
   static void Postfix()
   {
+    EWP.Harmony.UnpatchSelf();
     if (Helper.IsServer())
     {
       DataLoading.LoadEntries();

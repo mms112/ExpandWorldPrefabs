@@ -10,6 +10,22 @@ public class HandleRPC
     var method = AccessTools.Method(typeof(ZRoutedRpc), nameof(ZRoutedRpc.HandleRoutedRPC));
     var patch = AccessTools.Method(typeof(HandleRPC), nameof(Handle));
     harmony.Patch(method, prefix: new HarmonyMethod(patch));
+    method = AccessTools.Method(typeof(ZRoutedRpc), nameof(ZRoutedRpc.RouteRPC));
+    patch = AccessTools.Method(typeof(HandleRPC), nameof(RouteRPC));
+    harmony.Patch(method, prefix: new HarmonyMethod(patch));
+  }
+
+
+  static bool RouteRPC(ZRoutedRpc.RoutedRPCData rpcData)
+  {
+    var cancel = false;
+    if (rpcData.m_methodHash == SayHash)
+    {
+      var zdo = ZDOMan.instance.GetZDO(rpcData.m_targetZDO);
+      if (zdo == null) return true;
+      cancel = CancelSay(zdo, rpcData);
+    }
+    return !cancel;
   }
   // Not implemented:
   // SapCollector extract: Can be handled by created.
@@ -153,6 +169,18 @@ public class HandleRPC
       return Manager.Handle(ActionType.Command, text, zdo);
     else
       return Manager.Handle(ActionType.Say, text, zdo);
+  }
+  private static bool CancelSay(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
+  {
+    var pars = ZNetView.Deserialize(data.m_senderPeerID, SayPars, data.m_parameters);
+    data.m_parameters.SetPos(0);
+    if (pars.Length < 4) return false;
+    var user = (UserInfo)pars[2];
+    var text = (string)pars[3];
+    if (ZNet.instance.IsAdmin(user.UserId.ToString()))
+      return Manager.CheckCancel(ActionType.Command, text, zdo);
+    else
+      return Manager.CheckCancel(ActionType.Say, text, zdo);
   }
   static readonly int FlashShieldHash = "FlashShield".GetStableHashCode();
   static readonly ParameterInfo[] FlashShieldPars = AccessTools.Method(typeof(PrivateArea), nameof(PrivateArea.RPC_FlashShield)).GetParameters();

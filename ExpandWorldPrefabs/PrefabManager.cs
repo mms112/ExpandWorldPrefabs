@@ -76,6 +76,16 @@ public class Manager
 
     return cancel;
   }
+  public static bool CheckCancel(ActionType type, string args, ZDO zdo, ZDO? source = null)
+  {
+    if (!ZNet.instance.IsServer()) return false;
+    var name = ZNetScene.instance.GetPrefab(zdo.m_prefab)?.name ?? "";
+    ObjectParameters parameters = new(name, args, zdo);
+    var info = InfoSelector.Select(type, zdo, args, parameters, source);
+    if (info == null) return false;
+    var cancel = info.Cancel?.GetBool(parameters) == true;
+    return cancel;
+  }
   private static void HandleSpawns(Info info, ZDO zdo, Parameters pars, bool remove, bool regenerate, string dataStr)
   {
     // Original object must be regenerated to apply data.
