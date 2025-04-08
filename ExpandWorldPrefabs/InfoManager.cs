@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Data;
@@ -29,7 +28,6 @@ public class InfoManager
   public static readonly PrefabInfo RepairDatas = new();
   public static readonly PrefabInfo DamageDatas = new();
   public static readonly PrefabInfo StateDatas = new();
-  public static readonly PrefabInfo CommandDatas = new();
   public static readonly PrefabInfo SayDatas = new();
   public static readonly PrefabInfo PokeDatas = new();
   public static readonly GlobalInfo GlobalKeyDatas = new();
@@ -44,7 +42,6 @@ public class InfoManager
     RepairDatas.Clear();
     DamageDatas.Clear();
     StateDatas.Clear();
-    CommandDatas.Clear();
     SayDatas.Clear();
     PokeDatas.Clear();
     GlobalKeyDatas.Clear();
@@ -69,9 +66,12 @@ public class InfoManager
       EventDatas.Add(info);
       return;
     }
+    if (info.Type == ActionType.Command)
+    {
+      info.Admin = new SimpleBoolValue(true);
+      info.Type = ActionType.Say;
+    }
     Select(info.Type).Add(info);
-    if (info.Type == ActionType.Say)
-      Select(ActionType.Command).Add(info);
   }
   public static void Patch()
   {
@@ -83,9 +83,9 @@ public class InfoManager
       HandleCreated.Patch(EWP.Harmony);
     if (RemoveDatas.Exists)
       HandleDestroyed.Patch(EWP.Harmony);
-    if (RepairDatas.Exists || DamageDatas.Exists || StateDatas.Exists || CommandDatas.Exists || SayDatas.Exists)
+    if (RepairDatas.Exists || DamageDatas.Exists || StateDatas.Exists || SayDatas.Exists)
       HandleRPC.Patch(EWP.Harmony);
-    if (CommandDatas.Exists || SayDatas.Exists)
+    if (SayDatas.Exists)
       ServerClient.Patch(EWP.Harmony);
     if (GlobalKeyDatas.Exists)
       HandleGlobalKey.Patch(EWP.Harmony);
@@ -106,7 +106,6 @@ public class InfoManager
     ActionType.Repair => RepairDatas,
     ActionType.Damage => DamageDatas,
     ActionType.State => StateDatas,
-    ActionType.Command => CommandDatas,
     ActionType.Say => SayDatas,
     ActionType.Poke => PokeDatas,
     ActionType.Create => CreateDatas,

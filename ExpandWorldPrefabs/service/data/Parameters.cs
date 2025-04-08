@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using Service;
 using UnityEngine;
@@ -371,10 +372,39 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
   {
     LoadInventory();
     if (inventory == null) return 0;
+    if (prefab == "") return inventory.m_inventory.Sum(i => i.m_stack);
+    if (prefab == "*") return inventory.m_inventory.Sum(i => i.m_stack);
     int count = 0;
-    foreach (var item in inventory.m_inventory)
+    if (prefab[0] == '*' && prefab[prefab.Length - 1] == '*')
     {
-      if ((item.m_dropPrefab?.name ?? item.m_shared.m_name) == prefab) count += item.m_stack;
+      prefab = prefab.Substring(1, prefab.Length - 2).ToLowerInvariant();
+      foreach (var item in inventory.m_inventory)
+      {
+        if ((item.m_dropPrefab?.name ?? item.m_shared.m_name).ToLowerInvariant().Contains(prefab)) count += item.m_stack;
+      }
+    }
+    else if (prefab[0] == '*')
+    {
+      prefab = prefab.Substring(1);
+      foreach (var item in inventory.m_inventory)
+      {
+        if ((item.m_dropPrefab?.name ?? item.m_shared.m_name).EndsWith(prefab, StringComparison.OrdinalIgnoreCase)) count += item.m_stack;
+      }
+    }
+    else if (prefab[prefab.Length - 1] == '*')
+    {
+      prefab = prefab.Substring(0, prefab.Length - 1);
+      foreach (var item in inventory.m_inventory)
+      {
+        if ((item.m_dropPrefab?.name ?? item.m_shared.m_name).StartsWith(prefab, StringComparison.OrdinalIgnoreCase)) count += item.m_stack;
+      }
+    }
+    else
+    {
+      foreach (var item in inventory.m_inventory)
+      {
+        if ((item.m_dropPrefab?.name ?? item.m_shared.m_name) == prefab) count += item.m_stack;
+      }
     }
     return count;
   }

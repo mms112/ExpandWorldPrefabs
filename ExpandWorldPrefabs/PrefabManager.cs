@@ -41,7 +41,9 @@ public class Manager
 
     var remove = info.Remove?.GetBool(parameters) == true;
     var regenerate = info.Regenerate;
-    var dataStr = info.Data?.Get(parameters) ?? "";
+    var dataStr = info.Data?.GetAll(parameters) ?? "";
+    if (info.InjectData == null && dataStr.Contains(","))
+      info.InjectData = true;
     HandleSpawns(info, zdo, parameters, remove, regenerate, dataStr);
     Poke(info, zdo, parameters);
     Terrain(info, zdo, parameters);
@@ -50,7 +52,7 @@ public class Manager
     // Original object was regenerated to apply data.
     if (remove || regenerate)
       DelayedRemove.Add(info.RemoveDelay?.Get(parameters) ?? 0f, zdo, remove && info.TriggerRules);
-    else if (info.InjectData)
+    else if (info.InjectData == true)
     {
       var data = DataHelper.Get(dataStr);
       var removeItems = info.RemoveItems;
@@ -134,8 +136,9 @@ public class Manager
     var rot = rotQuat.eulerAngles;
     if (spawn.Snap?.GetBool(parameters) == true)
       pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
-    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data?.Get(parameters) ?? ""));
+    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data?.GetAll(parameters) ?? ""));
     var prefab = spawn.GetPrefab(parameters);
+    if (prefab == 0) return;
     ZdoEntry zdoEntry = new(prefab, pos, rot, originalZdo);
     if (data != null)
       zdoEntry.Load(data, parameters);
@@ -231,8 +234,19 @@ public class Manager
       if (poke.Evaluate?.GetBool(pars) != false)
         pokeParameter = Evaluate(pokeParameter);
       var delay = poke.Delay?.Get(pars) ?? 0f;
-      if (poke.Self?.GetBool(pars) == true)
-        DelayedPoke.Add(delay, zdo, pokeParameter);
+      var self = poke.Self?.GetBool(pars) == true;
+      var target = poke.Target?.Get(pars);
+      if (self || target != null)
+      {
+        if (self)
+          DelayedPoke.Add(delay, zdo, pokeParameter);
+        if (target != null)
+        {
+          var targetZdo = ZDOMan.instance.GetZDO(target.Value);
+          if (targetZdo != null && targetZdo != zdo)
+            DelayedPoke.Add(delay, targetZdo, pokeParameter);
+        }
+      }
       else
       {
         var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, rot, pars);

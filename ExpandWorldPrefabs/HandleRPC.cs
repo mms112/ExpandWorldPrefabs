@@ -163,24 +163,16 @@ public class HandleRPC
     var pars = ZNetView.Deserialize(data.m_senderPeerID, SayPars, data.m_parameters);
     data.m_parameters.SetPos(0);
     if (pars.Length < 4) return false;
-    var user = (UserInfo)pars[2];
     var text = (string)pars[3];
-    if (ZNet.instance.IsAdmin(user.UserId.ToString()))
-      return Manager.Handle(ActionType.Command, text, zdo);
-    else
-      return Manager.Handle(ActionType.Say, text, zdo);
+    return Manager.Handle(ActionType.Say, text, zdo);
   }
   private static bool CancelSay(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
   {
     var pars = ZNetView.Deserialize(data.m_senderPeerID, SayPars, data.m_parameters);
     data.m_parameters.SetPos(0);
     if (pars.Length < 4) return false;
-    var user = (UserInfo)pars[2];
     var text = (string)pars[3];
-    if (ZNet.instance.IsAdmin(user.UserId.ToString()))
-      return Manager.CheckCancel(ActionType.Command, text, zdo);
-    else
-      return Manager.CheckCancel(ActionType.Say, text, zdo);
+    return Manager.CheckCancel(ActionType.Say, text, zdo);
   }
   static readonly int FlashShieldHash = "FlashShield".GetStableHashCode();
   static readonly ParameterInfo[] FlashShieldPars = AccessTools.Method(typeof(PrivateArea), nameof(PrivateArea.RPC_FlashShield)).GetParameters();

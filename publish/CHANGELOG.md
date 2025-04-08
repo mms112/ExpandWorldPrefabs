@@ -1,3 +1,8 @@
+- v1.40
+  - Adds a new fied `admin` to only trigger for admins or non-admins.
+  - Adds wildcard support to the parameter `item` to match multiple items.
+  - Fixes error when trying to spawn invalid prefab.
+
 - v1.39
   - Adds a new trigger type `change` to allow reacting to most data changes.
   - Adds numeric range and multiple value support to the field `type` parameter.

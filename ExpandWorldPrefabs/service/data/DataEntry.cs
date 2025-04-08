@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Policy;
+using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -16,7 +17,10 @@ public class DataEntry
   }
   public DataEntry(string base64)
   {
-    Load(new ZPackage(base64));
+    if (base64.Contains(","))
+      Load(base64);
+    else
+      Load(new ZPackage(base64));
   }
   public DataEntry(DataData data)
   {
@@ -383,6 +387,53 @@ public class DataEntry
           if (ConnectionHash == 0) ConnectionHash = hash.GetStableHashCode();
         }
       }
+    }
+  }
+  public void Load(string field)
+  {
+    // type, key. value.
+    var split = Parse.Split(field);
+    if (split.Length != 3)
+      throw new InvalidOperationException($"Failed to parse field {field}.");
+    var type = split[0].ToLowerInvariant();
+    var key = split[1];
+    var value = split[2];
+    switch (type)
+    {
+      case "float":
+        Floats ??= [];
+        Floats[ZdoHelper.Hash(key)] = DataValue.Float(value);
+        break;
+      case "int":
+        Ints ??= [];
+        Ints[ZdoHelper.Hash(key)] = DataValue.Int(value);
+        break;
+      case "bool":
+        Bools ??= [];
+        Bools[ZdoHelper.Hash(key)] = DataValue.Bool(value);
+        break;
+      case "hash":
+        Hashes ??= [];
+        Hashes[ZdoHelper.Hash(key)] = DataValue.Hash(value);
+        break;
+      case "long":
+        Longs ??= [];
+        Longs[ZdoHelper.Hash(key)] = DataValue.Long(value);
+        break;
+      case "string":
+        Strings ??= [];
+        Strings[ZdoHelper.Hash(key)] = DataValue.String(value);
+        break;
+      case "vec3":
+        Vecs ??= [];
+        Vecs[ZdoHelper.Hash(key)] = DataValue.Vector3(value);
+        break;
+      case "quat":
+        Quats ??= [];
+        Quats[ZdoHelper.Hash(key)] = DataValue.Quaternion(value);
+        break;
+      default:
+        throw new InvalidOperationException($"Unknown type {type}.");
     }
   }
   public void Load(ZPackage pkg)

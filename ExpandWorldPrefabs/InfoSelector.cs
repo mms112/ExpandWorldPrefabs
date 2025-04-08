@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using Data;
 using Service;
 using UnityEngine;
@@ -66,6 +67,7 @@ public class InfoSelector
     var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
     var checkPaint = linq.Any(d => d.MinPaint != null || d.MaxPaint != null);
     var checkTerrainHeight = linq.Any(d => d.MinTerrainHeight != null || d.MaxTerrainHeight != null);
+    var checkAdmin = linq.Any(d => d.Admin != null);
     if (checkTerrainHeight)
     {
       var height = WorldGenerator.instance.GetHeight(pos.x, pos.z);
@@ -98,6 +100,12 @@ public class InfoSelector
     if (checkBannedObjects)
     {
       linq = [.. linq.Where(d => d.BannedObjects == null || ObjectsFiltering.HasNotNearby(d.BannedObjectsLimit, d.BannedObjects, zdo, parameters))];
+    }
+    if (checkAdmin)
+    {
+      var peer = ZNet.instance.GetPeer(zdo.GetOwner());
+      var admin = peer != null && ZNet.instance.IsAdmin(peer.m_socket.GetHostName());
+      linq = [.. linq.Where(d => d.Admin == null || d.Admin.GetBool(parameters) == admin)];
     }
     if (checkLocations)
     {

@@ -209,7 +209,7 @@ public class AnyValue(string[] values)
   }
   protected List<string> GetAllValues(Parameters pars)
   {
-    return [.. Values.Select(pars.Replace).Where(v => v != null && v != "<none")];
+    return [.. Values.Select(pars.Replace).Where(v => v != null && v != "" && v != "<none>")];
   }
 }
 public class ItemValue(ItemData data)

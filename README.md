@@ -54,8 +54,7 @@ Most fields are put on a single line. List values are separated by `,`.
       - Using this type automatically adds a server client to the player list.
       - Server client is needed to intercept chat messages.
       - Server client counts as an extra player for boss kills, increasing the amount of loot.
-    - `command`: When admins say something. Parameter is the text.
-      - Using this type automatically adds Server client to the player list.
+    - `command`: Deprecated. Use `say` with `admin: true` instead.
     - `poke`: When `pokes` field is used.
     - `globalkey`: When a global key is set or removed. Parameter is the key name.
       - Use field `remove` to trigger on key removal.
@@ -78,6 +77,10 @@ Most fields are put on a single line. List values are separated by `,`.
 
 If a filter is not specified, it's not checked and is always considered valid.
 
+- admin (P): Checks if the object owner is an admin.
+  - If true, the owner must be an admin.
+  - If false, the owner must not be an admin.
+  - If not set, nothing is checked.
 - biomes: List of valid biomes.
 - day (P): Valid during the day.
 - night (P): Valid during the night.
@@ -186,17 +189,18 @@ See object filtering [examples](examples_object_filtering.md).
   - Basic arithmetic is supported. For example `<x>+10` would add 10 meters to the x coordinate.
   - Using `say` command requires either Discord Control mod or Server Devcommands mod (with Server chat enabled).
 - commands: List of console commands to run.
-- data (P): Changes data to the original object.
-  - Name of the data entry (from `data.yaml`) or data code that is added to the object.
-  - This is done by respawning the original object with the new data.
-- drops (P): If true, the object drops are spawned.
-  - These include creature drops, destructible drops and structure materials.
-  - Not supported for type `destroy`.
-- injectData (default: `false`): If true, the object is not respawned when adding data.
+- data (P): Sets multiple values when using a data entry (name from from `data.yaml`).
+  - This is done by respawning the object (can be changed b setting `injectData` to true).
+- data (P): Sets a single value with format `type, key, value`.
+  - This is done without respawning the object (can be changed by setting `injectData` to false).
+- injectData: If true, the object is not respawned when adding data.
   - This doesn't work in most cases because clients don't load the new data.
   - Some possible cases are:
     - When adding data that is only used by this mod. In this case, clients wouldn't use the data anyway.
     - When changing data that changes during the normal game play. For example creature health.
+- drops (P): If true, the object drops are spawned.
+  - These include creature drops, destructible drops and structure materials.
+  - Not supported for type `destroy`.
 - owner (P): Changes the object owner (number).
   - Only works when using `injectData`.
   - Number 0 removes the owner, but the server will reassign it after a few seconds.
@@ -213,6 +217,7 @@ See object filtering [examples](examples_object_filtering.md).
 - spawn (P): Spawns another object.
   - prefab: Object id or value group.
   - data: Entry in the `data.yaml` to be used as initial data.
+    - Supports `type, key, value` format to set a single data value.
   - delay: Delay in seconds for spawning.
   - pos: Position offset in x,z,y from the original object.
   - rot: Rotation offset in y,x,z from the original object.
@@ -229,6 +234,7 @@ See object filtering [examples](examples_object_filtering.md).
 - poke (P): List of poke objects:
   - prefab: Target object id or value group.
   - self: If true, the object itself is poked. Prefab is not checked.
+  - target: Specific ZDO object. Prefab is not checked.
   - parameter: Custom value used as the parameter for the `poke` type.
   - evaluate: If false, math expressions are not calculated in the parameter. Default is true.
     - For example if some text has math symbols, it might cause weird results.
@@ -359,6 +365,7 @@ Following parameters are available to be used in the yaml file:
 - `<byte_*>`: Byte value from the object converted to base64 text.
 - `<zdo_*>`: Object id value from the object.
 - `<item_*>`: Amount of specific item in the container.
+  - Wildcard `*` can be used for partial matches. For example `Trophy*` to match all trophies or `*` to count everything.
 - `<item_X_Y>`: Item name at slot X,Y.
 - `<pdata_*>`: Player data.
   - `<pdata_baseValue>`: Amount of nearby player base structures.

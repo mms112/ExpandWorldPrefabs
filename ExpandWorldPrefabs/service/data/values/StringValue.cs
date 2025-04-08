@@ -6,6 +6,12 @@ public class StringValue(string[] values) : AnyValue(values), IStringValue
 {
   private readonly bool IsPattern = values.Any(v => v.Contains("*"));
   public string? Get(Parameters pars) => GetValue(pars);
+  public string? GetAll(Parameters pars)
+  {
+    var values = GetAllValues(pars);
+    if (values.Count == 0) return null;
+    return string.Join(",", values);
+  }
 
   public bool? Match(Parameters pars, string value)
   {
@@ -19,6 +25,7 @@ public class SimpleStringValue(string value) : IStringValue
   private readonly string Value = value;
   private readonly bool IsPattern = value.Contains("*");
   public string? Get(Parameters pars) => Value;
+  public string? GetAll(Parameters pars) => Value;
   public bool? Match(Parameters pars, string value) => IsPattern ? PatternMatch(value, Value) : Value == value;
   public static bool PatternMatch(string value, string pattern)
   {
@@ -42,5 +49,6 @@ public class SimpleStringValue(string value) : IStringValue
 public interface IStringValue
 {
   string? Get(Parameters pars);
+  string? GetAll(Parameters pars);
   bool? Match(Parameters pars, string value);
 }

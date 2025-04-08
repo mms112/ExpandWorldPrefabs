@@ -159,6 +159,8 @@ public class Data
   public string? cancel;
   [DefaultValue(null)]
   public string? exec;
+  [DefaultValue(null)]
+  public string? admin;
 }
 
 
@@ -176,7 +178,7 @@ public class Info
   public IFloatValue? RemoveDelay;
   public IBoolValue? Drops;
   public IStringValue? Data;
-  public bool InjectData = false;
+  public bool? InjectData;
   public string[] Commands = [];
   public IBoolValue? Day;
   public IBoolValue? Night;
@@ -229,6 +231,7 @@ public class Info
   public ILongValue? Owner;
   public IBoolValue? Cancel;
   public IStringValue? Execute;
+  public IBoolValue? Admin;
 }
 
 public class SpawnData
@@ -324,6 +327,7 @@ public class Poke(PokeData data)
   public IIntValue? Limit = data.limit == null ? null : DataValue.Int(data.limit);
   public IFloatValue? Delay = data.delay == null ? null : DataValue.Float(data.delay);
   public IBoolValue? Self = data.self == null ? null : DataValue.Bool(data.self);
+  public IZdoIdValue? Target = data.target == null ? null : DataValue.ZdoId(data.target);
   public IBoolValue? Evaluate = data.evaluate == null ? null : DataValue.Bool(data.evaluate);
 }
 public class Object
@@ -438,6 +442,8 @@ public class PokeData : ObjectData
   public string? delay;
   [DefaultValue(null)]
   public string? self;
+  [DefaultValue(null)]
+  public string? target;
   [DefaultValue(null)]
   public string? parameter;
   [DefaultValue(null)]
