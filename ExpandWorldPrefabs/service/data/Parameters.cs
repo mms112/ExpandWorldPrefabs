@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -120,13 +121,13 @@ public class Parameters(string prefab, string arg, Vector3 pos)
       "<par7>" => GetArg(7),
       "<par8>" => GetArg(8),
       "<par9>" => GetArg(9),
-      "<time>" => Format(time),
+      "<time>" => Helper.Format(time),
       "<day>" => EnvMan.instance.GetDay(time).ToString(),
       "<ticks>" => ((long)(time * 10000000.0)).ToString(),
-      "<x>" => Format(pos.x),
-      "<y>" => Format(pos.y),
-      "<z>" => Format(pos.z),
-      "<snap>" => Format(WorldGenerator.instance.GetHeight(pos.x, pos.z)),
+      "<x>" => Helper.Format(pos.x),
+      "<y>" => Helper.Format(pos.y),
+      "<z>" => Helper.Format(pos.z),
+      "<snap>" => Helper.Format(WorldGenerator.instance.GetHeight(pos.x, pos.z)),
       _ => null,
     };
 
@@ -233,8 +234,6 @@ public class Parameters(string prefab, string arg, Vector3 pos)
     args ??= arg.Split(' ');
     return args.Length <= index ? defaultValue : args[index];
   }
-  protected static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
-  protected static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
 
   // Parameter value could be a value group, so that has to be resolved.
   private static string ResolveValue(string value)
@@ -291,11 +290,11 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     key switch
     {
       "<zdo>" => zdo.m_uid.ToString(),
-      "<pos>" => $"{Format(zdo.m_position.x)},{Format(zdo.m_position.z)},{Format(zdo.m_position.y)}",
+      "<pos>" => Helper.FormatPos(zdo.m_position),
       "<i>" => ZoneSystem.GetZone(zdo.m_position).x.ToString(),
       "<j>" => ZoneSystem.GetZone(zdo.m_position).y.ToString(),
-      "<a>" => Format(zdo.m_rotation.y),
-      "<rot>" => $"{Format(zdo.m_rotation.y)},{Format(zdo.m_rotation.x)},{Format(zdo.m_rotation.z)}",
+      "<a>" => Helper.Format(zdo.m_rotation.y),
+      "<rot>" => Helper.FormatRot(zdo.m_rotation),
       "<pid>" => GetPid(zdo),
       "<pname>" => GetPname(zdo),
       "<pchar>" => GetPchar(zdo),

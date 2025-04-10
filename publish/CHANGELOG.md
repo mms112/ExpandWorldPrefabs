@@ -1,4 +1,5 @@
 - v1.40
+  - Adds support of vector and quaternion values to the type `change`.
   - Adds a new fied `admin` to only trigger for admins or non-admins.
   - Adds wildcard support to the parameter `item` to match multiple items.
   - Fixes error when trying to spawn invalid prefab.

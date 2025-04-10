@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Data;
 using Service;
 using UnityEngine;
@@ -22,7 +23,7 @@ public class Helper
         if (CheckWild(s, str))
           return true;
       }
-      return false;
+      // No return to also compare the full value.
     }
     if (wild[0] == '*' && wild[wild.Length - 1] == '*')
       return str.ToLowerInvariant().Contains(wild.Substring(1, wild.Length - 2).ToLowerInvariant());
@@ -82,4 +83,13 @@ public class Helper
     }
     return true;
   }
+
+
+  public static string Format(float value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
+  public static string Format(double value) => value.ToString("0.#####", NumberFormatInfo.InvariantInfo);
+  public static string FormatPos(Vector3 value) => $"{Format(value.x)},{Format(value.z)},{Format(value.y)}";
+  public static string FormatRot(Vector3 value) => $"{Format(value.y)},{Format(value.x)},{Format(value.z)}";
+  public static string FormatPos2(Vector3 value) => $"{Format2(value.x)},{Format2(value.z)},{Format2(value.y)}";
+  public static string FormatRot2(Vector3 value) => $"{Format2(value.y)},{Format2(value.x)},{Format2(value.z)}";
+  public static string Format2(float value) => value.ToString("0.##", NumberFormatInfo.InvariantInfo);
 }

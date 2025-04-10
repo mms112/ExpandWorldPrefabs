@@ -3,6 +3,7 @@ using System.Globalization;
 using Data;
 using HarmonyLib;
 using Service;
+using UnityEngine;
 
 namespace ExpandWorld.Prefab;
 
@@ -21,6 +22,12 @@ public class HandleChanged
     harmony.Patch(method, prefix: new HarmonyMethod(patch));
     method = AccessTools.Method(typeof(ZDOExtraData), nameof(ZDOExtraData.Set), [typeof(ZDOID), typeof(int), typeof(long)]);
     patch = AccessTools.Method(typeof(HandleChanged), nameof(HandleLong));
+    harmony.Patch(method, prefix: new HarmonyMethod(patch));
+    method = AccessTools.Method(typeof(ZDOExtraData), nameof(ZDOExtraData.Set), [typeof(ZDOID), typeof(int), typeof(Vector3)]);
+    patch = AccessTools.Method(typeof(HandleChanged), nameof(HandleVec3));
+    harmony.Patch(method, prefix: new HarmonyMethod(patch));
+    method = AccessTools.Method(typeof(ZDOExtraData), nameof(ZDOExtraData.Set), [typeof(ZDOID), typeof(int), typeof(Quaternion)]);
+    patch = AccessTools.Method(typeof(HandleChanged), nameof(HandleQuaternion));
     harmony.Patch(method, prefix: new HarmonyMethod(patch));
 
     TrackedHashes.Clear();
@@ -109,6 +116,26 @@ public class HandleChanged
     var prev = zdo.GetLong(hash);
     if (prev == value) return;
     ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString(), prev.ToString()));
+  }
+  private static void HandleVec3(ZDOID zid, int hash, Vector3 value)
+  {
+    if (!TrackedHashes.TryGetValue(hash, out var tracked)) return;
+    if (!ZDOMan.instance.m_objectsByID.TryGetValue(zid, out var zdo)) return;
+    if (!tracked.Contains(zdo.m_prefab)) return;
+    var prev = Helper.FormatPos2(zdo.GetVec3(hash, Vector3.zero));
+    var curr = Helper.FormatPos2(value);
+    if (prev == curr) return;
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), curr, prev));
+  }
+  private static void HandleQuaternion(ZDOID zid, int hash, Quaternion value)
+  {
+    if (!TrackedHashes.TryGetValue(hash, out var tracked)) return;
+    if (!ZDOMan.instance.m_objectsByID.TryGetValue(zid, out var zdo)) return;
+    if (!tracked.Contains(zdo.m_prefab)) return;
+    var prev = Helper.FormatRot2(zdo.GetQuaternion(hash, Quaternion.identity).eulerAngles);
+    var curr = Helper.FormatRot2(value.eulerAngles);
+    if (prev == curr) return;
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), curr, prev));
   }
 }
 
