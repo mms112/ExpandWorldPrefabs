@@ -56,7 +56,7 @@ public class DataStorage
     }
     else SetValueSub(key, value);
   }
-  public static string IncrementValue(string key, int amount)
+  public static string IncrementValue(string key, long amount)
   {
     if (key == "") return "0";
     key = key.ToLowerInvariant();
@@ -67,14 +67,14 @@ public class DataStorage
       {
         if (Database.TryGetValue(k, out var value))
         {
-          SetValueSub(k, (Parse.Int(value, 0) + amount).ToString());
+          SetValueSub(k, (Parse.Long(value, 0) + amount).ToString());
         }
       }
       return "0";
     }
     else
     {
-      var newValue = Parse.Int(GetValue(key, "0"), 0) + amount;
+      var newValue = Parse.Long(GetValue(key, "0"), 0) + amount;
       SetValueSub(key, newValue.ToString());
       return newValue.ToString();
     }

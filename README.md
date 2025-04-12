@@ -404,8 +404,8 @@ Number related functions:
 - `<acos_X>`: Returns arccosine of X.
 - `<atan_X>`: Returns arctangent of X.
 - `<atan_X_Y>`: Returns arctangent of X/Y.
-- `<calcf_X>`: Evaluates the math expression X and returns a decimal number.
-- `<calci_X>`: Evaluates the math expression X and returns an integer number.
+- `<calcfloat_X>`: Evaluates the math expression X and returns a decimal number.
+- `<calcint_X>`: Evaluates the math expression X and returns an integer number.
 - `<ceil_X>`: Returns smallest integer greater than or equal to X.
 - `<cos_X>`: Returns cosine of X.
 - `<div_X_Y>`: Returns quotient of X and Y.
@@ -418,13 +418,22 @@ Number related functions:
 - `<mod_X_Y>`: Returns remainder of X divided by Y.
 - `<mul_X_Y>`: Returns product of X and Y.
 - `<pow_X_Y>`: Returns X raised to the power of Y.
-- `<randf_X_Y>`: Returns random decimal number between X and Y.
-- `<randi_X_Y>`: Returns random integer number between X and Y.
+- `<randfloat_X_Y>`: Returns random decimal number between X and Y.
+- `<randint_X_Y>`: Returns random integer number between X and Y.
 - `<round_X>`: Returns nearest integer of X.
 - `<sin_X>`: Returns sine of X.
 - `<sqrt_X>`: Returns square root of X.
 - `<sub_X_Y>`: Returns difference of X and Y.
 - `<tan_X>`: Returns tangent of X.
+
+Long number related functions (usually only needed when calculating with game ticks):
+
+- `<addlong_X_Y>`: Returns sum of X and Y as long number.
+- `<calclong_X>`: Evaluates the math expression X and returns a long number.
+- `<divlong_X_Y>`: Returns quotient of X and Y as long number.
+- `<modlong_X_Y>`: Returns remainder of X divided by Y as long number.
+- `<mullong_X_Y>`: Returns product of X and Y as long number.
+- `<sublong_X_Y>`: Returns difference of X and Y as long number.
 
 Custom data related functions:
 
