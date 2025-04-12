@@ -55,8 +55,8 @@ public class HandleCreated
   private static IEnumerable<CodeInstruction> RPC_ZDOData(IEnumerable<CodeInstruction> instructions)
   {
     return new CodeMatcher(instructions)
-      .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZDO), nameof(ZDO.Deserialize))))
-      .Advance(2)
+      .MatchEndForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZDO), nameof(ZDO.Deserialize))))
+      .Advance(1)
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 12))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, 13))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Call, Transpilers.EmitDelegate(HandleClientCreated).operand))

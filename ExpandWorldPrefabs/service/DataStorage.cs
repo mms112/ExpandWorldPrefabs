@@ -115,12 +115,12 @@ public class DataStorage
       if (key.Contains("<"))
       {
         var kvp = Parse.Kvp(pars.Replace(key), ' ');
-        if (Database.TryGetValue(kvp.Key, out var value) && (kvp.Value == "" || value == kvp.Value)) return true;
+        if (Database.TryGetValue(kvp.Key.ToLowerInvariant(), out var value) && (kvp.Value == "" || value == kvp.Value)) return true;
       }
       else
       {
         var kvp = Parse.Kvp(key, ' ');
-        if (Database.TryGetValue(kvp.Key, out var value) && (kvp.Value == "" || value == kvp.Value)) return true;
+        if (Database.TryGetValue(kvp.Key.ToLowerInvariant(), out var value) && (kvp.Value == "" || value == kvp.Value)) return true;
       }
     }
     return false;
@@ -132,7 +132,7 @@ public class DataStorage
       if (key.Contains("<"))
       {
         var kvp = Parse.Kvp(pars.Replace(key), ' ');
-        if (!Database.TryGetValue(kvp.Key, out var value) || (kvp.Value != "" && value != kvp.Value)) return false;
+        if (!Database.TryGetValue(kvp.Key.ToLowerInvariant(), out var value) || (kvp.Value != "" && value != kvp.Value)) return false;
       }
       else
       {

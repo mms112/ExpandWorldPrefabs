@@ -30,8 +30,8 @@ public class ServerClient
 
   static IEnumerable<CodeInstruction> AddServerClient(IEnumerable<CodeInstruction> instructions)
   {
-    return new CodeMatcher(instructions).MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), nameof(ZPackage.Write), [typeof(int)])))
-      .Advance(1)
+    return new CodeMatcher(instructions).End().MatchStartBackwards(new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(ZNet), nameof(ZNet.m_players))))
+      .Advance(-1)
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
       .InsertAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ServerClient), nameof(AddServer))))

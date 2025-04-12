@@ -231,7 +231,7 @@ public class HandleRPC
     var item = (string)pars[1];
     var variant = (int)pars[2];
     var quality = (int)pars[3];
-    var state = $"{(item == "" ? "none" : item)} {variant} {quality}";
+    var state = $"{(item == "" ? "<none>" : item)} {variant} {quality}";
     return Manager.Handle(ActionType.State, state, zdo, GetSource(data.m_senderPeerID));
   }
   static readonly int SetArmorVisualItemHash = "RPC_SetVisualItem".GetStableHashCode();
@@ -246,7 +246,7 @@ public class HandleRPC
     var slot = (int)pars[1];
     var item = (string)pars[2];
     var variant = (int)pars[3];
-    var state = $"{(item == "" ? "none" : item)} {variant} {slot} ";
+    var state = $"{(item == "" ? "<none>" : item)} {variant} {slot} ";
     return Manager.Handle(ActionType.State, state, zdo, GetSource(data.m_senderPeerID));
   }
   static readonly int AnimateLeverHash = "RPC_AnimateLever".GetStableHashCode();
@@ -270,7 +270,7 @@ public class HandleRPC
     if (pars.Length < 3) return false;
     var slot = (int)pars[1];
     var item = (string)pars[2];
-    var state = $"{slot} {(item == "" ? "none" : item)}";
+    var state = $"{slot} {(item == "" ? "<none>" : item)}";
     return Manager.Handle(ActionType.State, state, zdo, GetSource(data.m_senderPeerID));
   }
 

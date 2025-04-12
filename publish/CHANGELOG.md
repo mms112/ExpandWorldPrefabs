@@ -1,8 +1,12 @@
 - v1.40
   - Adds support of vector and quaternion values to the type `change`.
-  - Adds a new fied `admin` to only trigger for admins or non-admins.
+  - Adds a new field `admin` to only trigger for admins or non-admins.
   - Adds wildcard support to the parameter `item` to match multiple items.
+  - Adds shorthand format for data entries (automatically enables the field `injectData`).
+  - Changes the type `change` to return `<none>` instead of `none` for empty values (to match how data filtering works).
+  - Changes the type `state` to return `<none>` instead of `none` for empty values (to match how data filtering works).
   - Fixes error when trying to spawn invalid prefab.
+  - Fixes parameters with upper case letters not working for filters `keys`, `bannedKeys`, `globalKeys` and `bannedGlobalKeys`.
 
 - v1.39
   - Adds a new trigger type `change` to allow reacting to most data changes.

@@ -360,14 +360,7 @@ public class Object
     if (data.weight != null)
       WeightValue = DataValue.Int(data.weight);
     if (data.data != null)
-    {
-      Data = data.data.GetStableHashCode();
-      if (!DataHelper.Exists(Data))
-      {
-        Log.Error($"Invalid object filter data: {data.data}");
-        Data = 0;
-      }
-    }
+      Data = DataHelper.GetHash(data.data);
   }
   public Object(string line)
   {
@@ -383,14 +376,7 @@ public class Object
       MaxDistanceValue = DataValue.Float(range.Max);
     }
     if (split.Count > 2)
-    {
-      Data = split[2].GetStableHashCode();
-      if (!DataHelper.Exists(Data))
-      {
-        Log.Error($"Invalid object filter data: {split[2]}");
-        Data = 0;
-      }
-    }
+      Data = DataHelper.GetHash(split[2]);
     if (split.Count > 3)
     {
       WeightValue = DataValue.Int(split[3]);

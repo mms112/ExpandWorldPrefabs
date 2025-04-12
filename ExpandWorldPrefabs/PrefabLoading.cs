@@ -135,10 +135,10 @@ public class Loading
         BannedBiomes = Yaml.ToBiomes(data.bannedBiomes, false),
         Environments = environments,
         BannedEnvironments = bannedEnvironments,
-        GlobalKeys = [.. Parse.ToList(data.globalKeys).Select(s => s.ToLowerInvariant())],
-        BannedGlobalKeys = [.. Parse.ToList(data.bannedGlobalKeys).Select(s => s.ToLowerInvariant())],
-        Keys = [.. Parse.ToList(data.keys).Select(s => s.ToLowerInvariant())],
-        BannedKeys = [.. Parse.ToList(data.bannedKeys).Select(s => s.ToLowerInvariant())],
+        GlobalKeys = [.. Parse.ToList(data.globalKeys).Select(FormatKey)],
+        BannedGlobalKeys = [.. Parse.ToList(data.bannedGlobalKeys).Select(FormatKey)],
+        Keys = [.. Parse.ToList(data.keys).Select(FormatKey)],
+        BannedKeys = [.. Parse.ToList(data.bannedKeys).Select(FormatKey)],
         Events = events,
         // Distance can be set without events for any event.
         // However if event is set, there must be a distance (the default value).
@@ -177,7 +177,15 @@ public class Loading
       };
     })];
   }
-
+  private static string FormatKey(string key)
+  {
+    // Parameters are case sensitive so can't be lower cased.
+    if (key.Contains("<")) return key;
+    // Only key should be lower cased.
+    var kvp = Parse.Kvp(key, ' ');
+    if (kvp.Value == "") return kvp.Key.ToLowerInvariant();
+    return kvp.Key.ToLowerInvariant() + " " + kvp.Value;
+  }
   private static Spawn[] ParseSpawns(string[] spawns, float? delay, bool? triggerRules) => [.. spawns.Select(s => new Spawn(s, delay, triggerRules))];
   private static Spawn[] ParseSpawns(SpawnData[] spawns, float? delay, bool? triggerRules) => [.. spawns.Select(s => new Spawn(s, delay, triggerRules))];
 

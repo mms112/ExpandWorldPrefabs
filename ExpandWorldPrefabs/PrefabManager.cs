@@ -40,10 +40,9 @@ public class Manager
       ClientRpc(info.ClientRpcs, zdo, parameters);
 
     var remove = info.Remove?.GetBool(parameters) == true;
-    var regenerate = info.Regenerate;
     var dataStr = info.Data?.GetAll(parameters) ?? "";
-    if (info.InjectData == null && dataStr.Contains(","))
-      info.InjectData = true;
+    var inject = info.InjectData ?? dataStr.Contains(",");
+    var regenerate = info.Regenerate && !inject;
     HandleSpawns(info, zdo, parameters, remove, regenerate, dataStr);
     Poke(info, zdo, parameters);
     Terrain(info, zdo, parameters);
@@ -52,7 +51,7 @@ public class Manager
     // Original object was regenerated to apply data.
     if (remove || regenerate)
       DelayedRemove.Add(info.RemoveDelay?.Get(parameters) ?? 0f, zdo, remove && info.TriggerRules);
-    else if (info.InjectData == true)
+    else if (inject)
     {
       var data = DataHelper.Get(dataStr);
       var removeItems = info.RemoveItems;

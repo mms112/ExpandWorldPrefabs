@@ -74,7 +74,7 @@ public class Helper
     {
       if (key.Contains("<"))
       {
-        if (!ZoneSystem.instance.m_globalKeys.Contains(pars.Replace(key))) return false;
+        if (!ZoneSystem.instance.m_globalKeys.Contains(pars.Replace(key).ToLowerInvariant())) return false;
       }
       else
       {

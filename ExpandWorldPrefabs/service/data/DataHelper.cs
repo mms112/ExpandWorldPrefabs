@@ -27,6 +27,11 @@ public class DataHelper
     return false;
   }
   public static DataEntry? Get(string name) => name == "" ? null : DataLoading.Get(name);
+  public static int GetHash(string name)
+  {
+    Get(name);
+    return name.GetStableHashCode();
+  }
 
   public static List<string>? GetValuesFromGroup(string group)
   {

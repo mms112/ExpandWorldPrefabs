@@ -313,18 +313,18 @@ Terrain operation:
 
 State works for following objects:
 
-- Armor stand: Setting item triggers state with `itemid variant slot` or `none 0 slot`.
+- Armor stand: Setting item triggers state with `itemid variant slot` or `<none> 0 slot`.
   - For specific item on any slot, use `itemid` or `itemid variant`.
   - For any item on specific slot, use `* * slot`.
 - Ballista: Targeting triggers state with the target id.
-- Cooking stations: Setting item triggers state with `itemid slot` or `none slot`.
+- Cooking stations: Setting item triggers state with `itemid slot` or `<none> slot`.
   - For specific item on any slot, use `itemid`.
   - For any item on specific slot, use `* slot`.
 - Creatures: Each animation such as attacks triggers state.
 - Creatures: Being targeted by ballista triggers state `target`.
 - Creatures: Setting saddle triggers state `saddle` or `unsaddle`.
 - Creatures: Waking up from sleep triggers state `wakeup`.
-- Item stands: Setting item triggers state with `itemid variant quality` or `none 0 0`.
+- Item stands: Setting item triggers state with `itemid variant quality` or `<none> 0 0`.
   - For specific item of any variant or quality, use `itemid`.
   - For any item of specific quality, use `* * quality`.
 - Feast: Eating triggers state `eat`.
@@ -375,6 +375,7 @@ Following parameters are available to be used in the yaml file:
 - `<pname>`: Player name of the client that controls the object.
 - `<pchar>`: Character id of the client that controls the object.
 - `<owner>`: Id of the owner client (long number).
+- `<none>` Empty or lack of value when using filters.
 
 Object attributes can be queried with the field system. For example `<float_WearNTear.m_health>` to get piece maximum health or `<float_ItemDrop.m_itemData.m_shared.m_maxDurability>` to get item maximum durability.
 

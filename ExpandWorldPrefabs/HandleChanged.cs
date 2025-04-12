@@ -88,7 +88,7 @@ public class HandleChanged
     var prefab = ZNetScene.instance.GetPrefab(value);
     var prevPrefab = ZNetScene.instance.GetPrefab(prev);
     if (prefab || prevPrefab)
-      ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), prefab?.name ?? "none", prevPrefab?.name ?? "none"));
+      ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), prefab?.name ?? "<none>", prevPrefab?.name ?? "<none>"));
   }
   private static void HandleFloat(ZDOID zid, int hash, float value)
   {
@@ -106,7 +106,7 @@ public class HandleChanged
     if (!tracked.Contains(zdo.m_prefab)) return;
     var prev = zdo.GetString(hash);
     if (prev == value) return;
-    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value == "" ? "none" : value, prev == "" ? "none" : prev));
+    ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value == "" ? "<none>" : value, prev == "" ? "<none>" : prev));
   }
   private static void HandleLong(ZDOID zid, int hash, long value)
   {
