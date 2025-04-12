@@ -146,8 +146,7 @@ public class Data
   [DefaultValue(null)]
   public string? maxTerrainHeight;
 
-  [DefaultValue(false)]
-  public bool injectData = false;
+  public bool? injectData;
 
   [DefaultValue(null)]
   public string? owner;

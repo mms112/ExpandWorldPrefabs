@@ -110,7 +110,7 @@ public class Loading
         Fallback = data.fallback,
         Args = t.Parameters,
         Remove = remove == null ? data.remove == null ? null : DataValue.Bool(data.remove) : new SimpleBoolValue(remove.Value),
-        Regenerate = (d != "" || data.addItems != "" || data.removeItems != "") && !data.injectData,
+        Regenerate = d != "" || data.addItems != "" || data.removeItems != "",
         RemoveDelay = data.removeDelay == null ? null : DataValue.Float(data.removeDelay),
         Drops = t.Type == ActionType.Destroy || data.drops == null ? null : DataValue.Bool(data.drops),
         Spawns = spawns,

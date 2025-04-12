@@ -6,12 +6,7 @@ public class StringValue(string[] values) : AnyValue(values), IStringValue
 {
   private readonly bool IsPattern = values.Any(v => v.Contains("*"));
   public string? Get(Parameters pars) => GetValue(pars);
-  public string? GetAll(Parameters pars)
-  {
-    var values = GetAllValues(pars);
-    if (values.Count == 0) return null;
-    return string.Join(",", values);
-  }
+  public string? GetAll(Parameters pars) => GetWhole(pars);
 
   public bool? Match(Parameters pars, string value)
   {

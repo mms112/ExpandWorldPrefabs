@@ -392,7 +392,7 @@ public class DataEntry
   public void Load(string field)
   {
     // type, key. value.
-    var split = Parse.Split(field);
+    var split = Parse.Split(field, false);
     if (split.Length != 3)
       throw new InvalidOperationException($"Failed to parse field {field}.");
     var type = split[0].ToLowerInvariant();
