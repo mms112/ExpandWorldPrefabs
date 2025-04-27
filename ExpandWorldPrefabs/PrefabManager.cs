@@ -40,7 +40,7 @@ public class Manager
       ClientRpc(info.ClientRpcs, zdo, parameters);
 
     var remove = info.Remove?.GetBool(parameters) == true;
-    var dataStr = info.Data?.GetAll(parameters) ?? "";
+    var dataStr = info.Data?.GetWhole(parameters) ?? "";
     var inject = info.InjectData ?? dataStr.Contains(",");
     var regenerate = info.Regenerate && !inject;
     HandleSpawns(info, zdo, parameters, remove, regenerate, dataStr);
@@ -135,7 +135,7 @@ public class Manager
     var rot = rotQuat.eulerAngles;
     if (spawn.Snap?.GetBool(parameters) == true)
       pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
-    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data?.GetAll(parameters) ?? ""));
+    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data?.GetWhole(parameters) ?? ""));
     var prefab = spawn.GetPrefab(parameters);
     if (prefab == 0) return;
     ZdoEntry zdoEntry = new(prefab, pos, rot, originalZdo);

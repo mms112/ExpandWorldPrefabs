@@ -4,6 +4,7 @@
   - Adds wildcard support to the parameter `item` to match multiple items.
   - Adds shorthand format for data entries (automatically enables the field `injectData`).
   - Adds new parameter `<addlong>`, `<calclong>`, `<divlong>`, `<modlong>`, `<mullong>` and `<sublong>` for large integer values.
+  - Adds new parameter `<amount>`, `<durability>` and `<quality>` to get item properties from a chest.
   - Changes the type `change` to return `<none>` instead of `none` for empty values (to match how data filtering works).
   - Changes the type `state` to return `<none>` instead of `none` for empty values (to match how data filtering works).
   - Fixes error when trying to spawn invalid prefab.

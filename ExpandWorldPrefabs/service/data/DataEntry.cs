@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Security.Policy;
-using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -398,6 +396,13 @@ public class DataEntry
     var type = split[0].ToLowerInvariant();
     var key = split[1];
     var value = split[2];
+    if (key.Contains("."))
+    {
+      var component = key.Split('.')[0];
+      Ints ??= [];
+      Ints[ZdoHelper.Hash("HasFields")] = DataValue.Simple(1);
+      Ints[ZdoHelper.Hash($"HasFields{component}")] = DataValue.Simple(1);
+    }
     switch (type)
     {
       case "float":

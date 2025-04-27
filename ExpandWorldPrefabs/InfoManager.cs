@@ -19,7 +19,8 @@ public enum ActionType
   GlobalKey,
   Event,
   Change,
-  Key
+  Key,
+  Time
 }
 public class InfoManager
 {
@@ -30,10 +31,11 @@ public class InfoManager
   public static readonly PrefabInfo StateDatas = new();
   public static readonly PrefabInfo SayDatas = new();
   public static readonly PrefabInfo PokeDatas = new();
+  public static readonly PrefabInfo ChangeDatas = new();
   public static readonly GlobalInfo GlobalKeyDatas = new();
   public static readonly GlobalInfo KeyDatas = new();
   public static readonly GlobalInfo EventDatas = new();
-  public static readonly PrefabInfo ChangeDatas = new();
+  public static readonly GlobalInfo TimeDatas = new();
 
   public static void Clear()
   {
@@ -48,6 +50,7 @@ public class InfoManager
     KeyDatas.Clear();
     EventDatas.Clear();
     ChangeDatas.Clear();
+    TimeDatas.Clear();
   }
   public static void Add(Info info)
   {
@@ -64,6 +67,11 @@ public class InfoManager
     if (info.Type == ActionType.Event)
     {
       EventDatas.Add(info);
+      return;
+    }
+    if (info.Type == ActionType.Time)
+    {
+      TimeDatas.Add(info);
       return;
     }
     if (info.Type == ActionType.Command)
@@ -93,6 +101,14 @@ public class InfoManager
       HandleEvent.Patch(EWP.Harmony);
     if (ChangeDatas.Exists)
       HandleChanged.Patch(EWP.Harmony, ChangeDatas);
+    if (TimeDatas.Exists)
+    {
+      var checkTicks = TimeDatas.Info.Any(v => v.Args.Length > 0 && v.Args[0] == "tick");
+      var checkMinutes = TimeDatas.Info.Any(v => v.Args.Length > 0 && v.Args[0] == "minute");
+      var checkHours = TimeDatas.Info.Any(v => v.Args.Length > 0 && v.Args[0] == "hour");
+      var checkDays = TimeDatas.Info.Any(v => v.Args.Length > 0 && v.Args[0] == "day");
+      HandleTime.Patch(EWP.Harmony, checkTicks, checkMinutes, checkHours, checkDays);
+    }
     DataStorage.OnSet = KeyDatas.Exists ? OnKeySet : null;
   }
 
@@ -122,6 +138,7 @@ public class InfoManager
     ActionType.GlobalKey => GlobalKeyDatas,
     ActionType.Key => KeyDatas,
     ActionType.Event => EventDatas,
+    ActionType.Time => TimeDatas,
     _ => ErrorGlobal(type),
   };
   private static GlobalInfo ErrorGlobal(ActionType type)

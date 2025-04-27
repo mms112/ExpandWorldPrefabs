@@ -356,7 +356,10 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
      "quat" => DataEntry.PrintAngleYXZ(GetQuaternion(value, defaultValue)),
      "byte" => Convert.ToBase64String(zdo.GetByteArray(value)),
      "zdo" => zdo.GetZDOID(value).ToString(),
-     "item" => GetItem(value),
+     "amount" => GetAmount(value, defaultValue),
+     "quality" => GetQuality(value, defaultValue),
+     "durability" => GetDurability(value, defaultValue),
+     "item" => GetItem(value, defaultValue),
      "pos" => DataEntry.PrintVectorXZY(GetPos(value)),
      "pdata" => GetPlayerData(zdo, value),
      _ => null,
@@ -369,13 +372,37 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
   private bool GetBool(string value, string defaultValue) => ZdoHelper.GetBool(zdo, value, defaultValue);
   private Vector3 GetVec3(string value, string defaultValue) => ZdoHelper.GetVec3(zdo, value, defaultValue);
   private Quaternion GetQuaternion(string value, string defaultValue) => ZdoHelper.GetQuaternion(zdo, value, defaultValue);
-  private string GetItem(string value)
+  private string GetItem(string value, string defaultValue)
   {
+    if (value == "") return defaultValue;
     var kvp = Parse.Kvp(value, Separator);
     // Coordinates requires two numbers, otherwise it's an item name.
-    if (kvp.Value == "") return GetAmountOfItems(value).ToString();
     if (!Parse.TryInt(kvp.Key, out var x) || !Parse.TryInt(kvp.Value, out var y)) return GetAmountOfItems(value).ToString();
-    return GetItemAt(x, y);
+    return GetNameAt(x, y) ?? defaultValue;
+  }
+  private string GetAmount(string value, string defaultValue)
+  {
+    if (value == "") return defaultValue;
+    var kvp = Parse.Kvp(value, Separator);
+    // Coordinates requires two numbers, otherwise it's an item name.
+    if (!Parse.TryInt(kvp.Key, out var x) || !Parse.TryInt(kvp.Value, out var y)) return GetAmountOfItems(value).ToString();
+    return GetAmountAt(x, y) ?? defaultValue;
+  }
+  private string GetDurability(string value, string defaultValue)
+  {
+    if (value == "") return defaultValue;
+    var kvp = Parse.Kvp(value, Separator);
+    // Coordinates requires two numbers, otherwise it's an item name.
+    if (!Parse.TryInt(kvp.Key, out var x) || !Parse.TryInt(kvp.Value, out var y)) return defaultValue;
+    return GetDurabilityAt(x, y) ?? defaultValue;
+  }
+  private string GetQuality(string value, string defaultValue)
+  {
+    if (value == "") return defaultValue;
+    var kvp = Parse.Kvp(value, Separator);
+    // Coordinates requires two numbers, otherwise it's an item name.
+    if (!Parse.TryInt(kvp.Key, out var x) || !Parse.TryInt(kvp.Value, out var y)) return defaultValue;
+    return GetQualityAt(x, y) ?? defaultValue;
   }
   private int GetAmountOfItems(string prefab)
   {
@@ -417,14 +444,22 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     }
     return count;
   }
-  private string GetItemAt(int x, int y)
+  private string? GetNameAt(int x, int y)
+  {
+    var item = GetItemAt(x, y);
+    return item?.m_dropPrefab?.name ?? item?.m_shared.m_name;
+  }
+  private string? GetAmountAt(int x, int y) => GetItemAt(x, y)?.m_stack.ToString();
+  private string? GetDurabilityAt(int x, int y) => GetItemAt(x, y)?.m_durability.ToString();
+  private string? GetQualityAt(int x, int y) => GetItemAt(x, y)?.m_quality.ToString();
+  private ItemDrop.ItemData? GetItemAt(int x, int y)
   {
     LoadInventory();
-    if (inventory == null) return "";
-    if (x < 0 || x >= inventory.m_width || y < 0 || y >= inventory.m_height) return "";
-    var item = inventory.GetItemAt(x, y);
-    return item?.m_dropPrefab?.name ?? item?.m_shared.m_name ?? "";
+    if (inventory == null) return null;
+    if (x < 0 || x >= inventory.m_width || y < 0 || y >= inventory.m_height) return null;
+    return inventory.GetItemAt(x, y);
   }
+
 
   private void LoadInventory()
   {

@@ -6,7 +6,7 @@ public class StringValue(string[] values) : AnyValue(values), IStringValue
 {
   private readonly bool IsPattern = values.Any(v => v.Contains("*"));
   public string? Get(Parameters pars) => GetValue(pars);
-  public string? GetAll(Parameters pars) => GetWhole(pars);
+  public string? GetWhole(Parameters pars) => GetWholeValue(pars);
 
   public bool? Match(Parameters pars, string value)
   {
@@ -20,7 +20,7 @@ public class SimpleStringValue(string value) : IStringValue
   private readonly string Value = value;
   private readonly bool IsPattern = value.Contains("*");
   public string? Get(Parameters pars) => Value;
-  public string? GetAll(Parameters pars) => Value;
+  public string? GetWhole(Parameters pars) => Value;
   public bool? Match(Parameters pars, string value) => IsPattern ? PatternMatch(value, Value) : Value == value;
   public static bool PatternMatch(string value, string pattern)
   {
@@ -44,6 +44,7 @@ public class SimpleStringValue(string value) : IStringValue
 public interface IStringValue
 {
   string? Get(Parameters pars);
-  string? GetAll(Parameters pars);
+  // GetWhole is needed when the value is passed as it is, and processed later.
+  string? GetWhole(Parameters pars);
   bool? Match(Parameters pars, string value);
 }

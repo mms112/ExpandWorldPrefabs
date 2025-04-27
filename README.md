@@ -364,6 +364,9 @@ Following parameters are available to be used in the yaml file:
 - `<quat_*>`: Quaternion value from the object converted to y,x,z.
 - `<byte_*>`: Byte value from the object converted to base64 text.
 - `<zdo_*>`: Object id value from the object.
+- `<amount_X_Y>`: Amount of item at slot X,Y.
+- `<durability_X_Y>`: Durability of item at slot X,Y.
+- `<quality_X_Y>`: Quality of item at slot X,Y.
 - `<item_*>`: Amount of specific item in the container.
   - Wildcard `*` can be used for partial matches. For example `Trophy*` to match all trophies or `*` to count everything.
 - `<item_X_Y>`: Item name at slot X,Y.

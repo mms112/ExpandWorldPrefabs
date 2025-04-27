@@ -211,7 +211,7 @@ public class AnyValue(string[] values)
   {
     return [.. Values.Select(pars.Replace).Where(v => v != null && v != "" && v != "<none>")];
   }
-  protected string GetWhole(Parameters pars)
+  protected string GetWholeValue(Parameters pars)
   {
     return string.Join(",", Values.Select(pars.Replace));
   }
