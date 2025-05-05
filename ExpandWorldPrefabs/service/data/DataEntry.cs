@@ -13,12 +13,14 @@ public class DataEntry
   public DataEntry()
   {
   }
+  public DataEntry(string[] tkv)
+  {
+    InjectDataByDefault = true;
+    Load(tkv);
+  }
   public DataEntry(string base64)
   {
-    if (base64.Contains(","))
-      Load(base64);
-    else
-      Load(new ZPackage(base64));
+    Load(new ZPackage(base64));
   }
   public DataEntry(DataData data)
   {
@@ -28,7 +30,7 @@ public class DataEntry
   {
     Load(zdo);
   }
-
+  public bool InjectDataByDefault = false;
   // Nulls add more code but should be more performant.
   public Dictionary<int, IStringValue>? Strings;
   public Dictionary<int, IFloatValue>? Floats;
@@ -387,15 +389,24 @@ public class DataEntry
       }
     }
   }
-  public void Load(string field)
+  public static HashSet<string> SupportedTypes =
+  [
+    "float",
+    "int",
+    "bool",
+    "hash",
+    "long",
+    "string",
+    "vec3",
+    "quat",
+  ];
+  public void Load(string[] tkv)
   {
-    // type, key. value.
-    var split = Parse.Split(field, false);
-    if (split.Length != 3)
-      throw new InvalidOperationException($"Failed to parse field {field}.");
-    var type = split[0].ToLowerInvariant();
-    var key = split[1];
-    var value = split[2];
+    if (tkv.Length != 3)
+      throw new InvalidOperationException($"Failed to parse type, field, value.");
+    var type = tkv[0].ToLowerInvariant();
+    var key = tkv[1];
+    var value = tkv[2];
     if (key.Contains("."))
     {
       var component = key.Split('.')[0];

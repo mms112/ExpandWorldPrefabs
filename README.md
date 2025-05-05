@@ -56,6 +56,7 @@ Most fields are put on a single line. List values are separated by `,`.
       - Server client counts as an extra player for boss kills, increasing the amount of loot.
     - `command`: Deprecated. Use `say` with `admin: true` instead.
     - `poke`: When `pokes` field is used.
+      - [Basic Discord Guide](https://discord.com/channels/1167153871546744842/1366020389905629264), [Advanced Discord Guide](https://discord.com/channels/1167153871546744842/1366022688275173550)
     - `globalkey`: When a global key is set or removed. Parameter is the key name.
       - Use field `remove` to trigger on key removal.
       - There is no prefab or position for this type, so most fields won't work.
@@ -66,6 +67,11 @@ Most fields are put on a single line. List values are separated by `,`.
     - `event`: When an event starts or ends. Parameter is the event name.
       - Use field `end` to trigger on event end.
       - There is no prefab for this type, so most fields won't work.
+    - `time`: When the time changes.
+      - First parameter is the granularity (day, hour, minute, tick).
+      - Second parameter is the condition (single value, multiple values, range).
+      - Note: Valheim day is 30 minutes, Valheim hour is 1.25 minutes, Valheim minute is 1.25 seconds.
+      - [Discord Guide](https://discord.com/channels/1167153871546744842/1360994829663867040)
   - Objects spawned or removed by this mod won't trigger `create` or `destroy`.
 - types: List of types.
 - weight (default: `1`, P): Chance to be selected if multiple entries match.
@@ -201,6 +207,8 @@ See object filtering [examples](examples_object_filtering.md).
 - drops (P): If true, the object drops are spawned.
   - These include creature drops, destructible drops and structure materials.
   - Not supported for type `destroy`.
+- exec (P): Runs parameters with side effects.
+  - Mostly useful for saving custom data with the `save` function.
 - owner (P): Changes the object owner (number).
   - Only works when using `injectData`.
   - Number 0 removes the owner, but the server will reassign it after a few seconds.

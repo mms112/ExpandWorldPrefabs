@@ -27,6 +27,28 @@ public class DataHelper
     return false;
   }
   public static DataEntry? Get(string name) => name == "" ? null : DataLoading.Get(name);
+  public static DataEntry? Get(IStringValue? name, Parameters parameters)
+  {
+    if (name == null) return null;
+    var dataStr = name.GetWhole(parameters);
+    if (dataStr == null) return null;
+    var hash = dataStr.GetStableHashCode();
+    // Usually there is a single data entry, so makes sense to check the cache first.
+    // This also works for the type, key, value format.
+    if (DataLoading.TryGet(hash, out var data))
+      return data;
+    if (!dataStr.Contains(',')) return Get(dataStr);
+    // Need to detect multiple data entries from the type, key, value format.
+    // Bit hacky but no idea of a better way to do it.
+    var tkv = dataStr.Split([','], 3).Select(s => s.Trim()).ToArray();
+    if (tkv.Length > 2 && DataEntry.SupportedTypes.Contains(tkv[0]))
+    {
+      var entry = new DataEntry(tkv);
+      DataLoading.Add(hash, entry);
+      return entry;
+    }
+    return Get(name.Get(parameters) ?? "");
+  }
   public static int GetHash(string name)
   {
     Get(name);

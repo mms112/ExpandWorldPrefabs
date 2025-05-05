@@ -174,6 +174,24 @@ public class HandleRPC
     var text = (string)pars[3];
     return Manager.CheckCancel(ActionType.Say, text, zdo);
   }
+  static readonly int ChatMessageHash = "ChatMessage".GetStableHashCode();
+  static readonly ParameterInfo[] ChatMessgePars = AccessTools.Method(typeof(Chat), nameof(Chat.RPC_ChatMessage)).GetParameters();
+  private static bool HandleChat(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
+  {
+    var pars = ZNetView.Deserialize(data.m_senderPeerID, ChatMessgePars, data.m_parameters);
+    data.m_parameters.SetPos(0);
+    if (pars.Length < 5) return false;
+    var text = (string)pars[4];
+    return Manager.Handle(ActionType.Say, text, zdo);
+  }
+  private static bool CancelChat(ZDO zdo, ZRoutedRpc.RoutedRPCData data)
+  {
+    var pars = ZNetView.Deserialize(data.m_senderPeerID, ChatMessgePars, data.m_parameters);
+    data.m_parameters.SetPos(0);
+    if (pars.Length < 5) return false;
+    var text = (string)pars[4];
+    return Manager.CheckCancel(ActionType.Say, text, zdo);
+  }
   static readonly int FlashShieldHash = "FlashShield".GetStableHashCode();
   static readonly ParameterInfo[] FlashShieldPars = AccessTools.Method(typeof(PrivateArea), nameof(PrivateArea.RPC_FlashShield)).GetParameters();
   private static bool FlashShield(ZDO zdo)

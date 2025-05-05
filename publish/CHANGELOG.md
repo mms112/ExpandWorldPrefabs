@@ -1,3 +1,7 @@
+- v1.41
+  - Fixes multiple values not working for the field `data`.
+  - Fixes the field `exec` not working with global triggers (like time).
+
 - v1.40
   - Adds support of vector and quaternion values to the type `change`.
   - Adds a new field `admin` to only trigger for admins or non-admins.

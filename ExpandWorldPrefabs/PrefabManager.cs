@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using Data;
+using Service;
 using UnityEngine;
 
 namespace ExpandWorld.Prefab;
@@ -14,6 +15,7 @@ public class Manager
     Parameters parameters = new("", args, pos);
     var info = InfoSelector.SelectGlobal(type, args, parameters, pos, remove);
     if (info == null) return;
+    info.Execute?.Get(parameters);
     if (info.Commands.Length > 0)
       Commands.Run(info, parameters);
     if (info.ClientRpcs != null)
@@ -40,10 +42,10 @@ public class Manager
       ClientRpc(info.ClientRpcs, zdo, parameters);
 
     var remove = info.Remove?.GetBool(parameters) == true;
-    var dataStr = info.Data?.GetWhole(parameters) ?? "";
-    var inject = info.InjectData ?? dataStr.Contains(",");
+    var data = DataHelper.Get(info.Data, parameters);
+    var inject = info.InjectData ?? data?.InjectDataByDefault ?? false;
     var regenerate = info.Regenerate && !inject;
-    HandleSpawns(info, zdo, parameters, remove, regenerate, dataStr);
+    HandleSpawns(info, zdo, parameters, remove, regenerate, data);
     Poke(info, zdo, parameters);
     Terrain(info, zdo, parameters);
     if (info.Drops?.GetBool(parameters) == true)
@@ -53,7 +55,6 @@ public class Manager
       DelayedRemove.Add(info.RemoveDelay?.Get(parameters) ?? 0f, zdo, remove && info.TriggerRules);
     else if (inject)
     {
-      var data = DataHelper.Get(dataStr);
       var removeItems = info.RemoveItems;
       var addItems = info.AddItems;
       if (data != null)
@@ -87,13 +88,12 @@ public class Manager
     var cancel = info.Cancel?.GetBool(parameters) == true;
     return cancel;
   }
-  private static void HandleSpawns(Info info, ZDO zdo, Parameters pars, bool remove, bool regenerate, string dataStr)
+  private static void HandleSpawns(Info info, ZDO zdo, Parameters pars, bool remove, bool regenerate, DataEntry? customData)
   {
     // Original object must be regenerated to apply data.
     var regenerateOriginal = !remove && regenerate;
     if (info.Spawns == null && info.Swaps == null && !regenerateOriginal) return;
 
-    var customData = DataHelper.Get(dataStr);
     if (info.Spawns != null)
       foreach (var p in info.Spawns)
         CreateObject(p, zdo, customData, pars);
@@ -135,7 +135,7 @@ public class Manager
     var rot = rotQuat.eulerAngles;
     if (spawn.Snap?.GetBool(parameters) == true)
       pos.y = WorldGenerator.instance.GetHeight(pos.x, pos.z);
-    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data?.GetWhole(parameters) ?? ""));
+    data = DataHelper.Merge(data, DataHelper.Get(spawn.Data, parameters));
     var prefab = spawn.GetPrefab(parameters);
     if (prefab == 0) return;
     ZdoEntry zdoEntry = new(prefab, pos, rot, originalZdo);

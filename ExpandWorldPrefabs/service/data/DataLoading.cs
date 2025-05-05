@@ -35,7 +35,16 @@ public class DataLoading
     }
     return Data[hash];
   }
+  public static void Add(int hash, DataEntry entry)
+  {
+    Data[hash] = entry;
+  }
   public static DataEntry? Get(int hash) => Data.ContainsKey(hash) ? Data[hash] : null;
+  public static bool TryGet(int hash, out DataEntry? entry)
+  {
+    entry = Data.ContainsKey(hash) ? Data[hash] : null;
+    return entry != null;
+  }
 
   public static void LoadEntries()
   {
