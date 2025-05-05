@@ -59,6 +59,8 @@ public static class ZdoHelper
       result = fieldInfo.GetValue(result);
       if (result == null) return null;
     }
+    if (result is GameObject go) return go.name;
+    if (result is ItemDrop itemDrop) return itemDrop.gameObject.name;
     return result;
   }
 

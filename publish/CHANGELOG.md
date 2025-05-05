@@ -1,6 +1,7 @@
 - v1.41
   - Fixes multiple values not working for the field `data`.
   - Fixes the field `exec` not working with global triggers (like time).
+  - Fixes GameObject and ItemDrop types not working for field parameters.
 
 - v1.40
   - Adds support of vector and quaternion values to the type `change`.
@@ -28,16 +29,3 @@
   - Fixes weight not working on filters.
   - Fixes field default values not working on filters.
   - Fixes the field `spawn` copying persistency from the original object (affects whether the object is saved).
-
-- v1.37
-  - Adds dependency to YamlDotNet.
-  - Enables type `say`.
-
-- v1.36
-  - Disables type `say` until it is properly fixed.
-  - Fixed for the new update.
-
-- v1.35
-  - Adds new filters `minTerrainHeight` and `maxTerrainHeight` to filter based on terrain height.
-  - Adds new filters `minX`, `maxX`, `minZ` and `maxZ` to filter based on position.
-  - Adds a new parameter `item_X_Y` to get the item name at specific inventory slot.
