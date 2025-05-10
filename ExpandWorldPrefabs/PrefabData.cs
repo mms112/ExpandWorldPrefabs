@@ -337,7 +337,7 @@ public class Object
   private readonly IFloatValue? MinHeightValue;
   private readonly IFloatValue? MaxHeightValue;
   private readonly IVector3Value? OffsetValue;
-  private readonly int Data = 0;
+  private readonly int Filter = 0;
   private readonly IIntValue WeightValue = new SimpleIntValue(1);
 
   public Object(ObjectData data)
@@ -358,8 +358,10 @@ public class Object
       OffsetValue = DataValue.Vector3(data.offset);
     if (data.weight != null)
       WeightValue = DataValue.Int(data.weight);
-    if (data.data != null)
-      Data = DataHelper.GetHash(data.data);
+    if (data.filter != null)
+      Filter = DataHelper.GetHash(data.filter);
+    else if (data.data != null)
+      Filter = DataHelper.GetHash(data.data);
   }
   public Object(string line)
   {
@@ -375,7 +377,7 @@ public class Object
       MaxDistanceValue = DataValue.Float(range.Max);
     }
     if (split.Count > 2)
-      Data = DataHelper.GetHash(split[2]);
+      Filter = DataHelper.GetHash(split[2]);
     if (split.Count > 3)
     {
       WeightValue = DataValue.Int(split[3]);
@@ -416,8 +418,8 @@ public class Object
     if (MinHeight != null && dy < MinHeight) return false;
     if (MaxHeight != null && dy > MaxHeight) return false;
 
-    if (Data == 0) return true;
-    return DataHelper.Match(Data, zdo, pars);
+    if (Filter == 0) return true;
+    return DataHelper.Match(Filter, zdo, pars);
   }
 }
 
@@ -452,6 +454,8 @@ public class ObjectData
   public string? offset;
   [DefaultValue(null)]
   public string? data;
+  [DefaultValue(null)]
+  public string? filter;
   [DefaultValue(null)]
   public string? weight;
 }

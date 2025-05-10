@@ -170,7 +170,7 @@ If a filter is not specified, it's not checked and is always considered valid.
   - minHeight: Minimum height difference to the object.
   - maxHeight: Maximum height difference to the object.
   - weight: How much this object counts towards the `objectsLimit`. Default is 1.  
-  - data: Entry in the `data.yaml` that can be used as filter. All values must match.
+  - filter: Entry in the `data.yaml` that can be used as filter. All values must match.
 - bannedObjectsLimit: How many of the `bannedObjects` must not match (`min` or `min-max`).
   - If not set, then all of the entries must not be found.
   - If set, that many `bannedObjects` must not be found. Each filter can be matched by multiple entries.
@@ -253,7 +253,7 @@ See object filtering [examples](examples_object_filtering.md).
   - maxDistance: Maximum distance from the poker. Default is 100 meters.
   - minHeight: Minimum height difference from the poker.
   - maxHeight: Maximum height difference from the poker.
-  - data: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
+  - filter: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
 
 ### RPCs
 

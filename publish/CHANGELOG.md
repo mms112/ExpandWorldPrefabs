@@ -1,4 +1,5 @@
 - v1.41
+  - Changes the field `poke` and `objects` to use `filter` instead of `data` (old way still works).
   - Fixes multiple values not working for the field `data`.
   - Fixes the field `exec` not working with global triggers (like time).
   - Fixes GameObject and ItemDrop types not working for field parameters.

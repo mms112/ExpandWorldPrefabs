@@ -51,8 +51,19 @@ public class DataHelper
   }
   public static int GetHash(string name)
   {
+    var hash = name.GetStableHashCode();
+    if (name.Contains(','))
+    {
+      var tkv = name.Split([','], 3).Select(s => s.Trim()).ToArray();
+      if (tkv.Length > 2 && DataEntry.SupportedTypes.Contains(tkv[0]))
+      {
+        var entry = new DataEntry(tkv);
+        DataLoading.Add(hash, entry);
+        return hash;
+      }
+    }
     Get(name);
-    return name.GetStableHashCode();
+    return hash;
   }
 
   public static List<string>? GetValuesFromGroup(string group)
