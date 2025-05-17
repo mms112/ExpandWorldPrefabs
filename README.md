@@ -169,7 +169,7 @@ Containers can be filtered by items. This is done by using "items" from a data e
 - Items are checked in the same order as they are defined in the "items" list.
 - If item amount is set but items are not, then only the item count is checked.
 
-### Multiple filters
+### Multiple filters (P)
 
 There can be multiple required filters and banned filters. By default, each required filter and no banned filter must match.
 
