@@ -16,29 +16,11 @@ public class DataLoading
   public static Dictionary<int, DataEntry> Data = [];
   public static readonly Dictionary<int, List<string>> ValueGroups = [];
 
-  public static DataEntry Get(string name)
-  {
-    var hash = name.GetStableHashCode();
-    if (!Data.ContainsKey(hash))
-    {
-      try
-      {
-        Data[hash] = new DataEntry(name);
-      }
-      catch (Exception e)
-      {
-        if (name.Contains("=") || name.Length > 32)
-          throw new InvalidOperationException($"Can't load data value: {name}", e);
-        else
-          throw new InvalidOperationException($"Can't find data entry: {name}", e);
-      }
-    }
-    return Data[hash];
-  }
   public static void Add(int hash, DataEntry entry)
   {
     Data[hash] = entry;
   }
+  public static DataEntry? Get(string name) => Get(name.GetStableHashCode());
   public static DataEntry? Get(int hash) => Data.ContainsKey(hash) ? Data[hash] : null;
   public static bool TryGet(int hash, out DataEntry? entry)
   {

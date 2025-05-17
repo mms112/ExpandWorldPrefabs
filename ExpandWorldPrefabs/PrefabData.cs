@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Data;
 using Service;
 using UnityEngine;
@@ -116,13 +117,11 @@ public class Data
   [DefaultValue(null)]
   public string? bannedPlayerEvents;
   [DefaultValue(null)]
-  public string? filter = null;
-  [DefaultValue(null)]
   public string[]? filters = null;
   [DefaultValue(null)]
-  public string? bannedFilter = null;
-  [DefaultValue(null)]
   public string[]? bannedFilters = null;
+  [DefaultValue(null)]
+  public string? filterLimit = null;
   [DefaultValue(null)]
   public float? delay;
 
@@ -216,8 +215,7 @@ public class Info
   public float LocationDistance = 0f;
   public HashSet<string>? PlayerEvents;
   public HashSet<string>? BannedPlayerEvents;
-  public DataEntry? Filter;
-  public DataEntry? BannedFilter;
+  public Filters? Filters;
   public bool TriggerRules;
   public ObjectRpcInfo[]? ObjectRpcs;
   public ClientRpcInfo[]? ClientRpcs;
@@ -253,8 +251,8 @@ public class SpawnData
   public string? delay;
   [DefaultValue(null)]
   public string? triggerRules;
-
 }
+
 public class Spawn
 {
   private readonly IPrefabValue Prefab;
@@ -337,7 +335,7 @@ public class Object
   private readonly IFloatValue? MinHeightValue;
   private readonly IFloatValue? MaxHeightValue;
   private readonly IVector3Value? OffsetValue;
-  private readonly int Filter = 0;
+  private readonly Filters? filters;
   private readonly IIntValue WeightValue = new SimpleIntValue(1);
 
   public Object(ObjectData data)
@@ -358,10 +356,10 @@ public class Object
       OffsetValue = DataValue.Vector3(data.offset);
     if (data.weight != null)
       WeightValue = DataValue.Int(data.weight);
-    if (data.filter != null)
-      Filter = DataHelper.GetHash(data.filter);
+    if (data.filters != null || data.bannedFilters != null)
+      filters = new Filters(data.filters, data.bannedFilters, data.filterLimit);
     else if (data.data != null)
-      Filter = DataHelper.GetHash(data.data);
+      filters = new Filters([data.data], null, data.filterLimit);
   }
   public Object(string line)
   {
@@ -377,7 +375,7 @@ public class Object
       MaxDistanceValue = DataValue.Float(range.Max);
     }
     if (split.Count > 2)
-      Filter = DataHelper.GetHash(split[2]);
+      filters = new Filters([split[2]], null, null);
     if (split.Count > 3)
     {
       WeightValue = DataValue.Int(split[3]);
@@ -418,8 +416,8 @@ public class Object
     if (MinHeight != null && dy < MinHeight) return false;
     if (MaxHeight != null && dy > MaxHeight) return false;
 
-    if (Filter == 0) return true;
-    return DataHelper.Match(Filter, zdo, pars);
+    if (filters == null) return true;
+    return filters.Match(pars, zdo);
   }
 }
 
@@ -455,7 +453,11 @@ public class ObjectData
   [DefaultValue(null)]
   public string? data;
   [DefaultValue(null)]
-  public string? filter;
+  public string[]? filters;
+  [DefaultValue(null)]
+  public string[]? bannedFilters;
+  [DefaultValue(null)]
+  public string? filterLimit;
   [DefaultValue(null)]
   public string? weight;
 }
@@ -513,6 +515,62 @@ public class TerrainData
   public string? paintHeightCheck;
   [DefaultValue(null)]
   public string? paint;
+}
+
+
+public class Filters(string[]? filters, string[]? bannedFilters, string? filterLimit)
+{
+  // Default limit is that all positive filters must match.
+  public readonly IFloatValue? Limit = filterLimit == null ? new SimpleFloatValue(filters?.Length ?? 0f) : DataValue.Float(filterLimit);
+  public readonly Filter[] Values = [.. filters?.Select(f => new Filter(f, false)) ?? [], .. bannedFilters?.Select(f => new Filter(f, true)) ?? []];
+
+  public bool Match(Parameters parameters, ZDO zdo)
+  {
+    var limit = Limit?.Get(parameters);
+    if (limit == null) return false;
+    var totalWeight = Values.Sum(f => f.Match(parameters, zdo));
+    return limit <= totalWeight || Helper.Approx(totalWeight, limit.Value);
+  }
+}
+
+public class Filter
+{
+  public Filter(string filter, bool banned)
+  {
+    var split = Parse.ToList(filter);
+    // Data is either single name or type, key, value format.
+    // Last part can optionally be a weight.
+    if (split.Count == 2)
+    {
+      Weight = DataValue.Float(split[1]);
+      filter = split[0];
+    }
+    else if (split.Count == 4)
+    {
+      Weight = DataValue.Float(split[3]);
+      filter = string.Join(",", split.Take(3));
+    }
+    else
+    {
+      Weight = banned ? new SimpleFloatValue(10000) : new SimpleFloatValue(1);
+    }
+    Data = DataValue.String(filter);
+    Banned = banned;
+  }
+  public readonly IStringValue? Data;
+  public readonly bool Banned;
+  // Default behavior is that none of the banned filters must match (so default limit of banned filter must be very high).
+  public readonly IFloatValue? Weight;
+
+  public float Match(Parameters parameters, ZDO zdo)
+  {
+    var data = DataHelper.Get(Data, parameters);
+    if (data == null) return 0f;
+    if (!data.Match(parameters, zdo)) return 0f;
+    var weight = Weight?.Get(parameters) ?? 0f;
+    // Negative weight for banned means it counts towards failing the filter.
+    return Banned ? -weight : weight;
+  }
 }
 
 public class Terrain(TerrainData data)

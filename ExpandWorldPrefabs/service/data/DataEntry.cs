@@ -18,10 +18,6 @@ public class DataEntry
     InjectDataByDefault = true;
     Load(tkv);
   }
-  public DataEntry(string base64)
-  {
-    Load(new ZPackage(base64));
-  }
   public DataEntry(DataData data)
   {
     Load(data);
@@ -452,72 +448,7 @@ public class DataEntry
         throw new InvalidOperationException($"Unknown type {type}.");
     }
   }
-  public void Load(ZPackage pkg)
-  {
-    pkg.SetPos(0);
-    var num = pkg.ReadInt();
-    if ((num & 1) != 0)
-    {
-      Floats ??= [];
-      var count = pkg.ReadByte();
-      for (var i = 0; i < count; ++i)
-        Floats[pkg.ReadInt()] = new SimpleFloatValue(pkg.ReadSingle());
-    }
-    if ((num & 2) != 0)
-    {
-      Vecs ??= [];
-      var count = pkg.ReadByte();
-      for (var i = 0; i < count; ++i)
-        Vecs[pkg.ReadInt()] = new SimpleVector3Value(pkg.ReadVector3());
-    }
-    if ((num & 4) != 0)
-    {
-      Quats ??= [];
-      var count = pkg.ReadByte();
-      for (var i = 0; i < count; ++i)
-        Quats[pkg.ReadInt()] = new SimpleQuaternionValue(pkg.ReadQuaternion());
-    }
-    if ((num & 8) != 0)
-    {
-      Ints ??= [];
-      var count = pkg.ReadByte();
-      for (var i = 0; i < count; ++i)
-        Ints[pkg.ReadInt()] = new SimpleIntValue(pkg.ReadInt());
-    }
-    // Intended to come before strings (changing would break existing data).
-    if ((num & 64) != 0)
-    {
-      Longs ??= [];
-      var count = pkg.ReadByte();
-      for (var i = 0; i < count; ++i)
-        Longs[pkg.ReadInt()] = new SimpleLongValue(pkg.ReadLong());
-    }
-    if ((num & 16) != 0)
-    {
-      Strings ??= [];
-      var count = pkg.ReadByte();
-      for (var i = 0; i < count; ++i)
-        Strings[pkg.ReadInt()] = new SimpleStringValue(pkg.ReadString());
-    }
-    if ((num & 128) != 0)
-    {
-      ByteArrays ??= [];
-      var count = pkg.ReadByte();
-      for (var i = 0; i < count; ++i)
-        ByteArrays[pkg.ReadInt()] = pkg.ReadByteArray();
-    }
-    if ((num & 256) != 0)
-    {
-      ConnectionType = (ZDOExtraData.ConnectionType)pkg.ReadByte();
-      ConnectionHash = pkg.ReadInt();
-    }
-    if ((num & 512) != 0)
-      Persistent = new SimpleBoolValue(pkg.ReadBool());
-    if ((num & 1024) != 0)
-      Distant = new SimpleBoolValue(pkg.ReadBool());
-    if ((num & 2048) != 0)
-      Priority = (ZDO.ObjectType)pkg.ReadByte();
-  }
+
   public bool Match(Parameters pars, ZDO zdo)
   {
     if (Strings != null && Strings.Any(pair => pair.Value.Match(pars, GetString(zdo, pair.Key)) == false)) return false;

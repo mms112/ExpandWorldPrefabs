@@ -56,17 +56,46 @@ public class Yaml
         }
         objectsMode = false;
       }
-      if (line.StartsWith("  spawn: "))
+      // Some extra checks needed to not break if the spawn line has extra spaces or comments.
+      if (line.StartsWith("  spawn: ") && !line.Contains("#") && line.Trim().Length > 6)
       {
         // Convert to spawns list.
         result.Add("  spawns:");
         result.Add("  - " + line.Substring(9));
       }
-      else if (line.StartsWith("  swap: "))
+      else if (line.StartsWith("  swap: ") && !line.Contains("#") && line.Trim().Length > 5)
       {
         // Convert to swaps list.
         result.Add("  swaps:");
         result.Add("  - " + line.Substring(8));
+      }
+      else if (line.StartsWith("  filter:"))
+      {
+        // Convert to filters list.
+        result.Add("  filters:");
+        if (!line.Contains("#") && line.Trim().Length > 7)
+          result.Add("  - " + line.Substring(10));
+      }
+      else if (line.StartsWith("  bannedFilter:"))
+      {
+        // Convert to banned filters list.
+        result.Add("  bannedFilters:");
+        if (!line.Contains("#") && line.Trim().Length > 13)
+          result.Add("  - " + line.Substring(16));
+      }
+      else if (line.StartsWith("    filter:"))
+      {
+        // Convert to filters list.
+        result.Add("    filters:");
+        if (!line.Contains("#") && line.Trim().Length > 7)
+          result.Add("    - " + line.Substring(12));
+      }
+      else if (line.StartsWith("    bannedFilter: "))
+      {
+        // Convert to banned filters list.
+        result.Add("    bannedFilters:");
+        if (!line.Contains("#") && line.Trim().Length > 7)
+          result.Add("    - " + line.Substring(18));
       }
       else if (line.StartsWith("  objects:") || line.StartsWith("  bannedObjects:"))
       {

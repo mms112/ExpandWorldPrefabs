@@ -134,27 +134,71 @@ If a filter is not specified, it's not checked and is always considered valid.
   - You can use the parameter `<pdata_possibleEvents>` to print them.
 - bannedPlayerEvents: List of event ids. None must be possible for the player.
 
-### Data filters
+### Data filters (P)
 
-- filter: Data filter for the object. This can be a data entry or a single data value.
-  - Format for a single data value is `type, key, value`. Supported types are bool, int, hash, float and string.
-    - `filter: bool, boss, true` would apply only to boss creatures.
-    - `filter: string, Humanoid.m_name, Piggy` would apply only to creatures with name "Piggy".
-  - Ranges are supported for int and float.
-    - `filter: int, level, 2;3` would apply to creatures with 1 or 2 stars
-    - `filter: int, level, 0;1` is required for 1 star because 0 is the default value.
-  - Wildcards are suppored for strings.
-    - `filter: string, TamedName, *(S)*` would apply to pets with name containing "(S)".
-  - For type `repair`, the filter is also checked for the player who did the repair.
-    - Filter is valid if either the player or the object matches.
-  - Data type "items" can be used to filter containers.
-    - If item amount is not set, then the items must match exactly.
-    - If item amount is set, then at least that many items must match.
-    - Items are checked in the same order as they are defined in the "items" list.
-    - If item amount is set but items are not, then only the item count is checked.
-- filters: List of data value filters. All must match.
-- bannedFilter: Data filter that must not be true.
-- bannedFilters: List of data value filters. None must match.
+Filtering can be done based on object's data.
+
+- filter: Data filter that must match.
+- bannedFilter: Data filter that must not match.
+
+Filters can be either data entries or single data values.
+
+Format for a single data value is `type, key, value`. Supported types are bool, float, hash, int, quat, string and vec3.
+
+```yaml
+# This data entry must match.
+filter: coinStack
+# Creature must be a boss.
+filter: bool, boss, true
+# Creature must have 1-2 stars.
+filter: int, level, 2;3
+# Pet name must contain "(S)".
+filter: string, TamedName, *(S)*
+# This data entry must NOT match.
+bannedFilter: hasTakenDamage
+# Creature must NOT be named "Piggy".
+bannedFilter: string, Humanoid.m_name, Piggy
+```
+
+For type `repair`, the filter is also checked for the player who did the repair. Filter is valid if either the player or the object matches.
+
+Containers can be filtered by items. This is done by using "items" from a data entry.
+
+- If item amount is not set, then the items must match exactly.
+- If item amount is set, then at least that many items must match.
+- Items are checked in the same order as they are defined in the "items" list.
+- If item amount is set but items are not, then only the item count is checked.
+
+### Multiple filters
+
+There can be multiple required filters and banned filters. By default, each required filter and no banned filter must match.
+
+- filterLimit: Can be used to change how many filters must match.
+  - Default is the amount of required filters (all required filters must match).
+- filters: List of required data filters.
+  - Works same as the `filter` field.
+  - Format for a single data value is `type, key, value, weight`. Default weight is 1.
+  - Format for a data entry is `name, weight`. Default weight is 1.
+- bannedFilters: List of banned data filters.
+  - Works same as the `bannedFilter` field.
+  - Format for a single data value is `type, key, value, weight`. Default weight is 10000.
+  - Format for a data entry is `name, weight`. Default weight is 10000.
+  - Banned filters count negatively towards the limit.
+
+```yaml
+# Matches when a player is wearing at least 2 pieces of the bronze armor.
+filterLimit: 2
+filters: 
+# Bronze helmet counts as 2 pieces.
+- hash, HelmetItem, HelmetBronze, 2
+- hash, ChestItem, ArmorBronzeChest
+- hash, LegsItem, ArmorBronzeLegs
+# The player must not be wearing any iron armor.
+bannedFilters:
+- hash, HelmetItem, HelmetIron
+- hash, ChestItem, ArmorIronChest
+- hash, LegsItem, ArmorIronLegs
+```
 
 ### Object filters
 

@@ -62,8 +62,7 @@ public class InfoSelector
     var checkBannedObjects = linq.Any(d => d.BannedObjects != null);
     var checkLocations = linq.Any(d => d.Locations != null || d.BannedLocations != null);
     var checkPlayerEvents = linq.Any(d => d.PlayerEvents != null || d.BannedPlayerEvents != null);
-    var checkFilters = linq.Any(d => d.Filter != null);
-    var checkBannedFilters = linq.Any(d => d.BannedFilter != null);
+    var checkFilters = linq.Any(d => d.Filters != null);
     var checkPaint = linq.Any(d => d.MinPaint != null || d.MaxPaint != null);
     var checkTerrainHeight = linq.Any(d => d.MinTerrainHeight != null || d.MaxTerrainHeight != null);
     var checkAdmin = linq.Any(d => d.Admin != null);
@@ -160,16 +159,9 @@ public class InfoSelector
         return events.Any(ev => d.PlayerEvents.Contains(ev));
       })];
     }
-    if (checkFilters || checkBannedFilters)
+    if (checkFilters)
     {
-      if (checkFilters)
-      {
-        linq = [.. linq.Where(d => d.Filter == null || d.Filter.Match(parameters, zdo) || (source != null && d.Filter.Match(parameters, source)))];
-      }
-      if (checkBannedFilters)
-      {
-        linq = [.. linq.Where(d => d.BannedFilter == null || d.BannedFilter.Unmatch(parameters, zdo) || (source != null && d.BannedFilter.Unmatch(parameters, source)))];
-      }
+      linq = [.. linq.Where(d => d.Filters == null || d.Filters.Match(parameters, zdo))];
     }
     if (checkPaint)
     {

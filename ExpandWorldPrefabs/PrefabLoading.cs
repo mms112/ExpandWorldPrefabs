@@ -71,8 +71,9 @@ public class Loading
     var objects = data.objects == null ? null : ParseObjects(data.objects);
     var bannedObjects = data.bannedObjects == null ? null : ParseObjects(data.bannedObjects);
     var bannedObjectsLimit = ParseObjectsLimit(data.bannedObjectsLimit);
-    var filters = ParseFilters(data.filters ?? (data.filter == null ? [] : [data.filter]));
-    var bannedFilters = ParseFilters(data.bannedFilters ?? (data.bannedFilter == null ? [] : [data.bannedFilter]));
+
+    var filters = data.filters == null && data.bannedFilters == null ? null : new Filters(data.filters, data.bannedFilters, data.filterLimit);
+
     var legacyPokes = data.pokes == null ? null : ParseObjects(data.pokes);
     var pokes = data.poke == null ? null : ParsePokes(data.poke);
     var terrains = data.terrain == null ? null : data.terrain.Select(s => new Terrain(s)).ToArray();
@@ -159,8 +160,7 @@ public class Loading
         Objects = objects,
         BannedObjects = bannedObjects,
         BannedObjectsLimit = bannedObjectsLimit,
-        Filter = filters,
-        BannedFilter = bannedFilters,
+        Filters = filters,
         TriggerRules = triggerRules ?? false,
         ObjectRpcs = objectRpcs,
         ClientRpcs = clientRpcs,
@@ -189,66 +189,6 @@ public class Loading
   private static Spawn[] ParseSpawns(string[] spawns, float? delay, bool? triggerRules) => [.. spawns.Select(s => new Spawn(s, delay, triggerRules))];
   private static Spawn[] ParseSpawns(SpawnData[] spawns, float? delay, bool? triggerRules) => [.. spawns.Select(s => new Spawn(s, delay, triggerRules))];
 
-  private static DataEntry? ParseFilters(string[] filters)
-  {
-    if (filters.Length == 0)
-      return null;
-    if (filters.Length == 1 && Parse.ToList(filters[0]).Count == 1)
-      return DataLoading.Get(filters[0]);
-    DataEntry entry = new();
-    foreach (var filter in filters)
-      AddFilter(entry, filter);
-    return entry;
-  }
-  private static void AddFilter(DataEntry entry, string filter)
-  {
-    var split = Parse.ToList(filter);
-    if (split.Count < 3)
-    {
-      Log.Error($"Invalid filter: {filter}");
-      return;
-    }
-    var type = split[0].ToLowerInvariant();
-    var key = split[1].GetStableHashCode();
-    var value = string.Join(",", split.Skip(2));
-    if (type == "hash")
-    {
-      entry.Hashes ??= [];
-      entry.Hashes.Add(key, DataValue.Hash(value));
-      return;
-    }
-    if (type == "string")
-    {
-      entry.Strings ??= [];
-      entry.Strings.Add(key, DataValue.String(value));
-      return;
-    }
-    if (type == "bool")
-    {
-      entry.Bools ??= [];
-      entry.Bools.Add(key, DataValue.Bool(value));
-      return;
-    }
-    if (type == "int")
-    {
-      entry.Ints ??= [];
-      entry.Ints.Add(key, DataValue.Int(value));
-      return;
-    }
-    if (type == "float")
-    {
-      entry.Floats ??= [];
-      entry.Floats.Add(key, DataValue.Float(value));
-      return;
-    }
-    if (type == "long")
-    {
-      entry.Longs ??= [];
-      entry.Longs.Add(key, DataValue.Long(value));
-      return;
-    }
-    Log.Error($"Invalid filter type: {type}");
-  }
   private static Object[] ParseObjects(string[] objects) => [.. objects.Select(s => new Object(s))];
   private static Object[] ParseObjects(ObjectData[] objects) => [.. objects.Select(s => new Object(s))];
   private static Poke[] ParsePokes(PokeData[] objects) => [.. objects.Select(s => new Poke(s))];
