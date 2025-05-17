@@ -173,17 +173,18 @@ Containers can be filtered by items. This is done by using "items" from a data e
 
 There can be multiple required filters and banned filters. By default, each required filter and no banned filter must match.
 
+Format for a data entry is `name, weight`, with weight being optional.
+
+Format for a single data value is `type, key, value, weight`, with weight being optional.
+
 - filterLimit: Can be used to change how many filters must match.
-  - Default is the amount of required filters (all required filters must match).
+  - Default limit is the amount of required filters.
 - filters: List of required data filters.
-  - Works same as the `filter` field.
-  - Format for a single data value is `type, key, value, weight`. Default weight is 1.
-  - Format for a data entry is `name, weight`. Default weight is 1.
+  - Matching filters count positively towards the limit.
+  - Default weight is 1, which means all filters must match to reach the default limit.
 - bannedFilters: List of banned data filters.
-  - Works same as the `bannedFilter` field.
-  - Format for a single data value is `type, key, value, weight`. Default weight is 10000.
-  - Format for a data entry is `name, weight`. Default weight is 10000.
   - Banned filters count negatively towards the limit.
+  - Default weight is 10000, which causes any matching filter to fail the default limit.
 
 ```yaml
 # Matches when a player is wearing at least 2 pieces of the bronze armor.
