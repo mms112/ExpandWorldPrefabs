@@ -396,6 +396,7 @@ Following parameters are available to be used in the yaml file:
 - `<safeprefab>`: Original prefab id with underscores replaced by dashes.
   - This can be used as workaround because underscores split the prefab id as separate parameters.
 - `<zdo>`: Object id.
+- `<biome>`: Biome where the object is located.
 - `<x>`, `<y>` and `<z>`: Object center point.
 - `<pos>`: Object center point as x,z,y.
 - `<i>` and `<j>`: Object zone indices.

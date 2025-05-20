@@ -1,4 +1,5 @@
 - v1.42
+  - Adds a new parameter `<biome>` to get the biome of the object.
   - Adds a new field `filterLimit` to set how many filters must match.
   - Fixes comment or extra space at end of the fields `spawn` or `swap` breaking the file parsing.
   - Reworks the filtering system. Now multiple filters are checked separately, instead of being combined into a single check.

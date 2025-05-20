@@ -309,6 +309,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
       "<pname>" => GetPname(zdo),
       "<pchar>" => GetPchar(zdo),
       "<owner>" => zdo.GetOwner().ToString(),
+      "<biome>" => WorldGenerator.instance.GetBiome(zdo.m_position).ToString(),
       _ => null,
     };
 
