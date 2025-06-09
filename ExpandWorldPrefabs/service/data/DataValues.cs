@@ -51,6 +51,9 @@ public class DataValue
 
   public static IStringValue String(string values)
   {
+    // Quick hack for quoted strings.
+    if (values.Length > 2 && values[0] == '"' && values[values.Length - 1] == '"')
+      return new SimpleStringValue(values.Substring(1, values.Length - 2));
     var split = SplitWithValues(values);
     if (split.Length == 1 && !HasParameters(split[0]))
       return new SimpleStringValue(split[0]);

@@ -1,6 +1,7 @@
 - v1.43
   - Adds a field `bannedLocationDistance` so that different distance can be used for required and banned locations.
   - Changes the parameter `<hash_>` to also work for location ids.
+  - Fixes quoted strings being split up when used as "type, key, value" in the field `data`.
 
 - v1.42
   - Adds a new parameter `<biome>` to get the biome of the object.
