@@ -145,7 +145,8 @@ public class Loading
         // However if event is set, there must be a distance (the default value).
         // Zero distance means no check at all.
         EventDistance = data.eventDistance ?? (events.Count > 0 ? 100f : 0f),
-        LocationDistance = data.locationDistance,
+        LocationDistance = data.locationDistance ?? 0f,
+        BannedLocationDistance = data.bannedLocationDistance ?? data.locationDistance ?? 0f,
         Locations = locations,
         BannedLocations = bannedLocations,
         PlayerEvents = playerEvents,

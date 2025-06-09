@@ -121,8 +121,11 @@ If a filter is not specified, it's not checked and is always considered valid.
 - bannedKeys (P): List of saved custom data that must not be set.
   - The values are converted to lower case to match global keys behavior.
 - locations: List of location ids. At least one must be nearby.
-- bannedLocations: List of location ids. None must be nearby.
 - locationDistance (default: `0` meters): Search distance for nearby locations.
+  - If 0, uses the location exterior radius.
+  - This also affects banned locations, unless `bannedLocationDistance` is set.
+- bannedLocations: List of location ids. None must be nearby.
+- bannedLocationDistance (default: `0` meters): Search distance for nearby banned locations.
   - If 0, uses the location exterior radius.
 - events: List of event ids. At least one must be active nearby.
   - If set without `eventDistance`, the search distance is 100 meters.

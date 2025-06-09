@@ -108,45 +108,7 @@ public class InfoSelector
     if (checkLocations)
     {
       var zone = ZoneSystem.GetZone(pos);
-      linq = [.. linq.Where(d =>
-      {
-        if (d.Locations == null && d.BannedLocations == null) return true;
-        // +1 because the location can be at zone edge, so any distance can be on the next zone.
-        var di = (int)(d.LocationDistance / 64f) + 1;
-        var dj = (int)(d.LocationDistance / 64f) + 1;
-        var minI = zone.x - di;
-        var maxI = zone.x + di;
-        var minJ = zone.y - dj;
-        var maxJ = zone.y + dj;
-
-        if (d.BannedLocations != null)
-        {
-          for (int i = minI; i <= maxI; i++)
-          {
-            for (int j = minJ; j <= maxJ; j++)
-            {
-              var key = new Vector2i(i, j);
-              if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
-              if (!d.BannedLocations.Contains(loc.m_location.m_prefabName)) continue;
-              var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
-              if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return false;
-            }
-          }
-        }
-        if (d.Locations == null) return true;
-        for (int i = minI; i <= maxI; i++)
-        {
-          for (int j = minJ; j <= maxJ; j++)
-          {
-            var key = new Vector2i(i, j);
-            if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
-            if (!d.Locations.Contains(loc.m_location.m_prefabName)) continue;
-            var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
-            if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return true;
-          }
-        }
-        return false;
-      })];
+      linq = [.. linq.Where(d => CheckLocations(d, pos, zone))];
     }
     if (checkPlayerEvents)
     {
@@ -171,6 +133,53 @@ public class InfoSelector
         (d.MaxPaint == null || (d.MaxPaint.Value.b >= paint.b && d.MaxPaint.Value.g >= paint.g && d.MaxPaint.Value.r >= paint.r && d.MaxPaint.Value.a >= paint.a)))];
     }
     return Randomize([.. linq], parameters);
+  }
+  private static bool CheckLocations(Info d, Vector3 pos, Vector2i zone) => CheckBannedLocations(d, pos, zone) && CheckRequiredLocations(d, pos, zone);
+  private static bool CheckBannedLocations(Info d, Vector3 pos, Vector2i zone)
+  {
+    if (d.BannedLocations == null) return true;
+    // +1 because the location can be at zone edge, so any distance can be on the next zone.
+    int di = (int)(d.BannedLocationDistance / 64f) + 1;
+    int dj = (int)(d.BannedLocationDistance / 64f) + 1;
+    int minI = zone.x - di;
+    int maxI = zone.x + di;
+    int minJ = zone.y - dj;
+    int maxJ = zone.y + dj;
+    for (int i = minI; i <= maxI; i++)
+    {
+      for (int j = minJ; j <= maxJ; j++)
+      {
+        var key = new Vector2i(i, j);
+        if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
+        if (!d.BannedLocations.Contains(loc.m_location.m_prefabName)) continue;
+        var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
+        if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return false;
+      }
+    }
+    return true;
+  }
+  private static bool CheckRequiredLocations(Info d, Vector3 pos, Vector2i zone)
+  {
+    if (d.Locations == null) return true;
+    // +1 because the location can be at zone edge, so any distance can be on the next zone.
+    int di = (int)(d.LocationDistance / 64f) + 1;
+    int dj = (int)(d.LocationDistance / 64f) + 1;
+    int minI = zone.x - di;
+    int maxI = zone.x + di;
+    int minJ = zone.y - dj;
+    int maxJ = zone.y + dj;
+    for (int i = minI; i <= maxI; i++)
+    {
+      for (int j = minJ; j <= maxJ; j++)
+      {
+        var key = new Vector2i(i, j);
+        if (!ZoneSystem.instance.m_locationInstances.TryGetValue(key, out var loc)) continue;
+        if (!d.Locations.Contains(loc.m_location.m_prefabName)) continue;
+        var dist = d.LocationDistance == 0 ? loc.m_location.m_exteriorRadius : d.LocationDistance;
+        if (Utils.DistanceXZ(loc.m_position, pos) <= dist) return true;
+      }
+    }
+    return false;
   }
   private static Info? Randomize(Info[] valid, Parameters parameters)
   {

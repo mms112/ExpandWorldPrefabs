@@ -108,10 +108,12 @@ public class Data
   public string? bannedObjectsLimit;
   [DefaultValue(null)]
   public string? locations;
+  [DefaultValue(null)]
+  public float? locationDistance = null;
   [DefaultValue("")]
   public string? bannedLocations;
-  [DefaultValue(0f)]
-  public float locationDistance = 0f;
+  [DefaultValue(null)]
+  public float? bannedLocationDistance = null;
   [DefaultValue(null)]
   public string? playerEvents;
   [DefaultValue(null)]
@@ -213,6 +215,7 @@ public class Info
   public HashSet<string>? Locations;
   public HashSet<string>? BannedLocations;
   public float LocationDistance = 0f;
+  public float BannedLocationDistance = 0f;
   public HashSet<string>? PlayerEvents;
   public HashSet<string>? BannedPlayerEvents;
   public Filters? Filters;

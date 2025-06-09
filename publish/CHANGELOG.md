@@ -1,3 +1,6 @@
+- v1.43
+  - Adds a field `bannedLocationDistance` so that different distance can be used for required and banned locations.
+
 - v1.42
   - Adds a new parameter `<biome>` to get the biome of the object.
   - Adds a new field `filterLimit` to set how many filters must match.
