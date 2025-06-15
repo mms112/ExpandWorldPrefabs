@@ -152,8 +152,6 @@ public class Manager
     HandleCreated.Skip = !triggerRules;
     var zdo = entry.Create();
     HandleCreated.Skip = false;
-    if (zdo == null) return null;
-    ZdoEntry.FixOwner(zdo);
     return zdo;
   }
 
@@ -206,9 +204,8 @@ public class Manager
   public static void CreateDrop(ZDO source, GameObject item)
   {
     var hash = item.name.GetStableHashCode();
-    var zdo = ZdoEntry.Spawn(hash, item.transform.position, Vector3.zero);
+    var zdo = ZdoEntry.Spawn(hash, item.transform.position, Vector3.zero, source.GetOwner());
     if (zdo == null) return;
-    ZdoEntry.FixOwner(zdo, source.GetOwner());
   }
   public static void SpawnItems(string dataName, ZDO zdo, Parameters pars)
   {

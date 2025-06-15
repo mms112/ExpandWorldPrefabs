@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -396,11 +397,8 @@ public class ItemValue(ItemData data)
     var pos = source.m_position;
     if (prefab.GetComponent<ItemDrop>())
     {
-      var zdo = ZdoEntry.Spawn(RolledPrefab, pos, Vector3.zero);
+      var zdo = ZdoEntry.Spawn(RolledPrefab, pos, Vector3.zero, source.GetOwner());
       if (zdo == null) return;
-      // When item drop is created by someone else, the body is set to sleep.
-      // Body awakens when ownership changes. So starting with zero allows server to reassign ownership.
-      zdo.SetOwnerInternal(0);
       zdo.Set(ZDOVars.s_durability, Durability?.Get(pars) ?? 100f);
       zdo.Set(ZDOVars.s_stack, RolledStack);
       zdo.Set(ZDOVars.s_quality, Quality?.Get(pars) ?? 1);
@@ -425,9 +423,8 @@ public class ItemValue(ItemData data)
     {
       for (var i = 0; i < RolledStack; ++i)
       {
-        var zdo = ZdoEntry.Spawn(RolledPrefab, pos, Vector3.zero);
+        var zdo = ZdoEntry.Spawn(RolledPrefab, pos, Vector3.zero, source.GetOwner());
         if (zdo == null) return;
-        ZdoEntry.FixOwner(zdo, source.GetOwner());
         if (prefab.GetComponent<Character>())
           zdo.Set(ZDOVars.s_level, Quality?.Get(pars) ?? 1);
         if (CustomData != null)
