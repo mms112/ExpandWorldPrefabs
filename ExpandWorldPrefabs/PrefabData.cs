@@ -176,7 +176,7 @@ public class Info
   public IBoolValue? Remove;
   public bool Regenerate = false;
   public IFloatValue? RemoveDelay;
-  public IBoolValue? Drops;
+  public IStringValue? Drops;
   public IStringValue? Data;
   public bool? InjectData;
   public string[] Commands = [];

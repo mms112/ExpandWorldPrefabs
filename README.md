@@ -146,7 +146,7 @@ Filtering can be done based on object's data.
 
 Filters can be either data entries or single data values.
 
-Format for a single data value is `type, key, value`. Supported types are bool, float, hash, int, quat, string and vec3.
+Format for a single data value is `type, key, value`. Supported types are bool, float, hash, int, quat, string and vec.
 
 ```yaml
 # This data entry must match.
@@ -218,7 +218,7 @@ bannedFilters:
   - minHeight: Minimum height difference to the object.
   - maxHeight: Maximum height difference to the object.
   - weight: How much this object counts towards the `objectsLimit`. Default is 1.  
-  - filter: Entry in the `data.yaml` that can be used as filter. All values must match.
+  - Data filters like `filter`, `filters`, `bannedFilter` and `bannedFilters` can be used to filter the object.
 - bannedObjectsLimit: How many of the `bannedObjects` must not match (`min` or `min-max`).
   - If not set, then all of the entries must not be found.
   - If set, that many `bannedObjects` must not be found. Each filter can be matched by multiple entries.
@@ -289,7 +289,10 @@ See object filtering [examples](examples_object_filtering.md).
 
 - poke (P): List of poke objects:
   - prefab: Target object id or value group.
-  - self: If true, the object itself is poked. Prefab is not checked.
+  - self: Affects how the triggering object is poked.
+    - If not set, the object itself can be poked like any other object.
+    - If true, only the object itself is poked. Prefab is not checked.
+    - If false, the object itself is never poked.
   - target: Specific ZDO object. Prefab is not checked.
   - parameter: Custom value used as the parameter for the `poke` type.
   - evaluate: If false, math expressions are not calculated in the parameter. Default is true.
@@ -301,7 +304,7 @@ See object filtering [examples](examples_object_filtering.md).
   - maxDistance: Maximum distance from the poker. Default is 100 meters.
   - minHeight: Minimum height difference from the poker.
   - maxHeight: Maximum height difference from the poker.
-  - filter: Optional. Entry in the `data.yaml` to be used as filter. All data entries must match.
+  - Data filters like `filter`, `filters`, `bannedFilter` and `bannedFilters` can be used to filter the affected objects.
 
 ### RPCs
 

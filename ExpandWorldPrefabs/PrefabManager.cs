@@ -48,8 +48,11 @@ public class Manager
     HandleSpawns(info, zdo, parameters, remove, regenerate, data);
     Poke(info, zdo, parameters);
     Terrain(info, zdo, parameters);
-    if (info.Drops?.GetBool(parameters) == true)
+    var drops = info.Drops?.Get(parameters);
+    if (drops != null && drops == "true")
       SpawnDrops(zdo);
+    else if (drops != null && drops != "false")
+      SpawnItems(drops, zdo, parameters);
     // Original object was regenerated to apply data.
     if (remove || regenerate)
       DelayedRemove.Add(info.RemoveDelay?.Get(parameters) ?? 0f, zdo, remove && info.TriggerRules);
@@ -150,43 +153,27 @@ public class Manager
     var zdo = entry.Create();
     HandleCreated.Skip = false;
     if (zdo == null) return null;
-    FixOwner(zdo);
+    ZdoEntry.FixOwner(zdo);
     return zdo;
   }
 
-  private static void FixOwner(ZDO zdo)
-  {
-    // Some client should always be the owner so that creatures are initialized correctly (for example max health from stars).
-    // Things work slightly better when the server doesn't have ownership (for example max health from stars).
-
-    // During ghost init, objects are meant to be unloaded so setting owner could cause issues.
-    if (ZNetView.m_ghostInit) return;
-    // When single player, the owner is always the client.
-    // When self-hosted, things might not work but can be fixed later if needed.
-    if (!ZNet.instance.IsDedicated()) return;
-    // For client spawns, the original owner can be just used.
-    if (zdo.GetOwner() != ZDOMan.instance.m_sessionID) return;
-
-    var closestClient = ZDOMan.instance.m_peers.OrderBy(p => Utils.DistanceXZ(p.m_peer.m_refPos, zdo.m_position)).FirstOrDefault(p => p.m_peer.m_uid != zdo.GetOwner());
-    zdo.SetOwnerInternal(closestClient?.m_peer.m_uid ?? 0);
-  }
 
   public static void SpawnDrops(ZDO zdo)
   {
     if (ZNetScene.instance.m_instances.ContainsKey(zdo))
     {
-      SpawnDrops(ZNetScene.instance.m_instances[zdo].gameObject);
+      SpawnDrops(zdo, ZNetScene.instance.m_instances[zdo].gameObject);
     }
     else
     {
       var obj = ZNetScene.instance.CreateObject(zdo);
       obj.GetComponent<ZNetView>().m_ghost = true;
       ZNetScene.instance.m_instances.Remove(zdo);
-      SpawnDrops(obj);
+      SpawnDrops(zdo, obj);
       UnityEngine.Object.Destroy(obj);
     }
   }
-  private static void SpawnDrops(GameObject obj)
+  private static void SpawnDrops(ZDO source, GameObject obj)
   {
     HandleCreated.Skip = true;
     if (obj.TryGetComponent<DropOnDestroyed>(out var drop))
@@ -205,17 +192,34 @@ public class Manager
     {
       var items = tree.m_dropWhenDestroyed.GetDropList();
       foreach (var item in items)
-        UnityEngine.Object.Instantiate(item, obj.transform.position, Quaternion.identity);
+        CreateDrop(source, item);
     }
     if (obj.TryGetComponent<TreeLog>(out var log))
     {
       var items = log.m_dropWhenDestroyed.GetDropList();
       foreach (var item in items)
-        UnityEngine.Object.Instantiate(item, obj.transform.position, Quaternion.identity);
+        CreateDrop(source, item);
     }
     HandleCreated.Skip = false;
   }
 
+  public static void CreateDrop(ZDO source, GameObject item)
+  {
+    var hash = item.name.GetStableHashCode();
+    var zdo = ZdoEntry.Spawn(hash, item.transform.position, Vector3.zero);
+    if (zdo == null) return;
+    ZdoEntry.FixOwner(zdo, source.GetOwner());
+  }
+  public static void SpawnItems(string dataName, ZDO zdo, Parameters pars)
+  {
+    var data = DataHelper.Get(dataName);
+    if (data == null) return;
+    var items = data.GenerateItems(pars, new(10000, 10000));
+    HandleCreated.Skip = true;
+    foreach (var item in items)
+      item.Spawn(zdo, pars);
+    HandleCreated.Skip = false;
+  }
   public static void Poke(Info info, ZDO zdo, Parameters pars)
   {
     var pos = zdo.m_position;
@@ -233,11 +237,11 @@ public class Manager
       if (poke.Evaluate?.GetBool(pars) != false)
         pokeParameter = Evaluate(pokeParameter);
       var delay = poke.Delay?.Get(pars) ?? 0f;
-      var self = poke.Self?.GetBool(pars) == true;
+      var self = poke.Self?.GetBool(pars);
       var target = poke.Target?.Get(pars);
-      if (self || target != null)
+      if (self == true || target != null)
       {
-        if (self)
+        if (self == true)
           DelayedPoke.Add(delay, zdo, pokeParameter);
         if (target != null)
         {
@@ -249,6 +253,7 @@ public class Manager
       else
       {
         var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, rot, pars);
+        if (self == false) zdos = [.. zdos.Where(z => z != zdo)];
         DelayedPoke.Add(delay, zdos, pokeParameter);
       }
 

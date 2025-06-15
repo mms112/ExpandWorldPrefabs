@@ -385,7 +385,70 @@ public class ItemValue(ItemData data)
     pkg.Write(WorldLevel?.Get(pars) ?? 0);
     pkg.Write(PickedUp?.GetBool(pars) ?? false);
   }
-
+  public void Spawn(ZDO source, Parameters pars)
+  {
+    var prefab = ZNetScene.instance.GetPrefab(RolledPrefab);
+    if (prefab == null)
+    {
+      Log.Error($"Can't spawn missing drop: {RolledPrefab}");
+      return;
+    }
+    var pos = source.m_position;
+    if (prefab.GetComponent<ItemDrop>())
+    {
+      var zdo = ZdoEntry.Spawn(RolledPrefab, pos, Vector3.zero);
+      if (zdo == null) return;
+      // When item drop is created by someone else, the body is set to sleep.
+      // Body awakens when ownership changes. So starting with zero allows server to reassign ownership.
+      zdo.SetOwnerInternal(0);
+      zdo.Set(ZDOVars.s_durability, Durability?.Get(pars) ?? 100f);
+      zdo.Set(ZDOVars.s_stack, RolledStack);
+      zdo.Set(ZDOVars.s_quality, Quality?.Get(pars) ?? 1);
+      zdo.Set(ZDOVars.s_variant, Variant?.Get(pars) ?? 0);
+      zdo.Set(ZDOVars.s_crafterID, CrafterID?.Get(pars) ?? 0L);
+      zdo.Set(ZDOVars.s_crafterName, CrafterName?.Get(pars) ?? "");
+      zdo.Set(ZDOVars.s_dataCount, CustomData?.Count ?? 0);
+      int num = 0;
+      if (CustomData != null)
+      {
+        foreach (var kvp in CustomData)
+        {
+          zdo.Set(string.Format("data_{0}", num), kvp.Key);
+          zdo.Set(string.Format("data__{0}", num), kvp.Value.Get(pars) ?? "");
+          num += 1;
+        }
+      }
+      zdo.Set(ZDOVars.s_worldLevel, WorldLevel?.Get(pars) ?? 0);
+      zdo.Set(ZDOVars.s_pickedUp, PickedUp?.GetBool(pars) ?? false);
+    }
+    else
+    {
+      for (var i = 0; i < RolledStack; ++i)
+      {
+        var zdo = ZdoEntry.Spawn(RolledPrefab, pos, Vector3.zero);
+        if (zdo == null) return;
+        ZdoEntry.FixOwner(zdo, source.GetOwner());
+        if (prefab.GetComponent<Character>())
+          zdo.Set(ZDOVars.s_level, Quality?.Get(pars) ?? 1);
+        if (CustomData != null)
+        {
+          foreach (var kvp in CustomData)
+            LoadCustomData(zdo, pars, kvp);
+        }
+      }
+    }
+  }
+  private void LoadCustomData(ZDO zdo, Parameters pars, KeyValuePair<string, IStringValue> kvp)
+  {
+    if (kvp.Key == "data")
+    {
+      var data = DataHelper.Get(kvp.Value.Get(pars) ?? "");
+      if (data == null) return;
+      ZdoEntry entry = new(zdo);
+      entry.Load(data, pars);
+      entry.Write(zdo);
+    }
+  }
   public void AddTo(Parameters pars, Inventory inv)
   {
     var stack = Stack?.Get(pars) ?? 1;

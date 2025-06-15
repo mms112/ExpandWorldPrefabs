@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
 
@@ -33,25 +34,58 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
 
   public ZDO? Create()
   {
-    if (Prefab == 0) return null;
-    var prefab = ZNetScene.instance.GetPrefab(Prefab);
-    if (!prefab)
-    {
-      Log.Error($"Can't spawn missing prefab: {Prefab}");
-      return null;
-    }
-    // Prefab hash is used to check whether to trigger rules.
-    var zdo = ZDOMan.instance.CreateNewZDO(Position, Prefab);
-    var view = prefab.GetComponent<ZNetView>();
-    zdo.m_prefab = Prefab;
-    zdo.Persistent = view.m_persistent;
-    zdo.Distant = view.m_distant;
-    zdo.Type = view.m_type;
+    var zdo = Spawn(Prefab, Position, Rotation);
+    if (zdo == null) return null;
     zdo.SetOwnerInternal(Owner);
     Write(zdo);
     return zdo;
   }
 
+  // Helper function to ensure everything is initialized correctly.
+  // Normally this is done by ZNetView which is not available purely server side.
+  public static ZDO? Spawn(int prefab, Vector3 position, Vector3 rotation)
+  {
+    if (prefab == 0) return null;
+    var prefabObj = ZNetScene.instance.GetPrefab(prefab);
+    if (!prefabObj)
+    {
+      Log.Error($"Can't spawn missing prefab: {prefab}");
+      return null;
+    }
+    // Prefab hash is used to check whether to trigger rules.
+    var zdo = ZDOMan.instance.CreateNewZDO(position, prefab);
+    var view = prefabObj.GetComponent<ZNetView>();
+    zdo.m_prefab = prefab;
+    zdo.m_rotation = rotation;
+    zdo.Persistent = view.m_persistent;
+    zdo.Distant = view.m_distant;
+    zdo.Type = view.m_type;
+    return zdo;
+  }
+
+  public static void FixOwner(ZDO zdo, long? preferredOwner = null)
+  {
+    // Some client should always be the owner so that creatures are initialized correctly (for example max health from stars).
+    // Things work slightly better when the server doesn't have ownership (for example max health from stars).
+
+    // During ghost init, objects are meant to be unloaded so setting owner could cause issues.
+    if (ZNetView.m_ghostInit) return;
+    // When single player, the owner is always the client.
+    // When self-hosted, things might not work but can be fixed later if needed.
+    if (!ZNet.instance.IsDedicated()) return;
+    // For client spawns, the original owner can be just used.
+    if (zdo.GetOwner() != ZDOMan.instance.m_sessionID) return;
+
+    if (preferredOwner.HasValue)
+    {
+      zdo.SetOwnerInternal(preferredOwner.Value);
+    }
+    else
+    {
+      var closestClient = ZDOMan.instance.m_peers.OrderBy(p => Utils.DistanceXZ(p.m_peer.m_refPos, zdo.m_position)).FirstOrDefault(p => p.m_peer.m_uid != zdo.GetOwner());
+      zdo.SetOwnerInternal(closestClient?.m_peer.m_uid ?? 0);
+    }
+  }
   public void Load(DataEntry data, Parameters pars)
   {
     data.RollItems(pars);

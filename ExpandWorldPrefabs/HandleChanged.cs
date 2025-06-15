@@ -24,7 +24,7 @@ public class HandleChanged
     patch = AccessTools.Method(typeof(HandleChanged), nameof(HandleLong));
     harmony.Patch(method, prefix: new HarmonyMethod(patch));
     method = AccessTools.Method(typeof(ZDOExtraData), nameof(ZDOExtraData.Set), [typeof(ZDOID), typeof(int), typeof(Vector3)]);
-    patch = AccessTools.Method(typeof(HandleChanged), nameof(HandleVec3));
+    patch = AccessTools.Method(typeof(HandleChanged), nameof(HandleVec));
     harmony.Patch(method, prefix: new HarmonyMethod(patch));
     method = AccessTools.Method(typeof(ZDOExtraData), nameof(ZDOExtraData.Set), [typeof(ZDOID), typeof(int), typeof(Quaternion)]);
     patch = AccessTools.Method(typeof(HandleChanged), nameof(HandleQuaternion));
@@ -117,7 +117,7 @@ public class HandleChanged
     if (prev == value) return;
     ChangedZDOs.Add(new(zdo, ZdoHelper.ReverseHash(hash), value.ToString(), prev.ToString()));
   }
-  private static void HandleVec3(ZDOID zid, int hash, Vector3 value)
+  private static void HandleVec(ZDOID zid, int hash, Vector3 value)
   {
     if (!TrackedHashes.TryGetValue(hash, out var tracked)) return;
     if (!ZDOMan.instance.m_objectsByID.TryGetValue(zid, out var zdo)) return;

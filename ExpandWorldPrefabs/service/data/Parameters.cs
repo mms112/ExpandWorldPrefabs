@@ -353,7 +353,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
      "long" => GetLong(value, defaultValue).ToString(CultureInfo.InvariantCulture),
      "bool" => GetBool(value, defaultValue) ? "true" : "false",
      "hash" => GetHash(value, defaultValue),
-     "vec" => DataEntry.PrintVectorXZY(GetVec3(value, defaultValue)),
+     "vec" => DataEntry.PrintVectorXZY(GetVec(value, defaultValue)),
      "quat" => DataEntry.PrintAngleYXZ(GetQuaternion(value, defaultValue)),
      "byte" => Convert.ToBase64String(zdo.GetByteArray(value)),
      "zdo" => zdo.GetZDOID(value).ToString(),
@@ -377,7 +377,7 @@ public class ObjectParameters(string prefab, string arg, ZDO zdo) : Parameters(p
     var zdoValue = zdo.GetInt(value);
     return ZNetScene.instance.GetPrefab(zdoValue)?.name ?? ZoneSystem.instance.GetLocation(zdoValue)?.m_prefabName ?? defaultValue;
   }
-  private Vector3 GetVec3(string value, string defaultValue) => ZdoHelper.GetVec3(zdo, value, defaultValue);
+  private Vector3 GetVec(string value, string defaultValue) => ZdoHelper.GetVec(zdo, value, defaultValue);
   private Quaternion GetQuaternion(string value, string defaultValue) => ZdoHelper.GetQuaternion(zdo, value, defaultValue);
   private string GetItem(string value, string defaultValue)
   {

@@ -393,6 +393,7 @@ public class DataEntry
     "hash",
     "long",
     "string",
+    "vec",
     "vec3",
     "quat",
   ];
@@ -436,6 +437,7 @@ public class DataEntry
         Strings ??= [];
         Strings[ZdoHelper.Hash(key)] = DataValue.String(value);
         break;
+      case "vec":
       case "vec3":
         Vecs ??= [];
         Vecs[ZdoHelper.Hash(key)] = DataValue.Vector3(value);
@@ -457,7 +459,7 @@ public class DataEntry
     if (Longs != null && Longs.Any(pair => pair.Value.Match(pars, GetLong(zdo, pair.Key)) == false)) return false;
     if (Bools != null && Bools.Any(pair => pair.Value.Match(pars, GetBool(zdo, pair.Key)) == false)) return false;
     if (Hashes != null && Hashes.Any(pair => pair.Value.Match(pars, GetInt(zdo, pair.Key)) == false)) return false;
-    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, GetVec3(zdo, pair.Key)) == false)) return false;
+    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, GetVec(zdo, pair.Key)) == false)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, GetQuaternion(zdo, pair.Key)) == false)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == false)) return false;
     if (Persistent != null && Persistent.Match(pars, zdo.Persistent) == false) return false;
@@ -496,7 +498,7 @@ public class DataEntry
     if (Longs != null && Longs.Any(pair => pair.Value.Match(pars, GetLong(zdo, pair.Key)) == true)) return false;
     if (Bools != null && Bools.Any(pair => pair.Value.Match(pars, GetBool(zdo, pair.Key)) == true)) return false;
     if (Hashes != null && Hashes.Any(pair => pair.Value.Match(pars, GetInt(zdo, pair.Key)) == true)) return false;
-    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, GetVec3(zdo, pair.Key)) == true)) return false;
+    if (Vecs != null && Vecs.Any(pair => pair.Value.Match(pars, GetVec(zdo, pair.Key)) == true)) return false;
     if (Quats != null && Quats.Any(pair => pair.Value.Match(pars, GetQuaternion(zdo, pair.Key)) == true)) return false;
     if (ByteArrays != null && ByteArrays.Any(pair => pair.Value.SequenceEqual(zdo.GetByteArray(pair.Key)) == true)) return false;
     if (Persistent != null && Persistent.Match(pars, zdo.Persistent) == true) return false;
@@ -532,7 +534,7 @@ public class DataEntry
   private int GetInt(ZDO zdo, int key) => ZdoHelper.TryGetInt(zdo, key) ?? 0;
   private long GetLong(ZDO zdo, int key) => ZdoHelper.TryGetLong(zdo, key) ?? 0L;
   private bool GetBool(ZDO zdo, int key) => ZdoHelper.TryGetBool(zdo, key) ?? false;
-  private Vector3 GetVec3(ZDO zdo, int key) => ZdoHelper.TryGetVec3(zdo, key) ?? Vector3.zero;
+  private Vector3 GetVec(ZDO zdo, int key) => ZdoHelper.TryGetVec(zdo, key) ?? Vector3.zero;
   private Quaternion GetQuaternion(ZDO zdo, int key) => ZdoHelper.TryGetQuaternion(zdo, key) ?? Quaternion.identity;
 
   public static string PrintVectorXZY(Vector3 vector)

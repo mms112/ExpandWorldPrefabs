@@ -16,14 +16,14 @@ public static class ZdoHelper
   public static int GetInt(ZDO zdo, string value, string defaultValue) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(Hash(value), out var i) ? i : GetIntField(zdo.m_prefab, value, defaultValue);
   public static long GetLong(ZDO zdo, string value, string defaultValue) => ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(Hash(value), out var l) ? l : GetLongField(zdo.m_prefab, value, defaultValue);
   public static bool GetBool(ZDO zdo, string value, string defaultValue) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(Hash(value), out var b) ? b > 0 : GetBoolField(zdo.m_prefab, value, defaultValue);
-  public static Vector3 GetVec3(ZDO zdo, string value, string defaultValue) => ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(Hash(value), out var v) ? v : GetVecField(zdo.m_prefab, value, defaultValue);
+  public static Vector3 GetVec(ZDO zdo, string value, string defaultValue) => ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(Hash(value), out var v) ? v : GetVecField(zdo.m_prefab, value, defaultValue);
   public static Quaternion GetQuaternion(ZDO zdo, string value, string defaultValue) => ZDOExtraData.s_quats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(Hash(value), out var q) ? q : GetQuatField(zdo.m_prefab, value, defaultValue);
   public static string? TryGetString(ZDO zdo, int value) => ZDOExtraData.s_strings.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var str) ? str : TryGetStringField(zdo.m_prefab, value);
   public static float? TryGetFloat(ZDO zdo, int value) => ZDOExtraData.s_floats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var f) ? f : TryGetFloatField(zdo.m_prefab, value);
   public static int? TryGetInt(ZDO zdo, int value) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var i) ? i : TryGetIntField(zdo.m_prefab, value);
   public static long? TryGetLong(ZDO zdo, int value) => ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var l) ? l : TryGetLongField(zdo.m_prefab, value);
   public static bool? TryGetBool(ZDO zdo, int value) => ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var b) ? b > 0 : TryGetBoolField(zdo.m_prefab, value);
-  public static Vector3? TryGetVec3(ZDO zdo, int value) => ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var v) ? v : TryGetVecField(zdo.m_prefab, value);
+  public static Vector3? TryGetVec(ZDO zdo, int value) => ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var v) ? v : TryGetVecField(zdo.m_prefab, value);
   public static Quaternion? TryGetQuaternion(ZDO zdo, int value) => ZDOExtraData.s_quats.TryGetValue(zdo.m_uid, out var data) && data.TryGetValue(value, out var q) ? q : TryGetQuatField(zdo.m_prefab, value);
 
   private static string GetStringField(int prefabHash, string value, string defaultValue) => GetField(prefabHash, value) is string s ? s : defaultValue;

@@ -113,7 +113,7 @@ public class Loading
         Remove = remove == null ? data.remove == null ? null : DataValue.Bool(data.remove) : new SimpleBoolValue(remove.Value),
         Regenerate = d != "" || data.addItems != "" || data.removeItems != "",
         RemoveDelay = data.removeDelay == null ? null : DataValue.Float(data.removeDelay),
-        Drops = t.Type == ActionType.Destroy || data.drops == null ? null : DataValue.Bool(data.drops),
+        Drops =  data.drops == null ? null : DataValue.String(data.drops),
         Spawns = spawns,
         Swaps = swaps,
         Data = DataValue.String(d),
