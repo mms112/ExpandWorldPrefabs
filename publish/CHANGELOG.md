@@ -3,6 +3,7 @@
   - Adds support of false value to the poke field `self` to ignore the object itself.
   - Changes the parameter `<hash_>` to also work for location ids.
   - Fixes quoted strings being split up when used as "type, key, value" in the field `data`.
+  - Fixes field value queries not checking child objects (for example Boat chests).
 
 - v1.42
   - Adds a new parameter `<biome>` to get the biome of the object.

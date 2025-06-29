@@ -47,8 +47,7 @@ public static class ZdoHelper
     if (kvp.Value == "") return null;
     var prefab = ZNetScene.instance.GetPrefab(prefabHash);
     if (prefab == null) return null;
-    // Reflection to get the component and field.
-    var component = prefab.GetComponent(kvp.Key);
+    var component = FindComponent(prefab, kvp.Key);
     if (component == null) return null;
     var fields = kvp.Value.Split('.');
     object result = component;
@@ -62,6 +61,23 @@ public static class ZdoHelper
     if (result is GameObject go) return go.name;
     if (result is ItemDrop itemDrop) return itemDrop.gameObject.name;
     return result;
+  }
+  private static Component? FindComponent(GameObject obj, string name)
+  {
+    obj.GetComponentsInChildren(ZNetView.m_tempComponents);
+    foreach (var monoBehaviour in ZNetView.m_tempComponents)
+    {
+      if (monoBehaviour.GetType().Name == name)
+      {
+        return monoBehaviour;
+      }
+    }
+    foreach (Transform child in obj.transform)
+    {
+      var component = FindComponent(child.gameObject, name);
+      if (component != null) return component;
+    }
+    return null;
   }
 
 
