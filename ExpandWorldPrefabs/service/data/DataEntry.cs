@@ -41,7 +41,6 @@ public class DataEntry
   public Dictionary<int, byte[]>? ByteArrays;
   public List<ItemValue>? Items;
   public Vector2i? ContainerSize;
-  private Vector2i GetContainerSize() => ContainerSize ?? new(4, 2);
   public IIntValue? ItemAmount;
   public ZDOExtraData.ConnectionType? ConnectionType;
   public int ConnectionHash = 0;
@@ -565,11 +564,12 @@ public class DataEntry
     return (T)(object)value;
   }
 
-  public void RollItems(Parameters pars)
+  public void RollItems(Parameters pars, ZDO zdo)
   {
     if (Items?.Count > 0)
     {
-      var encoded = ItemValue.LoadItems(pars, Items, GetContainerSize(), ItemAmount?.Get(pars) ?? 0);
+      var size = ContainerSize ?? ZdoHelper.GetInventorySize(this, pars, zdo);
+      var encoded = ItemValue.LoadItems(pars, Items, size, ItemAmount?.Get(pars) ?? 0);
       Strings ??= [];
       Strings[ZDOVars.s_items] = DataValue.Simple(encoded);
     }
@@ -578,7 +578,7 @@ public class DataEntry
   public void AddItems(Parameters parameters, ZDO zdo)
   {
     if (Items == null || Items.Count == 0) return;
-    var size = GetContainerSize();
+    var size = ContainerSize ?? ZdoHelper.GetInventorySize(this, parameters, zdo);
     var inv = ItemValue.CreateInventory(zdo, size.x, size.y);
     var items = GenerateItems(parameters, size);
     foreach (var item in items)

@@ -457,7 +457,8 @@ Text related functions:
 - `<upper_X>`: Returns upper case of the text X.
 - `<rest_X>`: Returns the rest of the text starting from par X.
 - `<trim_X>`: Returns text X without leading and trailing spaces.
-- `<hash_X>`: Returns hash of the text X.
+- `<hashof_X>`: Returns hash of the text X.
+- `<textof_X>`: Returns text of the hash X.
 
 Number related functions:
 

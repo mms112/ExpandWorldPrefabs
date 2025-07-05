@@ -6,8 +6,8 @@ namespace ExpandWorld.Prefab;
 [HarmonyPatch(typeof(ZDOExtraData), nameof(ZDOExtraData.SetConnection))]
 public class PrefabConnector
 {
-  private static Dictionary<ZDOID, ZDOID> SwappedZDOs = [];
-  private static Dictionary<ZDOID, ZDOID> ReverseConnectionTable = [];
+  private static readonly Dictionary<ZDOID, ZDOID> SwappedZDOs = [];
+  private static readonly Dictionary<ZDOID, ZDOID> ReverseConnectionTable = [];
 
   public static void AddSwap(ZDOID from, ZDOID to)
   {
@@ -26,6 +26,7 @@ public class PrefabConnector
       {
         ZDOExtraData.s_connections[target] = new(otherConn.m_type, to);
         var zdo = ZDOMan.instance.GetZDO(target);
+        if (zdo == null) return;
         // This should guarantee that the change gets through even when not the owner.
         zdo.DataRevision += 100;
         ZDOMan.instance.ForceSendZDO(target);

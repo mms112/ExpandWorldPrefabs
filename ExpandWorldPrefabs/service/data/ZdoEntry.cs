@@ -66,7 +66,7 @@ public class ZdoEntry(int Prefab, Vector3 Position, Vector3 rotation, ZDO zdo)
 
   public void Load(DataEntry data, Parameters pars)
   {
-    data.RollItems(pars);
+    data.RollItems(pars, zdo);
     if (data.Floats?.Count > 0)
     {
       Floats ??= [];
