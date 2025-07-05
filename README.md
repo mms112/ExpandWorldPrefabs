@@ -482,8 +482,8 @@ Number related functions:
 - `<mod_X_Y>`: Returns remainder of X divided by Y.
 - `<mul_X_Y>`: Returns product of X and Y.
 - `<pow_X_Y>`: Returns X raised to the power of Y.
-- `<randfloat_X_Y>`: Returns random decimal number between X and Y.
-- `<randint_X_Y>`: Returns random integer number between X and Y.
+- `<randomfloat_X_Y>`: Returns random decimal number between X and Y.
+- `<randomint_X_Y>`: Returns random integer number between X and Y.
 - `<round_X>`: Returns nearest integer of X.
 - `<sin_X>`: Returns sine of X.
 - `<sqrt_X>`: Returns square root of X.
