@@ -329,6 +329,7 @@ public class Poke(PokeData data)
   public IBoolValue? Self = data.self == null ? null : DataValue.Bool(data.self);
   public IZdoIdValue? Target = data.target == null ? null : DataValue.ZdoId(data.target);
   public IBoolValue? Evaluate = data.evaluate == null ? null : DataValue.Bool(data.evaluate);
+  public bool HasPrefab = data.prefab != null && data.prefab != "";
 }
 public class Object
 {

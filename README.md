@@ -287,13 +287,15 @@ See object filtering [examples](examples_object_filtering.md).
 
 ### Pokes
 
+Poking allows to trigger actions on other objects (or even on the original object).
+
 - poke (P): List of poke objects:
   - prefab: Target object id or value group.
-  - self: Affects how the triggering object is poked.
-    - If not set, the object itself can be poked like any other object.
-    - If true, only the object itself is poked. Prefab is not checked.
-    - If false, the object itself is never poked.
-  - target: Specific ZDO object. Prefab is not checked.
+    - By default, the object itself can't be poked. You can set `self` to true allow self poking.
+  - self: When set to true, the object itself can be poked.
+    - If prefab is set, then other filters must apply as usual.
+    - If prefab is not set, then the object itself is always poked.
+  - target: Specific ZDO object. This can't be used with prefab.
   - parameter: Custom value used as the parameter for the `poke` type.
   - evaluate: If false, math expressions are not calculated in the parameter. Default is true.
     - For example if some text has math symbols, it might cause weird results.

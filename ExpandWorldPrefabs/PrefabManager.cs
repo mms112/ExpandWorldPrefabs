@@ -223,7 +223,7 @@ public class Manager
     var rot = zdo.GetRotation();
     if (info.LegacyPokes != null)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, rot, pars);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, rot, pars, null);
       var pokeParameter = Evaluate(pars.Replace(info.PokeParameter));
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
@@ -236,7 +236,12 @@ public class Manager
       var delay = poke.Delay?.Get(pars) ?? 0f;
       var self = poke.Self?.GetBool(pars);
       var target = poke.Target?.Get(pars);
-      if (self == true || target != null)
+      if (poke.HasPrefab)
+      {
+        var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, rot, pars, self == true ? null : zdo);
+        DelayedPoke.Add(delay, zdos, pokeParameter);
+      }
+      else if (self == true || target != null)
       {
         if (self == true)
           DelayedPoke.Add(delay, zdo, pokeParameter);
@@ -247,20 +252,13 @@ public class Manager
             DelayedPoke.Add(delay, targetZdo, pokeParameter);
         }
       }
-      else
-      {
-        var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, rot, pars);
-        if (self == false) zdos = [.. zdos.Where(z => z != zdo)];
-        DelayedPoke.Add(delay, zdos, pokeParameter);
-      }
-
     }
   }
   public static void PokeGlobal(Info info, Parameters pars, Vector3 pos)
   {
     if (info.LegacyPokes != null)
     {
-      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, Quaternion.identity, pars);
+      var zdos = ObjectsFiltering.GetNearby(info.PokeLimit, info.LegacyPokes, pos, Quaternion.identity, pars, null);
       var pokeParameter = Evaluate(pars.Replace(info.PokeParameter));
       DelayedPoke.Add(info.PokeDelay, zdos, pokeParameter);
     }
@@ -270,7 +268,7 @@ public class Manager
       var pokeParameter = pars.Replace(poke.Parameter ?? "");
       if (poke.Evaluate?.GetBool(pars) != false)
         pokeParameter = Evaluate(pokeParameter);
-      var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, Quaternion.identity, pars);
+      var zdos = ObjectsFiltering.GetNearby(poke.Limit?.Get(pars) ?? 0, poke.Filter, pos, Quaternion.identity, pars, null);
       DelayedPoke.Add(poke.Delay?.Get(pars) ?? 0f, zdos, pokeParameter);
 
     }
