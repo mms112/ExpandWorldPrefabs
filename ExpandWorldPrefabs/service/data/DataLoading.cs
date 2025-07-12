@@ -20,7 +20,28 @@ public class DataLoading
   {
     Data[hash] = entry;
   }
-  public static DataEntry? Get(string name) => Get(name.GetStableHashCode());
+  public static DataEntry? Get(string name)
+  {
+    var data = Get(name.GetStableHashCode());
+    if (data != null)
+      return data;
+    // Legacy base64 handling.
+    if (name.Length >= 12 && name.Length % 4 == 0)
+    {
+      try
+      {
+        DataEntry d = new(new ZPackage(name));
+        Data[name.GetStableHashCode()] = d;
+        return d;
+      }
+      catch
+      {
+        Log.Error($"Failed to decode base64 data: {name}");
+      }
+    }
+    Log.Warning($"Data entry not found: {name}");
+    return null;
+  }
   public static DataEntry? Get(int hash) => Data.ContainsKey(hash) ? Data[hash] : null;
   public static bool TryGet(int hash, out DataEntry? entry)
   {
