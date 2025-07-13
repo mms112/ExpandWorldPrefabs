@@ -1,6 +1,6 @@
 # Expand World Prefabs
 
-Allows creating rules to react to objects being spawned, destroyed and more.
+Allows creating rules for objects being spawned, destroyed and more.
 
 Install on the server (modding [guide](https://youtu.be/L9ljm2eKLrk)).
 
