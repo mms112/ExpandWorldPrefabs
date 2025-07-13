@@ -2,6 +2,7 @@
   - Adds a field `bannedLocationDistance` so that different distance can be used for required and banned locations.
   - Adds automatic container size detection to simplify adding items.
   - Adds back legacy base64 encoded data string support.
+  - Adds data entry support for the field `drops` to allow dropping custom items.
   - Changes the parameter `<hash_>` to also work for location ids.
   - Changes poking action to not include the object itself by default (can be changed with the poke field `self`).
   - Fixes quoted strings being split up when used as "type, key, value" in the field `data`.

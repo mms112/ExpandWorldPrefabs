@@ -254,6 +254,7 @@ See object filtering [examples](examples_object_filtering.md).
     - When changing data that changes during the normal game play. For example creature health.
 - drops (P): If true, the object drops are spawned.
   - These include creature drops, destructible drops and structure materials.
+  - This can also be a data entry with `items` information.
   - Not supported for type `destroy`.
 - exec (P): Runs parameters with side effects.
   - Mostly useful for saving custom data with the `save` function.
