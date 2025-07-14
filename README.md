@@ -217,7 +217,8 @@ bannedFilters:
     - All objects are searched if the max distance is more than 10000 meters.
   - minHeight: Minimum height difference to the object.
   - maxHeight: Maximum height difference to the object.
-  - weight: How much this object counts towards the `objectsLimit`. Default is 1.  
+  - weight: How much this object counts towards the `objectsLimit`. Default is 1.
+  - offset: Position offset in x,z,y from the original object position and rotation.  
   - Data filters like `filter`, `filters`, `bannedFilter` and `bannedFilters` can be used to filter the object.
 - bannedObjectsLimit: How many of the `bannedObjects` must not match (`min` or `min-max`).
   - If not set, then all of the entries must not be found.
