@@ -397,9 +397,10 @@ public class Object
   private float? MinHeight;
   private float? MaxHeight;
   private Vector3? Offset;
+  public Vector3 CachedPosition;
   public int Weight;
 
-  public void Roll(Parameters pars)
+  public void Roll(Parameters pars, Vector3 pos, Quaternion rot)
   {
     MinDistance = MinDistanceValue?.Get(pars);
     MaxDistance = MaxDistanceValue.Get(pars) ?? 100f;
@@ -407,16 +408,19 @@ public class Object
     MaxHeight = MaxHeightValue?.Get(pars);
     Weight = WeightValue.Get(pars) ?? 1;
     Offset = OffsetValue?.Get(pars);
+    if (Offset.HasValue)
+      CachedPosition = pos + rot * Offset.Value;
+    else
+      CachedPosition = pos;
   }
 
-  public bool IsValid(ZDO zdo, Vector3 pos, Quaternion rot, Parameters pars)
+  public bool IsValid(ZDO zdo, Parameters pars)
   {
     if (PrefabsValue.Match(pars, zdo.GetPrefab()) == false) return false;
-    if (Offset.HasValue) pos += rot * Offset.Value;
-    var d = Utils.DistanceXZ(pos, zdo.GetPosition());
+    var d = Utils.DistanceXZ(CachedPosition, zdo.GetPosition());
     if (MinDistance != null && d < MinDistance) return false;
     if (d > MaxDistance) return false;
-    var dy = Mathf.Abs(pos.y - zdo.GetPosition().y);
+    var dy = Mathf.Abs(CachedPosition.y - zdo.GetPosition().y);
     if (MinHeight != null && dy < MinHeight) return false;
     if (MaxHeight != null && dy > MaxHeight) return false;
 

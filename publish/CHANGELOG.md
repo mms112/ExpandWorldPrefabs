@@ -1,3 +1,6 @@
+- v1.44
+  - Adds offset support to pokes.
+
 - v1.43
   - Adds a field `bannedLocationDistance` so that different distance can be used for required and banned locations.
   - Adds automatic container size detection to simplify adding items.

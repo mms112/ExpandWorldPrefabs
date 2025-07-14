@@ -1,6 +1,6 @@
 {
   "name": "Expand_World_Prefabs",
-  "version_number": "1.43.0",
+  "version_number": "1.44.0",
   "website_url": "https://github.com/JereKuusela/valheim-expand_world_prefabs",
   "description": "Allows creating rules for objects being spawned, destroyed and more.",
   "dependencies": [
