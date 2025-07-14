@@ -307,7 +307,7 @@ Poking allows to trigger actions on other objects (or even on the original objec
   - maxDistance: Maximum distance from the poker. Default is 100 meters.
   - minHeight: Minimum height difference from the poker.
   - maxHeight: Maximum height difference from the poker.
-  - offset: Position offset in x,z,y from the original object.
+  - offset: Position offset in x,z,y from the original object position and rotation.
   - Data filters like `filter`, `filters`, `bannedFilter` and `bannedFilters` can be used to filter the affected objects.
 
 ### RPCs
