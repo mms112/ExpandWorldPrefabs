@@ -1,47 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)\valheim.targets" />
   <PropertyGroup>
-    <TargetFramework>net4.8</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>1.44.0</Version>
     <LangVersion>preview</LangVersion>
     <nullable>enable</nullable>
   </PropertyGroup>
-  <Target Name="CopyDLL" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetDir)$(ProjectName).dll" DestinationFolder="$(ProjectDir)\..\..\Libs" />
-    <Message Text="Copied to Libs folder." Importance="High" />
-  </Target>
   <ItemGroup>
-    <Reference Include="BepInExll">
-      <HintPath>..\..\Libs\BepinEx.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\Libs\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\Libs\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\Libs\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\Libs\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\Libs\BepInEx.Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="assembly_valheim">
-      <HintPath>..\..\Libs\assembly_valheim.dll</HintPath>
-    </Reference>
-    <Reference Include="assembly_utils">
-      <HintPath>..\..\Libs\assembly_utils.dll</HintPath>
-    </Reference>
-    <Reference Include="SPlatform">
-      <HintPath>..\..\Libs\SPlatform.dll</HintPath>
-    </Reference>
     <Reference Include="com.rlabrecque.steamworks.net">
-      <HintPath>..\..\Libs\com.rlabrecque.steamworks.net.dll</HintPath>
+      <HintPath>$(ManagedDataPath)\com.rlabrecque.steamworks.net.dll</HintPath>
     </Reference>
-    <Reference Include="YamlDotNet">
-      <HintPath>..\..\Libs\YamlDotNet.dll</HintPath>
-    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="13.7.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(SolutionDir)\Config\$(AssemblyName)\expand_world\expand_data.yaml" Link="Config\expand_data.yaml" />
+    <Content Include="$(SolutionDir)\Config\$(AssemblyName)\expand_world\expand_prefabs.yaml" Link="Config\expand_prefabs.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(Content)" />
   </ItemGroup>
 </Project>
