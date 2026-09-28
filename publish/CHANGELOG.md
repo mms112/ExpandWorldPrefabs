@@ -1,5 +1,6 @@
 - v1.61
   - Fixes various issues related to inventory handling.
+  - Renames undocumented poke `amount` to `pokecount` for consistency with other count fields. Thanks Zeall!
 
 - v1.60
   - Adds experimental server owned object support.
