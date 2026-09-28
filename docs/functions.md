@@ -35,6 +35,21 @@ Following functions are available to be used in the yaml file:
 - `<item_*>`: Amount of specific item in the container.
   - Wildcard `*` can be used for partial matches. For example `Trophy*` to match all trophies or `*` to count everything.
 - `<item_X_Y>`: Item name at slot X,Y.
+- `<objectcount>`: Combined count of everything the `objects:` field matched nearby. Requires `objects:` to be set on the same entry; returns `0` otherwise.
+  - This is the same number `objectsLimit` already compares against internally, just exposed as a value.
+- `<objectcount_X>`: Count of nearby matches whose real prefab is `X`. `X` is only ever checked against what `objects:` already found — never the whole game's prefab list.
+  - `X` can be an exact prefab name (`<objectcount_Boar>`) or a wildcard (`<objectcount_Wolf*>`), matched the same way `<item_*>`'s wildcard works.
+  - An exact `X` with no match uses the usual `<...=default>` fallback (empty if you did not write one). A wildcard `X` with no match is a real, computed `0` — not the fallback — since summing zero matches genuinely is zero.
+  - If the same real prefab could match more than one `objects:` entry (different `weight` or extra filters), the **first matching entry wins** — same rule `objectsLimit` already uses. Example:
+    ```yaml
+    objects:
+    - prefab: Player
+      filter: int, level, 3;99   # high level players
+      weight: 2
+    - prefab: Player
+      weight: 1                   # any other player
+    ```
+    A player with `level` 3 or higher matches the first entry and is credited with weight 2 — never both.
 - `<pdata_*>`: Player data.
   - `<pdata_baseValue>`: Amount of nearby player base structures.
   - `<pdata_possibleEvents>`: List of possible events.
