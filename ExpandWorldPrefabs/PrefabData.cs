@@ -658,6 +658,12 @@ public class Object
   }
 
   public bool AllowSelf(Functions f) => IncludeSelfValue?.GetBool(f) == true;
+
+  // Used by ObjectsFiltering's portal fallback (vanilla Valheim never adds a
+  // portal ZDO to ZDOMan.m_objectsBySector - see .scratch/portal-prefab-detection)
+  // to check whether this filter's own prefab list includes a given hash,
+  // without exposing PrefabsValue itself.
+  public bool MatchesPrefab(Functions f, int prefabHash) => HasPrefabFilter && PrefabsValue.Match(f, prefabHash) == true;
 }
 
 public class PokeData : ObjectData

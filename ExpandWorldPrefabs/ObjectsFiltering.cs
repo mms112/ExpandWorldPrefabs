@@ -20,7 +20,7 @@ public class ObjectsFiltering
       var zdos = ZDOMan.instance.m_objectsByID.Values;
       return GetObjects(limit, zdos, objects, f, self, random);
     }
-    var zdoLists = GetSectorIndices(objects);
+    var zdoLists = GetSectorIndices(objects, f);
     return GetObjects(limit, zdoLists, objects, f, self, random);
   }
   public static ZDOID[] GetNearby(int limit, Object objects, Vector3 pos, Quaternion rot, Functions f, ZDOID? self, bool random)
@@ -32,7 +32,7 @@ public class ObjectsFiltering
       var zdos = ZDOMan.instance.m_objectsByID.Values;
       return GetObjects(limit, zdos, objects, f, self, random);
     }
-    var zdoLists = GetSectorIndices(objects);
+    var zdoLists = GetSectorIndices(objects, f);
     return GetObjects(limit, zdoLists, objects, f, self, random);
   }
   private static ZDOID[] GetObjects(int limit, List<List<ZDO>> zdoLists, Object objects, Functions f, ZDOID? self, bool random)
@@ -80,7 +80,7 @@ public class ObjectsFiltering
       else
         return HasLimitObjects(zdos, l, objects, zdo.m_uid, f);
     }
-    var zdoLists = GetSectorIndices(objects);
+    var zdoLists = GetSectorIndices(objects, f);
     if (l == null)
       return HasAllObjects(zdoLists, objects, zdo.m_uid, f);
     else
@@ -100,7 +100,7 @@ public class ObjectsFiltering
         ? !HasAllObjects(zdos, objects, zdo.m_uid, f)
         : !HasLimitObjects(zdos, l, objects, zdo.m_uid, f);
     }
-    var zdoLists = GetSectorIndices(objects);
+    var zdoLists = GetSectorIndices(objects, f);
     if (l == null)
       return !HasAllObjects(zdoLists, objects, zdo.m_uid, f);
     else
@@ -147,22 +147,46 @@ public class ObjectsFiltering
     }
     return limit.Min <= counter && counter <= limit.Max;
   }
-  private static List<List<ZDO>> GetSectorIndices(Object[] objects)
+  private static List<List<ZDO>> GetSectorIndices(Object[] objects, Functions f)
   {
     List<List<ZDO>> zdoLists = [];
     HashSet<ZoneSystem.SectorIndex> handled = [];
     foreach (var o in objects)
       GetSectorIndices(o, zdoLists, handled);
-
+    if (objects.Any(o => TargetsPortal(o, f)))
+      AddPortalFallback(zdoLists);
     return zdoLists;
   }
 
-  private static List<List<ZDO>> GetSectorIndices(Object objects)
+  private static List<List<ZDO>> GetSectorIndices(Object objects, Functions f)
   {
     List<List<ZDO>> zdoLists = [];
     HashSet<ZoneSystem.SectorIndex> handled = [];
     GetSectorIndices(objects, zdoLists, handled);
+    if (TargetsPortal(objects, f))
+      AddPortalFallback(zdoLists);
     return zdoLists;
+  }
+
+  // Vanilla Valheim never adds a portal ZDO to ZDOMan.m_objectsBySector -
+  // ZDO.SetSector (decompiled) bails out early for any prefab hash in
+  // Game.instance.PortalPrefabHash - so sector-based lookup above can never
+  // find a portal, at any distance, regardless of which name/alias is used.
+  // Only fall back to a full ZDOMan.m_objectsByID scan when a filter is
+  // actually looking for a portal prefab, to avoid paying this cost on every
+  // ordinary objects: query. See .scratch/portal-prefab-detection.
+  private static bool TargetsPortal(Object o, Functions f)
+  {
+    var game = Game.instance;
+    if (game == null || game.PortalPrefabHash.Count == 0) return false;
+    return game.PortalPrefabHash.Any(hash => o.MatchesPrefab(f, hash));
+  }
+
+  private static void AddPortalFallback(List<List<ZDO>> zdoLists)
+  {
+    var portalHashes = Game.instance.PortalPrefabHash;
+    var portals = ZDOMan.instance.m_objectsByID.Values.Where(z => portalHashes.Contains(z.GetPrefab())).ToList();
+    if (portals.Count > 0) zdoLists.Add(portals);
   }
 
   private static void GetSectorIndices(Object o, List<List<ZDO>> zdoLists, HashSet<ZoneSystem.SectorIndex> handled)
