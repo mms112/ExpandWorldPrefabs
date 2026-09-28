@@ -30,6 +30,9 @@ Following functions are available to be used in the yaml file:
 - `<byte_*>`: Byte value from the object converted to base64 text.
 - `<zdo_*>`: Object id value from the object.
 - `<amount_X_Y>`: Amount of item at slot X,Y.
+- `<objectcount_X>`: Count of nearby matches whose prefab is `X`, checked only against `objects:`'s own matches.
+  - Wildcard `*` can be used for partial matches. For example `Trophy*` to match all trophies or `*` to count everything.
+  - `<objectcount>`: Shorthand for the combined count of everything `objects:` matched.
 - `<pokecount>`: Number of targets the current `poke:` is running against.
 - `<durability_X_Y>`: Durability of item at slot X,Y.
 - `<quality_X_Y>`: Quality of item at slot X,Y.

@@ -77,7 +77,7 @@ public class Manager
     return ret;
   }
 
-  private static bool Handle(Info info, Functions f, ZDO zdo)
+  private static bool Handle(Info info, ObjectFunctions f, ZDO zdo)
   {
     if (info.Chance != null)
     {
@@ -88,6 +88,12 @@ public class Manager
           return false;
       }
     }
+
+    // Computed once for the winning rule only - never inside InfoSelector's fast
+    // pass/fail check, which runs per candidate and would attribute the wrong one.
+    // See <objectcount>/<objectcount_X>.
+    if (info.Objects != null)
+      f.SetObjectCounts(ObjectsFiltering.GetCounts(info.Objects, zdo, f));
 
     if (info.LogSource != null && Config.RuleLogging)
       RuleLog.Write(info.LogSource, f);

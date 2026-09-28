@@ -10,6 +10,12 @@ namespace Data;
 
 public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(prefab, args, zdo.m_position)
 {
+  private Inventory? inventory;
+  // Set once per winning rule, before its own fields resolve, when it declares `objects:`.
+  // Keyed by real prefab name (not by which objects: entry matched) so both an exact
+  // prefab and a wildcard can be looked up against the same tally. See <objectcount>.
+  private Dictionary<string, int>? objectCounts;
+  public void SetObjectCounts(Dictionary<string, int> counts) => objectCounts = counts;
   private List<ItemRecord>? inventory;
 
 
@@ -52,8 +58,13 @@ public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(
       "biome" => GetBiome(),
       "altbiome" => GetAltBiome(),
       "joints" => GetJoints(),
+      "objectcount" => GetObjectCountTotal(),
       _ => null,
     };
+
+  // Bare <objectcount>: grand total across every objects: entry, combined -
+  // the same number ObjectsLimit already compares against internally.
+  private string GetObjectCountTotal() => (objectCounts?.Values.Sum() ?? 0).ToString(CultureInfo.InvariantCulture);
 
   private string GetConnected() => (zdo.GetConnection()?.m_target ?? ZDOID.None).ToString();
 
@@ -95,8 +106,26 @@ public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(
      "item" => GetItem(value, defaultValue),
      "pos" => Helper.FormatPos(GetPos(value)),
      "pdata" => PeerManager.GetPlayerData(zdo, value),
+     "objectcount" => GetObjectCount(value, defaultValue),
      _ => null,
    };
+
+  // <objectcount_X>: X is looked up only against this rule's own objects: block, never
+  // the whole game's prefab list. Exact real prefab name, or a wildcard matched the same
+  // way <item_*> already does elsewhere in this file.
+  private string GetObjectCount(string value, string defaultValue)
+  {
+    if (objectCounts == null || value == "") return defaultValue;
+    if (objectCounts.TryGetValue(value, out var exact)) return exact.ToString(CultureInfo.InvariantCulture);
+    // No match for an exact name: fall back to the caller's own defaultValue, same
+    // convention every other getter in this file uses - never hardcode a literal.
+    // Use <objectcount_X=0> when 0 is specifically what's wanted.
+    if (!value.Contains('*')) return defaultValue;
+    // A wildcard with zero matches is a real computed count, not a missing value -
+    // Sum() over an empty sequence is legitimately 0, so this one stays as-is.
+    var sum = objectCounts.Where(kv => SimpleStringValue.PatternMatch(kv.Key, value)).Sum(kv => kv.Value);
+    return sum.ToString(CultureInfo.InvariantCulture);
+  }
 
 
   private string GetBytes(string value, string defaultValue) => ZdoHelper.GetBytes(zdo, value, defaultValue);
