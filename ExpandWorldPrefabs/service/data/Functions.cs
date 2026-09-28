@@ -21,6 +21,15 @@ public class Functions(string prefab, string[] args, Vector3 pos)
   private readonly double time = ZNet.instance.GetTimeSeconds();
 
   public int Amount = 0;
+  private List<ZDOID>? pokeTargets;
+  private Dictionary<string, int>? pokeCounts;
+
+  public void SetPokeTargets(List<ZDOID> targets)
+  {
+    pokeTargets = targets;
+    pokeCounts = null;
+    Amount = targets.Count;
+  }
   public string Replace(string str) => Replace(str, false, false);
   public string Replace(string str, bool preventInjections, bool allValues)
   {
@@ -154,6 +163,7 @@ public class Functions(string prefab, string[] args, Vector3 pos)
   protected virtual string? GetValueFunction(string key, string value, string defaultValue) =>
    key switch
    {
+     "pokecount" => GetPokeCount(value, defaultValue),
      "sqrt" => Parse.TryFloat(value, out var f) ? Mathf.Sqrt(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
      "round" => Parse.TryFloat(value, out var f) ? Mathf.Round(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
      "ceil" => Parse.TryFloat(value, out var f) ? Mathf.Ceil(f).ToString(CultureInfo.InvariantCulture) : defaultValue,
@@ -248,6 +258,32 @@ public class Functions(string prefab, string[] args, Vector3 pos)
      "globalkey" => ZoneSystem.instance.GetGlobalKey(value, out var globalKey) ? globalKey.ToString() : defaultValue,
      _ => null,
    };
+
+  private string GetPokeCount(string value, string defaultValue)
+  {
+    if (value == "" || pokeTargets == null) return defaultValue;
+    var counts = GetPokeCounts();
+    if (counts.TryGetValue(value, out var exact)) return exact.ToString(CultureInfo.InvariantCulture);
+    if (!value.Contains('*')) return defaultValue;
+    var sum = counts.Where(kv => SimpleStringValue.PatternMatch(kv.Key, value)).Sum(kv => kv.Value);
+    return sum.ToString(CultureInfo.InvariantCulture);
+  }
+
+  private Dictionary<string, int> GetPokeCounts() => pokeCounts ??= GetPokeCounts(pokeTargets!);
+
+  private static Dictionary<string, int> GetPokeCounts(List<ZDOID> targets)
+  {
+    Dictionary<string, int> counts = [];
+    foreach (var target in targets)
+    {
+      var zdo = ZDOMan.instance.GetZDO(target);
+      var name = zdo == null ? null : ZNetScene.instance.GetPrefab(zdo.GetPrefab())?.name;
+      if (name == null) continue;
+      counts.TryGetValue(name, out var current);
+      counts[name] = current + 1;
+    }
+    return counts;
+  }
 
   internal static string? Rad2Deg(string value)
   {

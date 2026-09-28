@@ -34,6 +34,8 @@ Following functions are available to be used in the yaml file:
   - Wildcard `*` can be used for partial matches. For example `Trophy*` to match all trophies or `*` to count everything.
   - `<objectcount>`: Shorthand for the combined count of everything `objects:` matched.
 - `<pokecount>`: Number of targets the current `poke:` is running against.
+  - `<pokecount_X>`: Number of targets whose prefab is `X`.
+  - Wildcard `*` can be used for partial matches, for example `Trophy*` or `*` to count all targets.
 - `<durability_X_Y>`: Durability of item at slot X,Y.
 - `<quality_X_Y>`: Quality of item at slot X,Y.
 - `<item_*>`: Amount of specific item in the container.

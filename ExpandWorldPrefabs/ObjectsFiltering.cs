@@ -107,10 +107,6 @@ public class ObjectsFiltering
       return !HasLimitObjects(zdoLists, l, objects, zdo.m_uid, f);
   }
 
-  // Exact, non-short-circuited nearby count, bucketed by real prefab name (not by which
-  // `objects:` entry matched) so callers can look up either an exact prefab or a wildcard
-  // pattern against what was actually found. Used by <objectcount>/<objectcount_X>.
-  // Same first-match-wins + weight rules as HasLimitObjects, just never stops early.
   public static Dictionary<string, int> GetCounts(Object[] objects, ZDO zdo, Functions f)
   {
     Dictionary<string, int> counts = [];
