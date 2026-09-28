@@ -1,6 +1,6 @@
 # Examples for progression
 
-Wiki has list of vanilla global keys: <https://valheim.fandom.com/wiki/Global_Keys>
+Wiki has list of vanilla global keys: <https://valheim.wiki/Global_Keys>
 
 ## Remove night time spawns
 

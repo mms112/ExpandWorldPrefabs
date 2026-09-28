@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Data;
 using Service;
 using UnityEngine;
@@ -9,6 +10,53 @@ namespace ExpandWorld.Prefab;
 
 public class Helper
 {
+
+  internal static Heightmap.Biome ToBiomeFilter(string value, bool defaultAll, string[] allAltBiomes, out HashSet<string>? altBiomes)
+  {
+    altBiomes = null;
+    List<string> biomes = [];
+    foreach (var name in Parse.Split(value))
+    {
+      if (Enum.TryParse<Heightmap.Biome>(name, true, out _))
+      {
+        biomes.Add(name);
+        continue;
+      }
+      var alt = allAltBiomes.FirstOrDefault(ab => string.Equals(ab, name, StringComparison.OrdinalIgnoreCase));
+      if (alt == null)
+        biomes.Add(name);
+      else
+      {
+        altBiomes ??= [];
+        altBiomes.Add(alt);
+      }
+    }
+    return ToBiomes(string.Join(",", biomes), defaultAll && altBiomes == null && value == "");
+  }
+
+  public static Heightmap.Biome ToBiomes(string biomeStr, bool defaultAll)
+  {
+    Heightmap.Biome result = 0;
+    if (biomeStr == "")
+    {
+      return defaultAll ? (Heightmap.Biome)(-1) : 0;
+    }
+    else
+    {
+      var biomes = Parse.Split(biomeStr);
+      foreach (var biome in biomes)
+      {
+        if (Enum.TryParse<Heightmap.Biome>(biome, true, out var number))
+          result |= number;
+        else
+        {
+          if (int.TryParse(biome, out var value)) result += value;
+          else throw new InvalidOperationException($"Invalid biome {biome}.");
+        }
+      }
+    }
+    return result;
+  }
 
   public static bool CheckWild(string wild, string str)
   {

@@ -1,3 +1,7 @@
+- v1.61
+  - Fixes various issues related to inventory handling.
+  - Renames undocumented poke `amount` to `pokecount` for consistency with other count fields. Thanks Zeall!
+
 - v1.60
   - Adds experimental server owned object support.
   - Fixes for the new game update (item data, terrain and many other things). Thanks JPValheim!
@@ -33,19 +37,3 @@
   - Fixes function `key` returning global key instead of custom data value.
   - Fixes `Object attaching` not working for temporary objects like status effects.
   - Optimizes file reloading to only reload the changed file.
-
-- v1.56
-  - Fixes `Object attaching` affecting some normal effects like magic shield bubble.
-  - Removes dependency from Steamworks so should now work on non-Steam hosts.
-
-- v1.55
-  - Adds support for server side only data. Keys starting with `ewp_` are stored as server-only instead of normal ZDO fields.
-  - Adds range support for `keys` and `bannedKeys`.
-  - Adds file watcher to the config file to reload when manually edited.
-  - Changes `Persist spawned players` setting to be enabled by default (issue was probably with the attach system, not this).
-  - Fixes subfolders not working for data files.
-  - Fixes persisted NPC players not being removable by EWP scripts.
-  - Fixes scale hack not working on single player.
-  - Fíxes automatic `injectData` not being false when position or rotation is set.
-  - Fixes `Object attaching` affecting normal players when they are on beds, ships, etc (left a ghost player when disconnected).
-  - Optimizes script file reloading to only patch/unpatch game code when needed, instead of always patching/unpatching on every reload.

@@ -145,8 +145,7 @@ public class Functions(string prefab, string[] args, Vector3 pos)
       "y" => Helper.Format(pos.y),
       "z" => Helper.Format(pos.z),
       "snap" => Helper.Format(WorldGenerator.instance.GetHeight(pos.x, pos.z)),
-      // Need arg check to avoid conflict with value operations.
-      "amount" => args.Length < 2 ? Amount.ToString() : null,
+      "pokecount" => args.Length < 2 ? Amount.ToString() : null,
       "time" => Helper.Format(time),
       "realtime" => DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
       _ => null,
