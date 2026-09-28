@@ -174,7 +174,6 @@ public class ObjectsFiltering
     HashSet<ZoneSystem.SectorIndex> handled = [];
     foreach (var o in objects)
       GetSectorIndices(o, zdoLists, handled);
-
     return zdoLists;
   }
 
@@ -201,6 +200,12 @@ public class ObjectsFiltering
         var list = zm.m_objectsBySector[sector.Sector];
         if (list != null)
           zdoLists.Add(list);
+        // Vanilla never adds a portal ZDO to m_objectsBySector (ZDO.SetSector
+        // bails out early for any Game.instance.PortalPrefabHash prefab) - it
+        // keeps portals in their own per-sector dictionary instead. Same
+        // sector key, so just add that list too.
+        if (zm.m_portalObjects.TryGetValue(sector, out var portalList))
+          zdoLists.Add(portalList);
       }
     }
   }
