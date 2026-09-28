@@ -706,22 +706,22 @@ public class DataEntry
   {
     if (Items == null || Items.Count == 0) return;
     var size = ContainerSize ?? ZdoHelper.GetInventorySize(this, f, zdo);
-    var inv = ItemValue.CreateInventory(zdo, size.x, size.y);
+    var records = ItemDataHelper.Load(zdo);
     var items = GenerateItems(f, size);
     foreach (var item in items)
-      item.AddTo(f, inv);
-    InventoryStorage.Save(zdo, inv);
+      item.AddTo(f, records, size);
+    ItemDataHelper.SaveTo(zdo, records);
   }
   public void RemoveItems(Functions f, ZDO zdo)
   {
     if (Items == null || Items.Count == 0) return;
-    var inv = ItemValue.CreateInventory(zdo);
-    if (inv.m_inventory.Count == 0) return;
+    var records = ItemDataHelper.Load(zdo);
+    if (records.Count == 0) return;
 
     var items = GenerateItems(f, new(10000, 10000));
     foreach (var item in items)
-      item.RemoveFrom(f, inv);
-    InventoryStorage.Save(zdo, inv);
+      item.RemoveFrom(f, records);
+    ItemDataHelper.SaveTo(zdo, records);
   }
   public List<ItemValue> GenerateItems(Functions f, Vector2i size)
   {

@@ -259,23 +259,17 @@ public class ItemValue(ItemData data)
 
   public static bool Match(Functions f, List<ItemValue> data, ZDO zdo, IIntValue? amount)
   {
-    var inv = CreateInventory(zdo);
-    var matches = data.Count(item => item.Match(f, inv));
+    var records = ItemDataHelper.Load(zdo);
+    var matches = data.Count(item => item.Match(f, records));
     // If no amount is set, then must match exactly.
     if (amount == null)
-      return matches == data.Count && inv.m_inventory.Count == 0;
+      return matches == data.Count && records.Count == 0;
     return amount.Match(f, matches) == true;
   }
   public static bool Match(Functions f, ZDO zdo, IIntValue amount)
   {
-    var inv = CreateInventory(zdo);
-    return amount.Match(f, inv.m_inventory.Count) == true;
-  }
-
-  public static Inventory CreateInventory(ZDO zdo, int width = 100000, int height = 10000)
-  {
-    // Load only loads up to the inventory size, so the size must be large enough.
-    return InventoryStorage.Create(zdo, width, height);
+    var records = ItemDataHelper.Load(zdo);
+    return amount.Match(f, records.Count) == true;
   }
 
   public static string LoadItems(Functions f, List<ItemValue> items, Vector2i size, int amount) =>
@@ -284,7 +278,8 @@ public class ItemValue(ItemData data)
   internal static byte[] LoadItemBytes(Functions f, List<ItemValue> items, Vector2i size, int amount)
   {
     ZPackage pkg = new();
-    pkg.Write(InventoryStorage.FormatVersion);
+    // Inventory uses int for version, itemDrops uses byte.
+    pkg.Write((int)Version.Item.ChunksNCheats);
     items = Generate(f, items, size, amount);
     items = [.. items.Where(item => item.CanWrite())];
     pkg.Write((ushort)items.Count);
@@ -456,119 +451,120 @@ public class ItemValue(ItemData data)
       entry.Write(zdo);
     }
   }
-  public void AddTo(Functions f, Inventory inv)
+  public void AddTo(Functions f, List<ItemRecord> records, Vector2i size)
   {
     var stack = Stack?.Get(f) ?? 1;
-    stack = StackTo(f, stack, inv);
-    InsertTo(f, stack, inv);
+    stack = StackTo(f, stack, records);
+    InsertTo(f, stack, records, size);
   }
-  private int StackTo(Functions f, int stack, Inventory inv)
+  private int StackTo(Functions f, int stack, List<ItemRecord> records)
   {
-    foreach (var item in inv.m_inventory)
+    foreach (var item in records)
     {
       if (!MatchItem(f, item)) continue;
-      var amount = Mathf.Min(item.m_shared.m_maxStackSize - item.m_stack, stack);
-      item.m_stack += amount;
+      var amount = Mathf.Min(ItemDataHelper.GetMaxStackSize(item.PrefabHash) - item.Stack, stack);
+      item.Stack += amount;
       stack -= amount;
       if (stack <= 0) break;
     }
     return stack;
   }
-  private int InsertTo(Functions f, int stack, Inventory inv)
+  private int InsertTo(Functions f, int stack, List<ItemRecord> records, Vector2i size)
   {
     while (stack > 0)
     {
       var prefab = Prefab.Get(f) ?? 0;
       var item = ObjectDB.instance.GetItemPrefab(prefab);
       if (item == null || !item.TryGetComponent(out ItemDrop drop)) return stack;
-      var itemData = drop.m_itemData.Clone();
-      itemData.m_dropPrefab = item;
-      itemData.m_quality = Quality?.Get(f) ?? 1;
-      itemData.m_variant = Variant?.Get(f) ?? 0;
-      itemData.m_crafterID = CrafterID?.Get(f) ?? 0L;
-      itemData.m_crafterName = CrafterName?.Get(f) ?? "";
-      itemData.m_worldLevel = WorldLevel?.Get(f) ?? 0;
-      itemData.m_durability = Durability?.Get(f) ?? itemData.GetMaxDurability(itemData.m_quality);
-      itemData.m_equipped = Equipped?.GetBool(f) ?? false;
-      itemData.m_pickedUp = PickedUp?.GetBool(f) ?? false;
-      if (CustomData != null)
-        itemData.m_customData = CustomData.ToDictionary(x => x.Key, x => x.Value.Get(f) ?? "");
-
-      var amount = Mathf.Min(itemData.m_shared.m_maxStackSize, stack);
+      var quality = Quality?.Get(f) ?? 1;
+      var amount = Mathf.Min(drop.m_itemData.m_shared.m_maxStackSize, stack);
       stack -= amount;
-      itemData.m_stack = amount;
+
+      var record = new ItemRecord
+      {
+        PrefabHash = prefab,
+        PrefabName = item.name,
+        Stack = amount,
+        Durability = Durability?.Get(f) ?? drop.m_itemData.GetMaxDurability(quality),
+        Quality = quality,
+        Variant = Variant?.Get(f) ?? 0,
+        CrafterID = CrafterID?.Get(f) ?? 0L,
+        CrafterName = CrafterName?.Get(f) ?? "",
+        WorldLevel = WorldLevel?.Get(f) ?? 0,
+        Equipped = Equipped?.GetBool(f) ?? false,
+        PickedUp = PickedUp?.GetBool(f) ?? false,
+        CustomData = CustomData?.ToDictionary(x => x.Key, x => x.Value.Get(f) ?? "") ?? [],
+      };
 
       if (Position == "")
       {
-        var slot = inv.FindEmptySlot(true);
-        if (slot.x < 0) return stack;
-        itemData.m_gridPos = slot;
-        inv.m_inventory.Add(itemData);
+        var slot = ItemDataHelper.FindFreeSlot(records, size);
+        if (slot == null) return stack;
+        record.GridPos = slot.Value;
       }
       else
       {
-        itemData.m_gridPos = RolledPosition;
-        inv.m_inventory.RemoveAll(x => x.m_gridPos == RolledPosition);
-        inv.m_inventory.Add(itemData);
+        record.GridPos = RolledPosition;
+        records.RemoveAll(x => x.GridPos == RolledPosition);
       }
+      records.Add(record);
     }
     return stack;
   }
-  public void RemoveFrom(Functions f, Inventory inv)
+  public void RemoveFrom(Functions f, List<ItemRecord> records)
   {
     var stack = Stack?.Get(f) ?? 1;
-    for (var i = inv.m_inventory.Count - 1; i >= 0; --i)
+    for (var i = records.Count - 1; i >= 0; --i)
     {
-      var item = inv.m_inventory[i];
+      var item = records[i];
       if (!MatchItem(f, item)) continue;
-      var amount = Mathf.Min(item.m_stack, stack);
-      item.m_stack -= amount;
+      var amount = Mathf.Min(item.Stack, stack);
+      item.Stack -= amount;
       stack -= amount;
       if (stack <= 0) break;
     }
-    inv.m_inventory.RemoveAll(x => x.m_stack <= 0);
+    records.RemoveAll(x => x.Stack <= 0);
   }
 
-  public bool Match(Functions f, Inventory inv)
+  public bool Match(Functions f, List<ItemRecord> records)
   {
-    var item = FindMatch(f, inv);
+    var item = FindMatch(f, records);
     if (item == null) return false;
-    inv.RemoveItem(item);
+    records.Remove(item);
     return true;
   }
-  private ItemDrop.ItemData? FindMatch(Functions f, Inventory inv)
+  private ItemRecord? FindMatch(Functions f, List<ItemRecord> records)
   {
     if (Position != "")
     {
-      var item = inv.GetItemAt(RolledPosition.x, RolledPosition.y);
+      var item = records.FirstOrDefault(r => r.GridPos == RolledPosition);
       if (item == null) return null;
-      if (Stack?.Match(f, item.m_stack) == false) return null;
+      if (Stack?.Match(f, item.Stack) == false) return null;
       if (MatchItem(f, item)) return item;
+      return null;
     }
-    foreach (var item in inv.m_inventory)
+    foreach (var item in records)
     {
-      if (Stack?.Match(f, item.m_stack) == false) continue;
+      if (Stack?.Match(f, item.Stack) == false) continue;
       if (MatchItem(f, item)) return item;
-
     }
     return null;
   }
-  private bool MatchItem(Functions f, ItemDrop.ItemData item)
+  private bool MatchItem(Functions f, ItemRecord item)
   {
-    var name = item.m_dropPrefab?.name ?? item.m_shared.m_name;
-    if (Prefab.Match(f, StringExtensionMethods.GetStableHashCode(name)) == false) return false;
-    if (Durability?.Match(f, item.m_durability) == false) return false;
-    if (Equipped?.Match(f, item.m_equipped) == false) return false;
-    if (Quality?.Match(f, item.m_quality) == false) return false;
-    if (Variant?.Match(f, item.m_variant) == false) return false;
-    if (CrafterID?.Match(f, item.m_crafterID) == false) return false;
-    if (CrafterName?.Match(f, item.m_crafterName) == false) return false;
-    if (WorldLevel?.Match(f, item.m_worldLevel) == false) return false;
-    if (PickedUp?.Match(f, item.m_pickedUp) == false) return false;
+    if (Prefab.Match(f, item.PrefabHash) == false) return false;
+    if (Durability?.Match(f, item.Durability) == false) return false;
+    if (Equipped?.Match(f, item.Equipped) == false) return false;
+    if (Quality?.Match(f, item.Quality) == false) return false;
+    if (Variant?.Match(f, item.Variant) == false) return false;
+    if (CrafterID?.Match(f, item.CrafterID) == false) return false;
+    if (CrafterName?.Match(f, item.CrafterName) == false) return false;
+    if (WorldLevel?.Match(f, item.WorldLevel) == false) return false;
+    if (PickedUp?.Match(f, item.PickedUp) == false) return false;
     if (CustomData == null) return true;
     foreach (var kvp in CustomData)
     {
-      if (!item.m_customData.TryGetValue(kvp.Key, out var value)) return false;
+      if (!item.CustomData.TryGetValue(kvp.Key, out var value)) return false;
       if (kvp.Value.Match(f, value) == false) return false;
     }
     return true;
