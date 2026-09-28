@@ -1,6 +1,7 @@
 - v1.61
   - Adds new function `objectcount` to return the number of objects matching a given filter. Thanks Zeall!
   - Fixes various issues related to inventory handling.
+  - Fixes portals not being detected by object filters or pokes. Thanks Zeall!
   - Renames undocumented poke `amount` to `pokecount` for consistency with other count fields. Thanks Zeall!
 
 - v1.60
