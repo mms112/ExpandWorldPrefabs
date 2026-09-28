@@ -146,7 +146,10 @@ public class Functions(string prefab, string[] args, Vector3 pos)
       "z" => Helper.Format(pos.z),
       "snap" => Helper.Format(WorldGenerator.instance.GetHeight(pos.x, pos.z)),
       // Need arg check to avoid conflict with value operations.
-      "amount" => args.Length < 2 ? Amount.ToString() : null,
+      // Renamed from <amount> (undocumented) for consistency with <objectcount>/<objectcount_X>.
+      // No alias kept: an "amount" alias sitting next to <amount_X_Y> (item slot amount, a
+      // different feature) would read as related when it isn't - clean rename avoids that.
+      "pokecount" => args.Length < 2 ? Amount.ToString() : null,
       "time" => Helper.Format(time),
       "realtime" => DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
       _ => null,

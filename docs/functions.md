@@ -30,6 +30,7 @@ Following functions are available to be used in the yaml file:
 - `<byte_*>`: Byte value from the object converted to base64 text.
 - `<zdo_*>`: Object id value from the object.
 - `<amount_X_Y>`: Amount of item at slot X,Y.
+- `<pokecount>`: Number of targets the current `poke:` is running against.
 - `<durability_X_Y>`: Durability of item at slot X,Y.
 - `<quality_X_Y>`: Quality of item at slot X,Y.
 - `<item_*>`: Amount of specific item in the container.
