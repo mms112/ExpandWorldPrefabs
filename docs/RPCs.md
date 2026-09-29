@@ -221,7 +221,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Requests to open the container.
   objectRpc:
-  - name: RequestOpen
+  - name: RPC_RequestOpen
     source: <zdo>
     1: long, "player id"
 ```
@@ -229,7 +229,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Opens the container.
   objectRpc:
-  - name: OpenRespons
+  - name: RPC_OpenResponse
     target: <zdo>
     1: bool, "can be opened?"
 ```
@@ -261,9 +261,17 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Takes items from the chest.
   objectRpc:
-  - name: RPC_TakeAllRespons
+  - name: RPC_TakeAllResponse
     target: <zdo>
     1: bool, "can be taken?"
+```
+
+```yaml
+# Marks a hashed key as discovered on the container.
+  objectRpc:
+  - name: RPC_Discovered
+    source: <zdo>
+    1: hash, "key"
 ```
 
 ### CookingStation
@@ -543,7 +551,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Deals damage to a part of the rock.
   objectRpc:
-  - name: RPC_Hit
+  - name: RPC_Damage
     1: hit, "hit data"
     2: int, "part index"
 ```
@@ -1104,6 +1112,13 @@ Recommended to use the [terrain field](scripting.md#terrain) to set position, ra
 ```
 
 ```yaml
+# Sets the snow visual amount.
+  objectRpc:
+  - name: RPC_SetSnow
+    1: float, "snow amount"
+```
+
+```yaml
 # Removes the object.
   objectRpc:
   - name: RPC_Remove
@@ -1198,13 +1213,13 @@ This list all RPC calls that are not related to any object.
 ```yaml
 # Calls pong RPC on the sender.
   clientRpc:
-  - name: Ping
+  - name: RPC_Ping
 ```
 
 ```yaml
 # Prints network delay.
   clientRpc:
-  - name: Pong
+  - name: RPC_Pong
 ```
 
 ```yaml
