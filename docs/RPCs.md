@@ -101,7 +101,6 @@ By default, the RPC is sent to the owner of the object.
     1: int, "index of the item slot"
     2: hash, "name of the item"
     3: int, "variant number of the item"
-    4: int, "orientation of the item (0 = none, 1 = vertical, 2 = horizontal, 3 = all)"
 ```
 
 ### BaseAI (AnimalAI + MonsterAI)
@@ -287,6 +286,7 @@ By default, the RPC is sent to the owner of the object.
   objectRpc:
   - name: RPC_AddItem
     1: string, "name of the item"
+    2: bool, "cheated"
 ```
 
 ```yaml
@@ -351,7 +351,6 @@ By default, the RPC is sent to the owner of the object.
 # Tries to remove item from the feast. Sends RPC_OnEat to all clients.
   objectRpc:
   - name: RPC_TryEat
-    1: int, "index of the item slot"
 ```
 
 ### Fermenter
@@ -360,7 +359,8 @@ By default, the RPC is sent to the owner of the object.
 # Adds a single item.
   objectRpc:
   - name: RPC_AddItem
-    1: string, "name of the item"
+    1: hash, "name of the item"
+    2: bool, "cheated"
 ```
 
 ```yaml
@@ -456,6 +456,7 @@ By default, the RPC is sent to the owner of the object.
 # Attempts to incinerate the items.
   objectRpc:
   - name: RPC_RequestIncinerate
+    1: long, "player id"
 ```
 
 ```yaml
@@ -516,6 +517,7 @@ By default, the RPC is sent to the owner of the object.
     1: hash, "name of the item"
     2: int, "variant number of the item"
     3: int, "level of the item"
+    4: int, "orientation of the item (0 = none, 1 = vertical, 2 = horizontal, 3 = all)"
 ```
 
 ### MapTable
@@ -809,7 +811,8 @@ By default, the RPC is sent to the owner of the object.
     1: hash, "status effect"
     2: bool, "reset time?",
     3: int, "item level",
-    4: float, "skill level"
+    4: float, "skill level",
+    5: int, "variant"
 ```
 
 ### ShieldGenerator
@@ -908,6 +911,7 @@ By default, the RPC is sent to the owner of the object.
   objectRpc:
   - name: RPC_AddOre
     1: string, "name of the item"
+    2: bool, "cheated"
 ```
 
 ```yaml
@@ -1013,6 +1017,7 @@ Recommended to use the [terrain field](scripting.md#terrain) to set position, ra
   - name: RPC_OnStateChanged
     target: all
     1: enum_trap, Armed/Disarmed/Triggered  # - int, 0/1/2
+    2: long, "id of client modifying the state"
 ```
 
 ### TreeBase
@@ -1122,6 +1127,7 @@ Recommended to use the [terrain field](scripting.md#terrain) to set position, ra
 # Removes the object.
   objectRpc:
   - name: RPC_Remove
+    1: bool, "block item drop"
 ```
 
 ```yaml
@@ -1214,12 +1220,14 @@ This list all RPC calls that are not related to any object.
 # Calls pong RPC on the sender.
   clientRpc:
   - name: RPC_Ping
+    1: float, "time"
 ```
 
 ```yaml
 # Prints network delay.
   clientRpc:
   - name: RPC_Pong
+    1: float, "time"
 ```
 
 ```yaml
