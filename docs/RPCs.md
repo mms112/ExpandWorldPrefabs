@@ -253,7 +253,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Requests to take items.
   objectRpc:
-  - name: RequestTakeAll
+  - name: RPC_RequestTakeAll
     source: <zdo>
     1: long, "player id"
 ```
@@ -261,7 +261,7 @@ By default, the RPC is sent to the owner of the object.
 ```yaml
 # Takes items from the chest.
   objectRpc:
-  - name: TakeAllRespons
+  - name: RPC_TakeAllRespons
     target: <zdo>
     1: bool, "can be taken?"
 ```
