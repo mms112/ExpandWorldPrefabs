@@ -107,6 +107,27 @@ public class ObjectsFiltering
       return !HasLimitObjects(zdoLists, l, objects, zdo.m_uid, f);
   }
 
+  public static Dictionary<string, int> GetCounts(Object[] objects, ZDO zdo, Functions f)
+  {
+    Dictionary<string, int> counts = [];
+    if (objects.Length == 0) return counts;
+    foreach (var o in objects) o.Roll(f, zdo.m_position, zdo.GetRotation());
+    var maxRadius = objects.Max(o => o.MaxDistance);
+    IEnumerable<ZDO> candidates = maxRadius > 10000
+      ? ZDOMan.instance.m_objectsByID.Values
+      : GetSectorIndices(objects).SelectMany(z => z);
+    foreach (var z in candidates)
+    {
+      var valid = objects.FirstOrDefault(o => o.IsValid(z, f, zdo.m_uid));
+      if (valid == null) continue;
+      var name = ZNetScene.instance.GetPrefab(z.GetPrefab())?.name;
+      if (name == null) continue;
+      counts.TryGetValue(name, out var current);
+      counts[name] = current + valid.Weight;
+    }
+    return counts;
+  }
+
   private static bool HasAllObjects(List<List<ZDO>> zdoLists, Object[] objects, ZDOID? self, Functions f)
   {
     return objects.All(o => zdoLists.Any(zdos => zdos.Any(z => o.IsValid(z, f, self))));
@@ -153,7 +174,6 @@ public class ObjectsFiltering
     HashSet<ZoneSystem.SectorIndex> handled = [];
     foreach (var o in objects)
       GetSectorIndices(o, zdoLists, handled);
-
     return zdoLists;
   }
 
@@ -180,6 +200,9 @@ public class ObjectsFiltering
         var list = zm.m_objectsBySector[sector.Sector];
         if (list != null)
           zdoLists.Add(list);
+        // Portals are not added to m_objectsBySector, so have to be handled separately.
+        if (zm.m_portalObjects.TryGetValue(sector, out var portalList))
+          zdoLists.Add(portalList);
       }
     }
   }

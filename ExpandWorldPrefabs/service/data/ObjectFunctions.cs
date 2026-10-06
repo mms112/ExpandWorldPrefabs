@@ -5,12 +5,20 @@ using System.Linq;
 using ExpandWorld.Prefab;
 using Service;
 using UnityEngine;
+using PrefabObject = ExpandWorld.Prefab.Object;
 
 namespace Data;
 
 public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(prefab, args, zdo.m_position)
 {
-  private Inventory? inventory;
+  private Dictionary<string, int>? objectCounts;
+  private PrefabObject[]? objects;
+  public void SetObjectCounts(PrefabObject[] value)
+  {
+    objectCounts = null;
+    objects = value;
+  }
+  private List<ItemRecord>? inventory;
 
 
   protected override string? GetFunction(string key, string defaultValue)
@@ -52,8 +60,13 @@ public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(
       "biome" => GetBiome(),
       "altbiome" => GetAltBiome(),
       "joints" => GetJoints(),
+      "objectcount" => GetObjectCountTotal(),
       _ => null,
     };
+
+  private string GetObjectCountTotal() => GetObjectCounts().Values.Sum().ToString(CultureInfo.InvariantCulture);
+
+  private Dictionary<string, int> GetObjectCounts() => objectCounts ??= objects == null ? [] : ObjectsFiltering.GetCounts(objects, zdo, this);
 
   private string GetConnected() => (zdo.GetConnection()?.m_target ?? ZDOID.None).ToString();
 
@@ -95,9 +108,20 @@ public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(
      "item" => GetItem(value, defaultValue),
      "pos" => Helper.FormatPos(GetPos(value)),
      "pdata" => PeerManager.GetPlayerData(zdo, value),
+     "objectcount" => GetObjectCount(value, defaultValue),
      _ => null,
    };
 
+  private string GetObjectCount(string value, string defaultValue)
+  {
+    if (value == "") return defaultValue;
+    if (objects == null) return defaultValue;
+    var counts = GetObjectCounts();
+    if (counts.TryGetValue(value, out var exact)) return exact.ToString(CultureInfo.InvariantCulture);
+    if (!value.Contains('*')) return defaultValue;
+    var sum = counts.Where(kv => SimpleStringValue.PatternMatch(kv.Key, value)).Sum(kv => kv.Value);
+    return sum.ToString(CultureInfo.InvariantCulture);
+  }
 
   private string GetBytes(string value, string defaultValue) => ZdoHelper.GetBytes(zdo, value, defaultValue);
   private string GetString(string value, string defaultValue) => ZdoHelper.GetString(zdo, value, defaultValue);
@@ -149,31 +173,31 @@ public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(
   {
     LoadInventory();
     if (inventory == null) return 0;
-    if (prefab == "") return inventory.m_inventory.Sum(i => i.m_stack);
-    if (prefab == "*") return inventory.m_inventory.Sum(i => i.m_stack);
+    if (prefab == "") return inventory.Sum(i => i.Stack);
+    if (prefab == "*") return inventory.Sum(i => i.Stack);
     int count = 0;
     if (prefab[0] == '*' && prefab[prefab.Length - 1] == '*')
     {
       prefab = prefab.Substring(1, prefab.Length - 2).ToLowerInvariant();
-      foreach (var item in inventory.m_inventory)
+      foreach (var item in inventory)
       {
-        if (GetName(item).ToLowerInvariant().Contains(prefab)) count += item.m_stack;
+        if (GetName(item).ToLowerInvariant().Contains(prefab)) count += item.Stack;
       }
     }
     else if (prefab[0] == '*')
     {
       prefab = prefab.Substring(1);
-      foreach (var item in inventory.m_inventory)
+      foreach (var item in inventory)
       {
-        if (GetName(item).EndsWith(prefab, StringComparison.OrdinalIgnoreCase)) count += item.m_stack;
+        if (GetName(item).EndsWith(prefab, StringComparison.OrdinalIgnoreCase)) count += item.Stack;
       }
     }
     else if (prefab[prefab.Length - 1] == '*')
     {
       prefab = prefab.Substring(0, prefab.Length - 1);
-      foreach (var item in inventory.m_inventory)
+      foreach (var item in inventory)
       {
-        if (GetName(item).StartsWith(prefab, StringComparison.OrdinalIgnoreCase)) count += item.m_stack;
+        if (GetName(item).StartsWith(prefab, StringComparison.OrdinalIgnoreCase)) count += item.Stack;
       }
     }
     else
@@ -183,19 +207,19 @@ public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(
       {
         var prefix = prefab.Substring(0, wildIndex);
         var suffix = prefab.Substring(wildIndex + 1);
-        foreach (var item in inventory.m_inventory)
+        foreach (var item in inventory)
         {
           var name = GetName(item);
           if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
               name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-            count += item.m_stack;
+            count += item.Stack;
         }
       }
       else
       {
-        foreach (var item in inventory.m_inventory)
+        foreach (var item in inventory)
         {
-          if (GetName(item) == prefab) count += item.m_stack;
+          if (GetName(item) == prefab) count += item.Stack;
         }
       }
 
@@ -222,30 +246,27 @@ public class ObjectFunctions(string prefab, string[] args, ZDO zdo) : Functions(
     return string.Join(", ", jointNames);
   }
 
-  private string GetName(ItemDrop.ItemData? item) => item?.m_dropPrefab?.name ?? item?.m_shared.m_name ?? "";
+  private string GetName(ItemRecord? item) => item?.PrefabName ?? "";
   private string? GetNameAt(int x, int y)
   {
     var item = GetItemAt(x, y);
     return GetName(item);
   }
-  private string? GetAmountAt(int x, int y) => GetItemAt(x, y)?.m_stack.ToString();
-  private string? GetDurabilityAt(int x, int y) => GetItemAt(x, y)?.m_durability.ToString();
-  private string? GetQualityAt(int x, int y) => GetItemAt(x, y)?.m_quality.ToString();
-  private ItemDrop.ItemData? GetItemAt(int x, int y)
+  private string? GetAmountAt(int x, int y) => GetItemAt(x, y)?.Stack.ToString();
+  private string? GetDurabilityAt(int x, int y) => GetItemAt(x, y)?.Durability.ToString();
+  private string? GetQualityAt(int x, int y) => GetItemAt(x, y)?.Quality.ToString();
+  private ItemRecord? GetItemAt(int x, int y)
   {
     LoadInventory();
-    if (inventory == null) return null;
-    if (x < 0 || x >= inventory.m_width || y < 0 || y >= inventory.m_height) return null;
-    return inventory.GetItemAt(x, y);
+    if (inventory == null || x < 0 || y < 0) return null;
+    return inventory.FirstOrDefault(i => i.GridPos.x == x && i.GridPos.y == y);
   }
 
 
   private void LoadInventory()
   {
     if (inventory != null) return;
-    var loaded = new Inventory("", null, 9999, 9999);
-    if (!InventoryStorage.TryLoad(zdo, loaded)) return;
-    inventory = loaded;
+    inventory = ItemDataHelper.Load(zdo);
   }
 
   private Vector3 GetPos(string value)

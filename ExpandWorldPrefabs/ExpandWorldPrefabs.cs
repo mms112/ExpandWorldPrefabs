@@ -14,11 +14,11 @@ public class EWP : BaseUnityPlugin
 {
   public const string GUID = "expand_world_prefabs";
   public const string NAME = "Expand World Prefabs";
-  public const string VERSION = "1.60";
+  public const string VERSION = "1.62";
 #nullable disable
   public static Harmony Harmony;
 #nullable enable
-  public static Assembly? ExpandEvents;
+  public static Assembly? ExpandData;
   public void Awake()
   {
     Prefab.Config.Init(Config);
@@ -44,9 +44,9 @@ public class EWP : BaseUnityPlugin
   }
   public void Start()
   {
-    if (Chainloader.PluginInfos.TryGetValue("expand_world_events", out var plugin))
+    if (Chainloader.PluginInfos.TryGetValue("expand_world_data", out var plugin))
     {
-      ExpandEvents = plugin.Instance.GetType().Assembly;
+      ExpandData = plugin.Instance.GetType().Assembly;
     }
     new Terminal.ConsoleCommand("ewp_reload_data", "Manually reloads the ewp_data.yaml file.", (args) =>
     {
@@ -83,10 +83,10 @@ public class EWP : BaseUnityPlugin
 
   public static RandomEvent GetCurrentEvent(Vector3 pos)
   {
-    if (ExpandEvents == null) return RandEventSystem.instance.GetCurrentRandomEvent();
-    var method = ExpandEvents.GetType("ExpandWorld.EWE").GetMethod("GetCurrentRandomEvent", BindingFlags.Public | BindingFlags.Static);
+    if (ExpandData == null) return RandEventSystem.instance.GetCurrentRandomEvent();
+    var method = ExpandData.GetType("ExpandWorldData.Api").GetMethod("GetCurrentRandomEvent", BindingFlags.Public | BindingFlags.Static);
     if (method == null) return RandEventSystem.instance.GetCurrentRandomEvent();
-    return (RandomEvent)method.Invoke(null, [pos]);
+    return method.Invoke(null, [pos]) as RandomEvent ?? RandEventSystem.instance.GetCurrentRandomEvent();
   }
 }
 

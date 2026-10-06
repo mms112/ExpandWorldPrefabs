@@ -30,7 +30,7 @@ public class Loading
     InfoManager.Patch();
   }
 
-  private static Info[] FromData(Data data)
+  public static Info[] FromData(Data data)
   {
     var waterLevel = ZoneSystem.instance.m_waterLevel;
     float? spawnDelay = data.delay == null && data.spawnDelay == null ? null : Math.Max(data.delay ?? 0f, data.spawnDelay ?? 0f);
@@ -88,6 +88,7 @@ public class Loading
         maxTerrainHeight = DataValue.Float(split.Value);
       }
     }
+    var allAltBiomes = AltBiomeList.m_altBiomes.Select(ab => ab.m_name).ToArray();
     return [.. types.Select(t =>
     {
       var d = t.Type != ActionType.Destroy ? data.data : "";
@@ -125,9 +126,9 @@ public class Loading
         MaxZ = data.maxZ == null ? null : DataValue.Float(data.maxZ),
         MinAltitude = data.minAltitude == null ? null : DataValue.Float(data.minAltitude),
         MaxAltitude = data.maxAltitude == null ? null : DataValue.Float(data.maxAltitude),
-        Biomes = Yaml.ToBiomeFilter(data.biomes, true, out var altBiomes),
+        Biomes = Helper.ToBiomeFilter(data.biomes, true, allAltBiomes, out var altBiomes),
         AltBiomes = altBiomes,
-        BannedBiomes = Yaml.ToBiomeFilter(data.bannedBiomes, false, out var bannedAltBiomes),
+        BannedBiomes = Helper.ToBiomeFilter(data.bannedBiomes, false, allAltBiomes, out var bannedAltBiomes),
         BannedAltBiomes = bannedAltBiomes,
         Environments = environments,
         BannedEnvironments = bannedEnvironments,

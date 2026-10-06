@@ -77,7 +77,7 @@ public class Manager
     return ret;
   }
 
-  private static bool Handle(Info info, Functions f, ZDO zdo)
+  private static bool Handle(Info info, ObjectFunctions f, ZDO zdo)
   {
     if (info.Chance != null)
     {
@@ -88,6 +88,9 @@ public class Manager
           return false;
       }
     }
+
+    if (info.Objects != null)
+      f.SetObjectCounts(info.Objects);
 
     if (info.LogSource != null && Config.RuleLogging)
       RuleLog.Write(info.LogSource, f);
